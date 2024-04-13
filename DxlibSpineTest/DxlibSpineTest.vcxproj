@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{b7a2665a-71c5-4f5a-ae16-337712fe278f}</ProjectGuid>
+    <RootNamespace>DxlibSpineTest</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(ProjectDir)deps\dxlib;$(ProjectDir)deps\spine-cpp\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)deps\dxlib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(ProjectDir)deps\dxlib;$(ProjectDir)deps\spine-cpp\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)deps\dxlib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="deps\spine-cpp\src\spine\Animation.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\AnimationState.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\AnimationStateData.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Atlas.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\AtlasAttachmentLoader.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Attachment.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\AttachmentLoader.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\AttachmentTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Bone.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\BoneData.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\BoundingBoxAttachment.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\ClippingAttachment.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\ColorTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\ConstraintData.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\CurveTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\DeformTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\DrawOrderTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Event.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\EventData.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\EventTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Extension.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\IkConstraint.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\IkConstraintData.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\IkConstraintTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Json.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\LinkedMesh.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\MathUtil.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\MeshAttachment.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\PathAttachment.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\PathConstraint.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\PathConstraintData.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\PathConstraintMixTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\PathConstraintPositionTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\PathConstraintSpacingTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\PointAttachment.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\RegionAttachment.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\RotateTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\RTTI.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\ScaleTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\ShearTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Skeleton.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\SkeletonBinary.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\SkeletonBounds.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\SkeletonClipping.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\SkeletonData.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\SkeletonJson.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Skin.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Slot.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\SlotData.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\SpineObject.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\TextureLoader.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Timeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\TransformConstraint.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\TransformConstraintData.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\TransformConstraintTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\TranslateTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Triangulator.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\TwoColorTimeline.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Updatable.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\VertexAttachment.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\VertexEffect.cpp" />
+    <ClCompile Include="dxlib_spine.cpp" />
+    <ClCompile Include="dxlib_spine_player.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="main_window.cpp" />
+    <ClCompile Include="spine_loader.cpp" />
+    <ClCompile Include="spine_setting_dialogue.cpp" />
+    <ClCompile Include="win_dialogue.cpp" />
+    <ClCompile Include="win_filesystem.cpp" />
+    <ClCompile Include="win_text.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dxlib_spine.h" />
+    <ClInclude Include="dxlib_spine_player.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="main_window.h" />
+    <ClInclude Include="spine_loader.h" />
+    <ClInclude Include="spine_setting_dialogue.h" />
+    <ClInclude Include="win_dialogue.h" />
+    <ClInclude Include="win_filesystem.h" />
+    <ClInclude Include="win_text.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="dpiAwareness.manifest" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
