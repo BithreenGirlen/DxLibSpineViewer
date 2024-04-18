@@ -81,9 +81,6 @@ bool CDxLibSpinePlayer::SetSpineFromFile(const std::vector<std::string>& atlasPa
 
 	if (m_skeletonData.empty())return false;
 
-	m_BaseSize.u = m_skeletonData.at(0).get()->getWidth();
-	m_BaseSize.v = m_skeletonData.at(0).get()->getHeight();
-
 	WorkOutDefaultScale();
 	ResizeWindow();
 
@@ -110,9 +107,6 @@ bool CDxLibSpinePlayer::SetSpineFromMemory(const std::vector<std::string>& atlas
 	}
 
 	if (m_skeletonData.empty())return false;
-
-	m_BaseSize.u = m_skeletonData.at(0).get()->getWidth();
-	m_BaseSize.v = m_skeletonData.at(0).get()->getHeight();
 
 	WorkOutDefaultScale();
 	ResizeWindow();
@@ -275,11 +269,27 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 {
 	if (m_skeletonData.empty())return;
 
+	if (m_skeletonData.at(0).get()->getWidth() > 0.f && m_skeletonData.at(0).get()->getHeight() > 0.f)
+	{
+		m_BaseSize.u = m_skeletonData.at(0).get()->getWidth();
+		m_BaseSize.v = m_skeletonData.at(0).get()->getHeight();
+	}
+	else
+	{
+		/*If skeletonData does not store size, deduce from the size and the scale of regionAttachment of the default skin.*/
+		spine::RegionAttachment* pRegionAttachment = (spine::RegionAttachment*)m_skeletonData.at(0).get()->getDefaultSkin()->getAttachments().next()._attachment;
+		if (pRegionAttachment != nullptr)
+		{
+			m_BaseSize.u = pRegionAttachment->getWidth() * pRegionAttachment->getScaleX();
+			m_BaseSize.v = pRegionAttachment->getHeight() * pRegionAttachment->getScaleY();
+		}
+	}
+
 	m_fDefaultWindowScale = 1.f;
 	m_fDefaultOffset = DxLib::FLOAT2{};
 
-	int iSkeletonWidth = static_cast<int>(m_skeletonData.at(0).get()->getWidth());
-	int iSkeletonHeight = static_cast<int>(m_skeletonData.at(0).get()->getHeight());
+	int iSkeletonWidth = static_cast<int>(m_BaseSize.u);
+	int iSkeletonHeight = static_cast<int>(m_BaseSize.v);
 
 	int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
 	int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
