@@ -521,7 +521,7 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
             atlases.push_back(win_text::NarrowANSI(temp));
         }
         temps.clear();
-        bool bIs = win_filesystem::CreateFilePathList(pwzFolderPath, wstrSkelExt.c_str(), temps);
+        bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrSkelExt.c_str(), temps);
         if (bRet)
         {
             for (const std::wstring& temp : temps)
