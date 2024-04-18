@@ -24,7 +24,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_ int       nCmdShow)
 {
 #ifdef _DEBUG
-    SSpineDebug spineDebug;
+    static SSpineDebug spineDebug;
 #endif
 
     int iRet = 0;
