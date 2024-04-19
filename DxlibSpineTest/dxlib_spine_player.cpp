@@ -276,12 +276,28 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 	}
 	else
 	{
-		/*If skeletonData does not store size, deduce from the size and the scale of regionAttachment of the default skin.*/
-		spine::RegionAttachment* pRegionAttachment = (spine::RegionAttachment*)m_skeletonData.at(0).get()->getDefaultSkin()->getAttachments().next()._attachment;
-		if (pRegionAttachment != nullptr)
+		/*If skeletonData does not store size, deduce from the attachment of the default skin.*/
+		spine::Attachment* pAttachment = m_skeletonData.at(0).get()->getDefaultSkin()->getAttachments().next()._attachment;
+		if (pAttachment != nullptr)
 		{
-			m_BaseSize.u = pRegionAttachment->getWidth() * pRegionAttachment->getScaleX();
-			m_BaseSize.v = pRegionAttachment->getHeight() * pRegionAttachment->getScaleY();
+			if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
+			{
+				spine::RegionAttachment* pRegionAttachment = (spine::RegionAttachment*)pAttachment;
+				if (pRegionAttachment->getWidth() > 0.f && pRegionAttachment->getHeight() > 0.f)
+				{
+					m_BaseSize.u = pRegionAttachment->getWidth() * pRegionAttachment->getScaleX();
+					m_BaseSize.v = pRegionAttachment->getHeight() * pRegionAttachment->getScaleY();
+				}
+			}
+			else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
+			{
+				spine::MeshAttachment* pMeshAttachment = (spine::MeshAttachment*)pAttachment;
+				if (pMeshAttachment->getWidth() > 0.f && pMeshAttachment->getHeight() > 0.f)
+				{
+					m_BaseSize.u = pMeshAttachment->getWidth() * 2.f;
+					m_BaseSize.v = pMeshAttachment->getHeight() * 2.f;
+				}
+			}
 		}
 	}
 
