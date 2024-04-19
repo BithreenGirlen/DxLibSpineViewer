@@ -21,14 +21,14 @@ public:
 
 	void Update(float fDelta);
 	void Draw();
-	void SwitchPma()const { m_bAlphaPremultiplied ^= true; }
+	void SwitchPma(){ m_bAlphaPremultiplied ^= true; }
 private:
-	mutable bool m_bHasOwnAnimationStateData = false;
-	mutable bool m_bAlphaPremultiplied = true;
+	bool m_bHasOwnAnimationStateData = false;
+	bool m_bAlphaPremultiplied = true;
 
-	mutable spine::Vector<float> m_worldVertices;
-	mutable spine::Vector<DxLib::VERTEX2D> m_dxLibVertices;
-	mutable spine::Vector<unsigned short> m_dxLibIndices;
+	spine::Vector<float> m_worldVertices;
+	spine::Vector<DxLib::VERTEX2D> m_dxLibVertices;
+	spine::Vector<unsigned short> m_dxLibIndices;
 
 	spine::SkeletonClipping m_clipper;
 
