@@ -43,7 +43,7 @@ std::wstring win_dialogue::SelectWorkFolder(void* hParentWnd)
     return std::wstring();
 }
 
-std::wstring win_dialogue::SelectOpenFile(const wchar_t* pwzFileType, const wchar_t* pwzSpec, void* hParentWnd)
+std::wstring win_dialogue::SelectOpenFile(const wchar_t* pwzFileType, const wchar_t* pwzSpec, const wchar_t* pwzTitle, void* hParentWnd)
 {
     ComInit sInit;
     CComPtr<IFileOpenDialog> pFileDialog;
@@ -59,6 +59,7 @@ std::wstring win_dialogue::SelectOpenFile(const wchar_t* pwzFileType, const wcha
             FILEOPENDIALOGOPTIONS opt{};
             pFileDialog->GetOptions(&opt);
             pFileDialog->SetOptions(opt | FOS_PATHMUSTEXIST | FOS_FORCEFILESYSTEM);
+            if (pwzTitle != nullptr)pFileDialog->SetTitle(pwzTitle);
 
             if (SUCCEEDED(pFileDialog->Show(static_cast<HWND>(hParentWnd))))
             {
