@@ -58,7 +58,7 @@ bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
         ::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
     }
 
-	return false;
+    return false;
 }
 
 int CMainWindow::MessageLoop()
@@ -122,8 +122,6 @@ LRESULT CMainWindow::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
         return OnPaint();
     case WM_ERASEBKGND:
         return 1;
-    //case WM_GETMINMAXINFO:
-    //    return OnGetMinMaxInfo(wParam, lParam);
     case WM_KEYUP:
         return OnKeyUp(wParam, lParam);
     case WM_COMMAND:
@@ -178,7 +176,7 @@ LRESULT CMainWindow::OnPaint()
     PAINTSTRUCT ps;
     HDC hdc = ::BeginPaint(m_hWnd, &ps);
 
-    m_DxLibSpinePlayer.Redraw(1/120.f);
+    m_DxLibSpinePlayer.Redraw(1/60.f);
 
     ::EndPaint(m_hWnd, &ps);
 
@@ -187,17 +185,6 @@ LRESULT CMainWindow::OnPaint()
 /*WM_SIZE*/
 LRESULT CMainWindow::OnSize()
 {
-    return 0;
-}
-/*WM_GETMINMAXINFO*/
-LRESULT CMainWindow::OnGetMinMaxInfo(WPARAM wParam, LPARAM lParam)
-{
-    /*DxLib側の緩衝容量が恐らく頭打ちなので使用しない*/
-    MINMAXINFO* pMinMaxInfo = reinterpret_cast<MINMAXINFO*>(lParam);
-    pMinMaxInfo->ptMaxTrackSize.x = 50000;
-    pMinMaxInfo->ptMaxTrackSize.y = 50000;
-    pMinMaxInfo->ptMaxSize.x = 50000;
-    pMinMaxInfo->ptMaxSize.y = 50000;
     return 0;
 }
 /*WM_KEYUP*/
@@ -217,6 +204,9 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
     case 0x41: // Key A
         m_DxLibSpinePlayer.SwitchPma();
         break;
+    case 0x42: // Key B
+        m_DxLibSpinePlayer.SwitchBlendModeAdoption();
+        break;
     }
     return 0;
 }
@@ -235,6 +225,9 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
             break;
         case Menu::kFileSetting:
             MenuOnFileSetting();
+            break;
+        case Menu::kSelectFiles:
+            MenuOnSelectFiles();
             break;
         case Menu::kSeeThroughImage:
             MenuOnSeeThroughImage();
@@ -262,12 +255,12 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     if (wKey == MK_LBUTTON)
     {
         m_DxLibSpinePlayer.RescaleTime(iScroll > 0);
-        m_bSpeedSet = true;
+        m_bSpeedHavingChanged = true;
     }
 
     if (wKey == MK_RBUTTON)
     {
-
+        m_DxLibSpinePlayer.ShiftSkin();
     }
 
     return 0;
@@ -284,9 +277,9 @@ LRESULT CMainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 /*WM_LBUTTONUP*/
 LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
-    if (m_bSpeedSet)
+    if (m_bSpeedHavingChanged)
     {
-        m_bSpeedSet = false;
+        m_bSpeedHavingChanged = false;
         return 0;
     }
 
@@ -352,9 +345,11 @@ void CMainWindow::InitialiseMenuBar()
     hMenuFile = ::CreateMenu();
     if (hMenuFile == nullptr)goto failed;
 
-    iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kOpenFolder, "Open");
+    iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kOpenFolder, "Open folder");
     if (iRet == 0)goto failed;
     iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kFileSetting, "Setting");
+    if (iRet == 0)goto failed;
+    iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kSelectFiles, "Select files");
     if (iRet == 0)goto failed;
 
     hMenuImage = ::CreateMenu();
@@ -366,7 +361,7 @@ void CMainWindow::InitialiseMenuBar()
     hMenuBar = ::CreateMenu();
     if (hMenuBar == nullptr) goto failed;
 
-    iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuFile), "Folder");
+    iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuFile), "File");
     if (iRet == 0)goto failed;
     iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuImage), "Image");
     if (iRet == 0)goto failed;
@@ -393,7 +388,6 @@ failed:
     {
         ::DestroyMenu(hMenuBar);
     }
-
 }
 /*フォルダ選択*/
 void CMainWindow::MenuOnOpenFolder()
@@ -404,17 +398,39 @@ void CMainWindow::MenuOnOpenFolder()
         bool bRet = SetupResources(wstrPickedFolder.c_str());
         if (bRet)
         {
-            m_folders.clear();
-            m_nFolderIndex = 0;
+            ClearFolderInfo();
             win_filesystem::GetFolderListAndIndex(wstrPickedFolder.c_str(), m_folders, &m_nFolderIndex);
         }
     }
-
 }
-
+/*取り込みファイル設定*/
 void CMainWindow::MenuOnFileSetting()
 {
     m_SpineSettingDialogue.Open(::GetModuleHandleA(nullptr), m_hWnd, L"Extensions");
+}
+/*ファイル選択*/
+void CMainWindow::MenuOnSelectFiles()
+{
+    std::wstring wstrAtlasFile = win_dialogue::SelectOpenFile(L"atlas file", L"", L"Select atlas file", m_hWnd);
+    if (!wstrAtlasFile.empty())
+    {
+        std::wstring wstrSkelFile = win_dialogue::SelectOpenFile(L"skeleton file", L"", L"Select skeleton file", m_hWnd);
+        if (!wstrSkelFile.empty())
+        {
+            ClearFolderInfo();
+            std::vector<std::string> atlases;
+            std::vector<std::string> skels;
+
+            atlases.push_back(win_text::NarrowANSI(wstrAtlasFile));
+            skels.push_back(win_text::NarrowANSI(wstrSkelFile));
+
+            bool bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary());
+            if (!bRet)
+            {
+                ::MessageBoxW(nullptr, L"Failed to load spine", L"Error", MB_ICONERROR);
+            }
+        }
+    }
 }
 /*透過*/
 void CMainWindow::MenuOnSeeThroughImage()
@@ -537,4 +553,10 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
         ::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
     }
     return bRet;
+}
+/*階層構成情報消去*/
+void CMainWindow::ClearFolderInfo()
+{
+    m_folders.clear();
+    m_nFolderIndex = 0;
 }

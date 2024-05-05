@@ -29,7 +29,6 @@ private:
 	LRESULT OnClose();
 	LRESULT OnPaint();
 	LRESULT OnSize();
-	LRESULT OnGetMinMaxInfo(WPARAM wParam, LPARAM lParam);
 	LRESULT OnKeyUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnCommand(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMouseWheel(WPARAM wParam, LPARAM lParam);
@@ -37,12 +36,15 @@ private:
 	LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMButtonUp(WPARAM wParam, LPARAM lParam);
 
-	enum Menu{kOpenFolder = 1, kFileSetting,
-		kSeeThroughImage};
+	enum Menu
+	{
+		kOpenFolder = 1, kFileSetting, kSelectFiles,
+		kSeeThroughImage
+	};
 	enum MenuBar{kFolder, kImage};
 
 	POINT m_CursorPos{};
-	bool m_bSpeedSet = false;
+	bool m_bSpeedHavingChanged = false;
 	bool m_bLeftDowned = false;
 
 	HMENU m_hMenuBar = nullptr;
@@ -56,6 +58,7 @@ private:
 
 	void MenuOnOpenFolder();
 	void MenuOnFileSetting();
+	void MenuOnSelectFiles();
 
 	void MenuOnSeeThroughImage();
 
@@ -66,6 +69,7 @@ private:
 	void SwitchWindowMode();
 
 	bool SetupResources(const wchar_t* pwzFolderPath);
+	void ClearFolderInfo();
 
 	CDxLibSpinePlayer m_DxLibSpinePlayer;
 	CSpineSettingDialogue m_SpineSettingDialogue;
