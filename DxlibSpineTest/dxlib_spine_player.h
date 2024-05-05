@@ -28,9 +28,12 @@ public:
 
 	void MoveViewPoint(int iX, int iY);
 	void ShiftAnimation();
+	void ShiftSkin();
 
 	void Redraw(float fDelta);
+
 	void SwitchPma();
+	void SwitchBlendModeAdoption();
 private:
 	HWND m_hRenderWnd = nullptr;
 	int m_iDxLibInitialised = -1;
@@ -42,7 +45,7 @@ private:
 	std::vector<std::shared_ptr<spine::SkeletonData>> m_skeletonData;
 	std::vector<std::shared_ptr<CDxLibSpineDrawer>> m_drawables;
 
-	DxLib::FLOAT2 m_BaseSize = DxLib::FLOAT2{ kBaseWidth, kBaseHeight };
+	DxLib::FLOAT2 m_fBaseSize = DxLib::FLOAT2{ kBaseWidth, kBaseHeight };
 
 	float m_fDefaultWindowScale = 1.f;
 	float m_fThresholdScale = 1.f;
