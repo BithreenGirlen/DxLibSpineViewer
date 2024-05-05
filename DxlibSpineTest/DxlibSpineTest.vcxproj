@@ -161,6 +161,7 @@
     <ClCompile Include="deps\spine-cpp\src\spine\IkConstraintTimeline.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\Json.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\LinkedMesh.cpp" />
+    <ClCompile Include="deps\spine-cpp\src\spine\Log.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\MathUtil.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\MeshAttachment.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\PathAttachment.cpp" />
@@ -192,7 +193,6 @@
     <ClCompile Include="deps\spine-cpp\src\spine\TransformConstraintTimeline.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\TranslateTimeline.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\Triangulator.cpp" />
-    <ClCompile Include="deps\spine-cpp\src\spine\TwoColorTimeline.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\Updatable.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\VertexAttachment.cpp" />
     <ClCompile Include="deps\spine-cpp\src\spine\VertexEffect.cpp" />

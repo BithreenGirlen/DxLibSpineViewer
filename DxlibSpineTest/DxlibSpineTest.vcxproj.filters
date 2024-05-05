@@ -39,6 +39,15 @@
     <ClCompile Include="win_text.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="dxlib_spine.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="dxlib_spine_player.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="spine_setting_dialogue.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="deps\spine-cpp\src\spine\Animation.cpp">
       <Filter>ソース ファイル\deps\spine-cpp</Filter>
     </ClCompile>
@@ -115,6 +124,9 @@
       <Filter>ソース ファイル\deps\spine-cpp</Filter>
     </ClCompile>
     <ClCompile Include="deps\spine-cpp\src\spine\LinkedMesh.cpp">
+      <Filter>ソース ファイル\deps\spine-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="deps\spine-cpp\src\spine\Log.cpp">
       <Filter>ソース ファイル\deps\spine-cpp</Filter>
     </ClCompile>
     <ClCompile Include="deps\spine-cpp\src\spine\MathUtil.cpp">
@@ -210,9 +222,6 @@
     <ClCompile Include="deps\spine-cpp\src\spine\Triangulator.cpp">
       <Filter>ソース ファイル\deps\spine-cpp</Filter>
     </ClCompile>
-    <ClCompile Include="deps\spine-cpp\src\spine\TwoColorTimeline.cpp">
-      <Filter>ソース ファイル\deps\spine-cpp</Filter>
-    </ClCompile>
     <ClCompile Include="deps\spine-cpp\src\spine\Updatable.cpp">
       <Filter>ソース ファイル\deps\spine-cpp</Filter>
     </ClCompile>
@@ -221,15 +230,6 @@
     </ClCompile>
     <ClCompile Include="deps\spine-cpp\src\spine\VertexEffect.cpp">
       <Filter>ソース ファイル\deps\spine-cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="dxlib_spine.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="dxlib_spine_player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="spine_setting_dialogue.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
