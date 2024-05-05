@@ -22,9 +22,11 @@ public:
 	void Update(float fDelta);
 	void Draw();
 	void SwitchPma(){ m_bAlphaPremultiplied ^= true; }
+	void SwitchBlendModeAdoption() { m_bForceBlendModeNormal ^= true; }
 private:
 	bool m_bHasOwnAnimationStateData = false;
 	bool m_bAlphaPremultiplied = true;
+	bool m_bForceBlendModeNormal = false;
 
 	spine::Vector<float> m_worldVertices;
 	spine::Vector<DxLib::VERTEX2D> m_dxLibVertices;

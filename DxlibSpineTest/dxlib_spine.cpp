@@ -108,7 +108,7 @@ void CDxLibSpineDrawer::Draw()
 			/*
 			* In SDL, SFML and Cocos2d, it is assumed the stride being 2 byte, and as float 4 byte, they set 8 here.
 			* This float type vertice should be converted to the engine's vertex later as does Cocos2d to V3F_C4B_T2F.
-			* In DxLib, this will be converted to DxLib::VERTEX2D later.
+			* In DxLib, this will be converted to DxLib::VERTEX2D.
 			*/
 			m_worldVertices.setSize(8, 0);
 			/*Depends on spine's version whether the first argument is slot or bone.*/
@@ -172,7 +172,7 @@ void CDxLibSpineDrawer::Draw()
 			DxLib::VERTEX2D dxLibVertex{};
 			dxLibVertex.pos.x = (*pVertices)[ii];
 			dxLibVertex.pos.y = (*pVertices)[ii + 1LL];
-			dxLibVertex.pos.z = 0;
+			dxLibVertex.pos.z = 0.f;
 			dxLibVertex.rhw = 1.f;
 			dxLibVertex.dif.r = (BYTE)(tint.r * 255.f);
 			dxLibVertex.dif.g = (BYTE)(tint.g * 255.f);
@@ -204,6 +204,10 @@ void CDxLibSpineDrawer::Draw()
 			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
 			break;
 		}
+		if (m_bForceBlendModeNormal)
+		{
+			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
+		}
 		DxLib::SetDrawBlendMode(iDxLibBlendMode, 255);
 		DxLib::DrawPolygonIndexed2D
 		(
@@ -224,14 +228,14 @@ void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path
 	std::wstring wstrPath = win_text::WidenANSI(path.buffer());
 	int iDxLibTexture = DxLib::LoadGraph(wstrPath.c_str());
 	/*In case atlas size does not coincide with that of png, overwriting will collapse the layout.*/
-	//if (iDxLibTexture != -1)
-	//{
-	//	int iWidth = 0;
-	//	int iHeight = 0;
-	//	DxLib::GetGraphSize(iDxLibTexture, &iWidth, &iHeight);
-	//	page.width = iWidth;
-	//	page.height = iHeight;
-	//}
+	if (iDxLibTexture != -1 && page.width == 0 && page.height == 0)
+	{
+		int iWidth = 0;
+		int iHeight = 0;
+		DxLib::GetGraphSize(iDxLibTexture, &iWidth, &iHeight);
+		page.width = iWidth;
+		page.height = iHeight;
+	}
 	void* p = reinterpret_cast<void*>(static_cast<unsigned long long>(iDxLibTexture));
 
 	page.setRendererObject(p);
