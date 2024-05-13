@@ -63,7 +63,7 @@ File| Open folder | Opens folder select dialogue.
  -| Select files | Select atlas and skeleton file one by one.
 Image| Through-seen | Switches the window's transparancy.
 
-`Open folder` is basically for rendering using multiple spines, `Select files` is for single spine.  
+`Open folder` is basically for rendering multiple spines, `Select files` is for rendering single spine.  
 In both case, whether the skeleton is binary or not should be configured through setting dialogue.
 
 ## Mouse functions
@@ -86,5 +86,6 @@ Right button + mouse wheel| Switches the skin.
 | Esc | Close the application. |
 | A | Enable/disable premultiplied alpha.|  
 | B | Use/not to use blned-mode specified by slots.|  
+| Z | Enbale/disable depth-buffer.|  
 
 Some slots specify blend-mode-multiply though, blend-mode-normal seems to be more natural. In this case, type `B` to force the latter.
