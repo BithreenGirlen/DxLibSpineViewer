@@ -34,6 +34,7 @@ public:
 
 	void SwitchPma();
 	void SwitchBlendModeAdoption();
+	bool SwitchDepthBufferValidity();
 private:
 	HWND m_hRenderWnd = nullptr;
 	int m_iDxLibInitialised = -1;
@@ -60,6 +61,8 @@ private:
 
 	std::vector<std::string> m_skinNames;
 	size_t m_nSkinIndex = 0;
+
+	bool m_bDepthBufferEnabled = false;
 
 	void ClearDrawables();
 	bool SetupDrawer();

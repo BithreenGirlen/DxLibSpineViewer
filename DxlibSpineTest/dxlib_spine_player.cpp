@@ -211,7 +211,7 @@ void CDxLibSpinePlayer::Redraw(float fDelta)
 		for (size_t i = 0; i < m_drawables.size(); ++i)
 		{
 			m_drawables.at(i).get()->Update(fDelta);
-			m_drawables.at(i).get()->Draw();
+			m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
 		}
 		DxLib::ScreenFlip();
 		/*PeekMessageは扱いにくい*/
@@ -236,6 +236,22 @@ void CDxLibSpinePlayer::SwitchBlendModeAdoption()
 	{
 		m_drawables.at(i).get()->SwitchBlendModeAdoption();
 	}
+}
+/*奥行き表現有効無効切り替え*/
+bool CDxLibSpinePlayer::SwitchDepthBufferValidity()
+{
+	if (m_iDxLibInitialised != -1)
+	{
+		int iRet = DxLib::SetUseZBufferFlag(m_bDepthBufferEnabled ? FALSE : TRUE);
+		if (iRet == -1)return false;
+
+		iRet = DxLib::SetWriteZBufferFlag(m_bDepthBufferEnabled ? FALSE : TRUE);
+		if (iRet == -1)return false;
+
+		m_bDepthBufferEnabled ^= true;
+		return true;
+	}
+	return false;
 }
 /*消去*/
 void CDxLibSpinePlayer::ClearDrawables()
