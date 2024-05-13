@@ -153,6 +153,8 @@ LRESULT CMainWindow::OnCreate(HWND hWnd)
         ::MessageBoxW(nullptr, L"Failed to setup DxLib.", L"Error", MB_ICONERROR);
     }
 
+    UpdateDrawingInterval();
+
     return 0;
 }
 /*WM_DESTROY*/
@@ -176,7 +178,7 @@ LRESULT CMainWindow::OnPaint()
     PAINTSTRUCT ps;
     HDC hdc = ::BeginPaint(m_hWnd, &ps);
 
-    m_DxLibSpinePlayer.Redraw(1/60.f);
+    m_DxLibSpinePlayer.Redraw(m_fDelta);
 
     ::EndPaint(m_hWnd, &ps);
 
@@ -206,6 +208,11 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
         break;
     case 0x42: // Key B
         m_DxLibSpinePlayer.SwitchBlendModeAdoption();
+        break;
+    case 0x5a: // Key Z
+        m_DxLibSpinePlayer.SwitchDepthBufferValidity();
+        break;
+    default:
         break;
     }
     return 0;
@@ -559,4 +566,11 @@ void CMainWindow::ClearFolderInfo()
 {
     m_folders.clear();
     m_nFolderIndex = 0;
+}
+/*描画間隔更新*/
+void CMainWindow::UpdateDrawingInterval()
+{
+    DEVMODE sDevMode{};
+    ::EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &sDevMode);
+    m_fDelta = 1 / static_cast<float>(sDevMode.dmDisplayFrequency);
 }

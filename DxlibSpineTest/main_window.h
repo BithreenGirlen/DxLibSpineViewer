@@ -54,6 +54,8 @@ private:
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
 
+	float m_fDelta = 1 / 60.f;
+
 	void InitialiseMenuBar();
 
 	void MenuOnOpenFolder();
@@ -70,6 +72,8 @@ private:
 
 	bool SetupResources(const wchar_t* pwzFolderPath);
 	void ClearFolderInfo();
+
+	void UpdateDrawingInterval();
 
 	CDxLibSpinePlayer m_DxLibSpinePlayer;
 	CSpineSettingDialogue m_SpineSettingDialogue;
