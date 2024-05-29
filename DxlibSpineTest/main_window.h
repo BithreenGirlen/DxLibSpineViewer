@@ -8,6 +8,7 @@
 
 #include "dxlib_spine_player.h"
 #include "spine_setting_dialogue.h"
+#include "spine_manipulator_dialogue.h"
 
 class CMainWindow
 {
@@ -39,7 +40,7 @@ private:
 	enum Menu
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
-		kSeeThroughImage
+		kSeeThroughImage, kSkeletonSetting,
 	};
 	enum MenuBar{kFolder, kImage};
 
@@ -63,6 +64,7 @@ private:
 	void MenuOnSelectFiles();
 
 	void MenuOnSeeThroughImage();
+	void MenuOnSkeletonSetting();
 
 	void KeyUpOnNextFolder();
 	void KeyUpOnForeFolder();
@@ -77,6 +79,7 @@ private:
 
 	CDxLibSpinePlayer m_DxLibSpinePlayer;
 	CSpineSettingDialogue m_SpineSettingDialogue;
+	CSpineManipulatorDialogue m_SpineManipulatorDialogue;
 };
 
 #endif //MAIN_WINDOW_H_

@@ -201,6 +201,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_window.cpp" />
     <ClCompile Include="spine_loader.cpp" />
+    <ClCompile Include="spine_manipulator_dialogue.cpp" />
     <ClCompile Include="spine_setting_dialogue.cpp" />
     <ClCompile Include="win_dialogue.cpp" />
     <ClCompile Include="win_filesystem.cpp" />
@@ -212,6 +213,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="main_window.h" />
     <ClInclude Include="spine_loader.h" />
+    <ClInclude Include="spine_manipulator_dialogue.h" />
     <ClInclude Include="spine_setting_dialogue.h" />
     <ClInclude Include="win_dialogue.h" />
     <ClInclude Include="win_filesystem.h" />

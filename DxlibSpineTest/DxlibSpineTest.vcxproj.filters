@@ -231,6 +231,9 @@
     <ClCompile Include="deps\spine-cpp\src\spine\VertexEffect.cpp">
       <Filter>ソース ファイル\deps\spine-cpp</Filter>
     </ClCompile>
+    <ClCompile Include="spine_manipulator_dialogue.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -258,6 +261,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="spine_setting_dialogue.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="spine_manipulator_dialogue.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

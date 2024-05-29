@@ -239,6 +239,9 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         case Menu::kSeeThroughImage:
             MenuOnSeeThroughImage();
             break;
+        case Menu::kSkeletonSetting:
+            MenuOnSkeletonSetting();
+            break;
         }
     }
     else
@@ -364,6 +367,8 @@ void CMainWindow::InitialiseMenuBar()
 
     iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kSeeThroughImage, "Through-seen");
     if (iRet == 0)goto failed;
+    iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kSkeletonSetting, "Manipulation");
+    if (iRet == 0)goto failed;
 
     hMenuBar = ::CreateMenu();
     if (hMenuBar == nullptr) goto failed;
@@ -467,6 +472,20 @@ void CMainWindow::MenuOnSeeThroughImage()
 
             ::CheckMenuItem(hMenu, Menu::kSeeThroughImage, m_bTransparent ? MF_CHECKED : MF_UNCHECKED);
         }
+    }
+}
+/*骨組み操作画面呼び出し*/
+void CMainWindow::MenuOnSkeletonSetting()
+{
+    if (m_SpineManipulatorDialogue.GetHwnd() == nullptr)
+    {
+        HWND hWnd = m_SpineManipulatorDialogue.Create(m_hInstance, m_hWnd, L"Spine manipulation", &m_DxLibSpinePlayer);
+
+        ::ShowWindow(hWnd, SW_SHOWNORMAL);
+    }
+    else
+    {
+        ::SetFocus(m_SpineManipulatorDialogue.GetHwnd());
     }
 }
 /*次のフォルダに移動*/
