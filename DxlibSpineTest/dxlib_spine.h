@@ -21,8 +21,10 @@ public:
 
 	void Update(float fDelta);
 	void Draw(float fDepth = 0.f);
+
 	void SwitchPma(){ m_bAlphaPremultiplied ^= true; }
 	void SwitchBlendModeAdoption() { m_bForceBlendModeNormal ^= true; }
+	void SetLeaveOutList(spine::Vector<spine::String> &list);
 private:
 	bool m_bHasOwnAnimationStateData = false;
 	bool m_bAlphaPremultiplied = true;
@@ -35,6 +37,10 @@ private:
 	spine::SkeletonClipping m_clipper;
 
 	spine::Vector<unsigned short> m_quadIndices;
+
+	spine::Vector<spine::String> m_leaveOutList;
+
+	bool IsToBeLeftOut(const spine::String& slotName);
 };
 
 class CDxLibTextureLoader : public spine::TextureLoader

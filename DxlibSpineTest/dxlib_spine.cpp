@@ -81,6 +81,12 @@ void CDxLibSpineDrawer::Draw(float fDepth)
 			continue;
 		}
 
+		if (IsToBeLeftOut(slot.getData().getName()))
+		{
+			m_clipper.clipEnd(slot);
+			continue;
+		}
+
 		spine::Vector<float>* pVertices = &m_worldVertices;
 		int verticesCount = 0;
 		spine::Vector<float>* pAttachmentUvs = nullptr;
@@ -222,13 +228,34 @@ void CDxLibSpineDrawer::Draw(float fDepth)
 	m_clipper.clipEnd();
 }
 
+void CDxLibSpineDrawer::SetLeaveOutList(spine::Vector<spine::String>& list)
+{
+	/*There are some slots having mask or nuisance effect; exclude them from rendering.*/
+	m_leaveOutList.clear();
+	for (size_t i = 0; i < list.size(); ++i)
+	{
+		m_leaveOutList.add(list[i].buffer());
+	}
+}
+
+bool CDxLibSpineDrawer::IsToBeLeftOut(const spine::String& slotName)
+{
+	/*The comparison method depends on what should be excluded; the precise matching or just containing.*/
+	for (size_t i = 0; i < m_leaveOutList.size(); ++i)
+	{
+		if (strcmp(slotName.buffer(), m_leaveOutList[i].buffer()) == 0)return true;
+	}
+	return false;
+}
+
 void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path)
 {
-	/*Actually this shall be platform-independet as does SFML in <Utf.hpp>.*/
 	std::wstring wstrPath = win_text::WidenANSI(path.buffer());
 	int iDxLibTexture = DxLib::LoadGraph(wstrPath.c_str());
+	if (iDxLibTexture == -1)return;
+
 	/*In case atlas size does not coincide with that of png, overwriting will collapse the layout.*/
-	if (iDxLibTexture != -1 && page.width == 0 && page.height == 0)
+	if (page.width == 0 && page.height == 0)
 	{
 		int iWidth = 0;
 		int iHeight = 0;
