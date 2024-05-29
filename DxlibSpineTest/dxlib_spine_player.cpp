@@ -214,7 +214,7 @@ void CDxLibSpinePlayer::Redraw(float fDelta)
 			m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
 		}
 		DxLib::ScreenFlip();
-		/*PeekMessageは扱いにくい*/
+
 		if (m_hRenderWnd != nullptr)
 		{
 			::InvalidateRect(m_hRenderWnd, nullptr, FALSE);
@@ -252,6 +252,106 @@ bool CDxLibSpinePlayer::SwitchDepthBufferValidity()
 		return true;
 	}
 	return false;
+}
+/*槽溝名称引き渡し*/
+std::vector<std::string> CDxLibSpinePlayer::GetSlotList()
+{
+	std::vector<std::string> slotNames;
+	for (size_t i = 0; i < m_skeletonData.size(); ++i)
+	{
+		auto& slots = m_skeletonData.at(i).get()->getSlots();
+		for (size_t ii = 0; ii < slots.size(); ++ii)
+		{
+			const std::string& strName = slots[ii]->getName().buffer();
+			const auto iter = std::find(slotNames.begin(), slotNames.end(), strName);
+			if (iter == slotNames.cend())slotNames.push_back(strName);
+		}
+	}
+	return slotNames;
+}
+/*装い名称引き渡し*/
+std::vector<std::string> CDxLibSpinePlayer::GetSkinList() const
+{
+	return m_skinNames;
+}
+/*動作名称引き渡し*/
+std::vector<std::string> CDxLibSpinePlayer::GetanimationList() const
+{
+	return m_animationNames;
+}
+/*描画除外リスト設定*/
+void CDxLibSpinePlayer::SetSlotsToExclude(const std::vector<std::string>& slotNames)
+{
+	spine::Vector<spine::String> leaveOutList;
+	for (const auto& slotName : slotNames)
+	{
+		leaveOutList.add(slotName.c_str());
+	}
+
+	for (size_t i = 0; i < m_drawables.size(); ++i)
+	{
+		m_drawables.at(i).get()->SetLeaveOutList(leaveOutList);
+	}
+}
+/*装い合成*/
+void CDxLibSpinePlayer::MixSkins(const std::vector<std::string>& skinNames)
+{
+	const auto& currentSkinName = m_skinNames.at(m_nSkinIndex);
+
+	for (size_t i = 0; i < m_drawables.size(); ++i)
+	{
+		spine::Skin* skinToSet = m_skeletonData.at(i).get()->findSkin(currentSkinName.c_str());
+		if (skinToSet != nullptr)
+		{
+			for (const auto& skinName : skinNames)
+			{
+				if (currentSkinName != skinName)
+				{
+					spine::Skin* skinToAdd = m_skeletonData.at(i).get()->findSkin(skinName.c_str());
+					if (skinToAdd != nullptr)
+					{
+						skinToSet->addSkin(skinToAdd);
+					}
+				}
+			}
+			m_drawables.at(i).get()->skeleton->setSkin(skinToSet);
+			m_drawables.at(i).get()->skeleton->setSlotsToSetupPose();
+		}
+	}
+}
+/*動作合成*/
+void CDxLibSpinePlayer::MixAnimations(const std::vector<std::string>& animationNames)
+{
+	/*空配列の場合は合成動作を消去する。*/
+	if (animationNames.empty())
+	{
+		for (size_t i = 0; i < m_drawables.size(); ++i)
+		{
+			m_drawables.at(i).get()->state->setEmptyAnimations(0.f);
+		}
+		return;
+	}
+
+	const auto& currentAnimationName = m_animationNames.at(m_nAnimationIndex);
+
+	for (size_t i = 0; i < m_drawables.size(); ++i)
+	{
+		if (m_skeletonData.at(i).get()->findAnimation(currentAnimationName.c_str()) == nullptr)continue;
+
+		int iTrack = 1;
+		for (const auto& animationName : animationNames)
+		{
+			if (animationName != currentAnimationName)
+			{
+				spine::Animation* animation = m_skeletonData.at(i).get()->findAnimation(animationName.c_str());
+				if (animation != nullptr)
+				{
+					m_drawables.at(i).get()->state->addAnimation(iTrack, animation, false, 0.f);
+					++iTrack;
+				}
+			}
+		}
+	}
 }
 /*消去*/
 void CDxLibSpinePlayer::ClearDrawables()
@@ -322,6 +422,7 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 		{
 			float fWidth = m_skeletonData.at(i).get()->getWidth();
 			float fHeight = m_skeletonData.at(i).get()->getHeight();
+
 			m_fBaseSize.u = m_fBaseSize.u > fWidth ? m_fBaseSize.u : fWidth;
 			m_fBaseSize.v = m_fBaseSize.v > fHeight ? m_fBaseSize.v : fHeight;
 		}
@@ -372,12 +473,10 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 		if (iDesktopWidth > iDesktopHeight)
 		{
 			m_fDefaultWindowScale = fScaleY;
-			m_fThresholdScale = static_cast<float>(iDesktopWidth) / iSkeletonWidth;
 		}
 		else
 		{
 			m_fDefaultWindowScale = fScaleX;
-			m_fThresholdScale = static_cast<float>(iDesktopHeight) / iSkeletonHeight;
 		}
 
 		m_fDefaultOffset.u = iSkeletonWidth > iDesktopWidth ? (iSkeletonWidth - iDesktopWidth) * fScaleX : 0.f;
@@ -387,7 +486,6 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 /*尺度適用*/
 void CDxLibSpinePlayer::UpdateScaletonScale()
 {
-	float fOffset = m_fSkeletonScale - m_fThresholdScale > 0.f ? m_fSkeletonScale - m_fThresholdScale : 0;
 	for (size_t i = 0; i < m_drawables.size(); ++i)
 	{
 		m_drawables.at(i).get()->skeleton->setScaleX(m_fSkeletonScale);
@@ -409,7 +507,7 @@ void CDxLibSpinePlayer::ResizeWindow()
 {
 	if (m_hRenderWnd != nullptr)
 	{
-		bool bBarHidden = bIsWidowBarHidden();
+		bool bBarHidden = IsWidowBarHidden();
 		RECT rect;
 		if (!bBarHidden)
 		{
@@ -464,7 +562,7 @@ void CDxLibSpinePlayer::ResizeBuffer()
 	}
 }
 /*枠縁有無*/
-bool CDxLibSpinePlayer::bIsWidowBarHidden()
+bool CDxLibSpinePlayer::IsWidowBarHidden()
 {
 	if (m_hRenderWnd != nullptr)
 	{

@@ -35,6 +35,14 @@ public:
 	void SwitchPma();
 	void SwitchBlendModeAdoption();
 	bool SwitchDepthBufferValidity();
+
+	std::vector<std::string> GetSlotList();
+	std::vector<std::string> GetSkinList() const;
+	std::vector<std::string> GetanimationList() const;
+
+	void SetSlotsToExclude(const std::vector<std::string>& slotNames);
+	void MixSkins(const std::vector<std::string>& skinNames);
+	void MixAnimations(const std::vector<std::string>& animationNames);
 private:
 	HWND m_hRenderWnd = nullptr;
 	int m_iDxLibInitialised = -1;
@@ -49,7 +57,6 @@ private:
 	DxLib::FLOAT2 m_fBaseSize = DxLib::FLOAT2{ kBaseWidth, kBaseHeight };
 
 	float m_fDefaultWindowScale = 1.f;
-	float m_fThresholdScale = 1.f;
 	DxLib::FLOAT2 m_fDefaultOffset{};
 
 	float m_fTimeScale = 1.f;
@@ -74,6 +81,6 @@ private:
 	void ResizeWindow();
 	void ResizeBuffer();
 
-	bool bIsWidowBarHidden();
+	bool IsWidowBarHidden();
 };
 #endif // !DXLIB_SPINE_PLAYER_H_
