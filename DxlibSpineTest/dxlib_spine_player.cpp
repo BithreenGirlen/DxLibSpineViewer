@@ -178,6 +178,8 @@ void CDxLibSpinePlayer::ShiftAnimation()
 	++m_nAnimationIndex;
 	if (m_nAnimationIndex > m_animationNames.size() - 1)m_nAnimationIndex = 0;
 
+	ClearAnimationTracks();
+
 	for (size_t i = 0; i < m_drawables.size(); ++i)
 	{
 		spine::Animation* animation = m_skeletonData.at(i).get()->findAnimation(m_animationNames.at(m_nAnimationIndex).c_str());
@@ -322,15 +324,7 @@ void CDxLibSpinePlayer::MixSkins(const std::vector<std::string>& skinNames)
 /*動作合成*/
 void CDxLibSpinePlayer::MixAnimations(const std::vector<std::string>& animationNames)
 {
-	/*空配列の場合は合成動作を消去する。*/
-	if (animationNames.empty())
-	{
-		for (size_t i = 0; i < m_drawables.size(); ++i)
-		{
-			m_drawables.at(i).get()->state->setEmptyAnimations(0.f);
-		}
-		return;
-	}
+	ClearAnimationTracks();
 
 	const auto& currentAnimationName = m_animationNames.at(m_nAnimationIndex);
 
@@ -500,6 +494,18 @@ void CDxLibSpinePlayer::UpdateTimeScale()
 	for (size_t i = 0; i < m_drawables.size(); ++i)
 	{
 		m_drawables.at(i).get()->timeScale = m_fTimeScale;
+	}
+}
+/*合成動作消去*/
+void CDxLibSpinePlayer::ClearAnimationTracks()
+{
+	for (size_t i = 0; i < m_drawables.size(); ++i)
+	{
+		const auto& trackEntry = m_drawables.at(i).get()->state->getTracks();
+		for (size_t iTrack = 1; iTrack < trackEntry.size(); ++iTrack)
+		{
+			m_drawables.at(i).get()->state->setEmptyAnimation(iTrack, 0.f);
+		}
 	}
 }
 /*窓寸法調整*/

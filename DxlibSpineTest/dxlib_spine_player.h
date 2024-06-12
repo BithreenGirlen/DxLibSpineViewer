@@ -78,6 +78,8 @@ private:
 	void UpdateScaletonScale();
 	void UpdateTimeScale();
 
+	void ClearAnimationTracks();
+
 	void ResizeWindow();
 	void ResizeBuffer();
 
