@@ -275,7 +275,7 @@ std::vector<std::string> CDxLibSpinePlayer::GetSkinList() const
 	return m_skinNames;
 }
 /*動作名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayer::GetanimationList() const
+std::vector<std::string> CDxLibSpinePlayer::GetAnimationList() const
 {
 	return m_animationNames;
 }

@@ -98,7 +98,7 @@ LRESULT CSpineManipulatorDialogue::OnInit(HWND hWnd)
 		ConvertAndSort(m_pDxLibSpinePlayer->GetSkinList());
 		CreateSingleList(m_hSkinListView, wstrTemps);
 
-		ConvertAndSort(m_pDxLibSpinePlayer->GetanimationList());
+		ConvertAndSort(m_pDxLibSpinePlayer->GetAnimationList());
 		CreateSingleList(m_hAnimationListView, wstrTemps);
 	}
 

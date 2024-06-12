@@ -38,7 +38,7 @@ public:
 
 	std::vector<std::string> GetSlotList();
 	std::vector<std::string> GetSkinList() const;
-	std::vector<std::string> GetanimationList() const;
+	std::vector<std::string> GetAnimationList() const;
 
 	void SetSlotsToExclude(const std::vector<std::string>& slotNames);
 	void MixSkins(const std::vector<std::string>& skinNames);
