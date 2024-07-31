@@ -11,7 +11,7 @@ https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/0ab643de-73fb-
 - [DXライブラリ](https://dxlib.xsrv.jp/dxdload.html)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
-When building, supply the above libraries under the project directory as following. 
+When building, supply the above libraries under the project directory. 
 <pre>
 DxlibSpineTest
   ├ deps
@@ -30,19 +30,6 @@ DxlibSpineTest
 
 - `dxlib_spine.cpp`
   - Texture loader and spine rendering impelementation with DxLib.
-  - Win32API is used in order to convert `char` to `wchar_t` in `TextureLoader`. 
-```cpp
-void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path)
-{
-	//
-	std::wstring wstrPath = win_text::WidenANSI(path.buffer());
-	int iDxLibTexture = DxLib::LoadGraph(wstrPath.c_str());
-	//
-}
-```
-  - This dependency can be removed compiling with multi-byte character set; or feel free to replace the conversion part with other suitable libraries.
-
-The following are not indispensable for rendering.
 - `spine_loader.cpp`
   - spine resource loader functions.
 - `dxlib_spine_player.cpp`
@@ -57,8 +44,9 @@ Other files are for GUI.
 File| Open folder | Open folder-select-dialogue.
  -| Setting | Open a dialogue to set atlas/skelton extensions to pick up when opening folder.
  -| Select files | Pick up atlas and skeleton file one by one regardless of its extension.
-Image| Through-seen | Switch the window's transparancy.
-
+Image| Through-seen | Switch window's transparancy.
+ -| Manipulation | Open a dialogue to specify slots to be excluded, skins or animations to be mixed.
+ 
 `Open folder` is basically for rendering multiple spines, `Select files` is for rendering single spine.  
 In both case, whether the skeleton is binary or not should be configured through setting dialogue.
 
