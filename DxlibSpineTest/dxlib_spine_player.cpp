@@ -42,6 +42,9 @@ bool CDxLibSpinePlayer::SetupDxLib(HWND hRenderWnd)
 	iRet = DxLib::SetDrawMode(DX_DRAWMODE_BILINEAR);
 	if (iRet == -1)return false;
 
+	iRet = DxLib::SetTextureAddressMode(DX_TEXADDRESS_WRAP);
+	if (iRet == -1)return false;
+
 	iRet = DxLib::SetMultiThreadFlag(TRUE);
 	if (iRet == -1)return false;
 
@@ -410,39 +413,50 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 {
 	if (m_skeletonData.empty())return;
 
-	if (m_skeletonData.at(0).get()->getWidth() > 0.f && m_skeletonData.at(0).get()->getHeight() > 0.f)
-	{
-		for (size_t i = 0; i < m_skeletonData.size(); ++i)
+	float fMaxSize = 0.f;
+	const auto CompareDimention = [this, &fMaxSize](float fWidth, float fHeight)
+		-> void
 		{
-			float fWidth = m_skeletonData.at(i).get()->getWidth();
-			float fHeight = m_skeletonData.at(i).get()->getHeight();
-
-			m_fBaseSize.u = m_fBaseSize.u > fWidth ? m_fBaseSize.u : fWidth;
-			m_fBaseSize.v = m_fBaseSize.v > fHeight ? m_fBaseSize.v : fHeight;
-		}
-	}
-	else
-	{
-		/*If skeletonData does not store size, deduce from the attachment of the default skin.*/
-		spine::Attachment* pAttachment = m_skeletonData.at(0).get()->getDefaultSkin()->getAttachments().next()._attachment;
-		if (pAttachment != nullptr)
-		{
-			if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
+			if (fWidth * fHeight > fMaxSize)
 			{
-				spine::RegionAttachment* pRegionAttachment = (spine::RegionAttachment*)pAttachment;
-				if (pRegionAttachment->getWidth() > 0.f && pRegionAttachment->getHeight() > 0.f)
-				{
-					m_fBaseSize.u = pRegionAttachment->getWidth() * pRegionAttachment->getScaleX();
-					m_fBaseSize.v = pRegionAttachment->getHeight() * pRegionAttachment->getScaleY();
-				}
+				m_fBaseSize.u = fWidth;
+				m_fBaseSize.v = fHeight;
+				fMaxSize = fWidth * fHeight;
 			}
-			else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
+		};
+
+	for (size_t i = 0; i < m_skeletonData.size(); ++i)
+	{
+		if (m_skeletonData.at(i).get()->getWidth() > 0.f && m_skeletonData.at(i).get()->getHeight() > 0.f)
+		{
+			CompareDimention(m_skeletonData.at(i).get()->getWidth(), m_skeletonData.at(i).get()->getHeight());
+		}
+		else
+		{
+			/*If skeletonData does not store size, deduce from the attachment of the default skin.*/
+			spine::Attachment* pAttachment = m_skeletonData.at(i).get()->getDefaultSkin()->getAttachments().next()._attachment;
+			if (pAttachment != nullptr)
 			{
-				spine::MeshAttachment* pMeshAttachment = (spine::MeshAttachment*)pAttachment;
-				if (pMeshAttachment->getWidth() > 0.f && pMeshAttachment->getHeight() > 0.f)
+				if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
 				{
-					m_fBaseSize.u = pMeshAttachment->getWidth() * 2.f;
-					m_fBaseSize.v = pMeshAttachment->getHeight() * 2.f;
+					spine::RegionAttachment* pRegionAttachment = (spine::RegionAttachment*)pAttachment;
+					if (pRegionAttachment->getWidth() > 0.f && pRegionAttachment->getHeight() > 0.f)
+					{
+						CompareDimention
+						(
+							pRegionAttachment->getWidth() * pRegionAttachment->getScaleX(),
+							pRegionAttachment->getHeight() * pRegionAttachment->getScaleY()
+						);
+					}
+				}
+				else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
+				{
+					spine::MeshAttachment* pMeshAttachment = (spine::MeshAttachment*)pAttachment;
+					if (pMeshAttachment->getWidth() > 0.f && pMeshAttachment->getHeight() > 0.f)
+					{
+						float fScale = pMeshAttachment->getWidth() > Constants::kMinAtlas && pMeshAttachment->getHeight() > Constants::kMinAtlas ? 1.f : 2.f;
+						CompareDimention(pMeshAttachment->getWidth() * fScale, pMeshAttachment->getHeight() * fScale);
+					}
 				}
 			}
 		}

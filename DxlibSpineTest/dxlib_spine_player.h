@@ -47,7 +47,7 @@ private:
 	HWND m_hRenderWnd = nullptr;
 	int m_iDxLibInitialised = -1;
 
-	enum Constants { kBaseWidth = 1280, kBaseHeight = 720 };
+	enum Constants { kBaseWidth = 1280, kBaseHeight = 720, kMinAtlas = 1024, };
 
 	CDxLibTextureLoader m_textureLoader;
 	std::vector<std::unique_ptr<spine::Atlas>> m_atlases;
