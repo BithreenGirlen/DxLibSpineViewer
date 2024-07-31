@@ -2,9 +2,6 @@
 
 #include "dxlib_spine.h"
 
-/*Windows OS dependency*/
-#include "win_text.h"
-
 namespace spine
 {
 	SpineExtension* getDefaultExtension()
@@ -250,8 +247,36 @@ bool CDxLibSpineDrawer::IsToBeLeftOut(const spine::String& slotName)
 
 void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path)
 {
-	std::wstring wstrPath = win_text::WidenANSI(path.buffer());
-	int iDxLibTexture = DxLib::LoadGraph(wstrPath.c_str());
+#if	defined(_WIN32) && defined(_UNICODE)
+	const auto WidenPath = [&path]()
+		-> spine::Vector<wchar_t>
+		{
+			/*DxLib sets the default char set if it were not set, thus there is no error here*/
+			int iCharCode = DxLib::GetUseCharCodeFormat();
+			int iWcharCode = DxLib::Get_wchar_t_CharCodeFormat();
+
+			spine::Vector<wchar_t> vBuffer;
+			vBuffer.setSize(path.length() * sizeof(wchar_t), L'\0');
+
+			int iLen = DxLib::ConvertStringCharCodeFormat
+			(
+				iCharCode,
+				path.buffer(),
+				iWcharCode,
+				vBuffer.buffer()
+			);
+			if (iLen != -1)
+			{
+				/*The defualt value is neglected when shrinking.*/
+				vBuffer.setSize(iLen, L'\0');
+			}
+			return vBuffer;
+		};
+	spine::Vector<wchar_t> wcharPath = WidenPath();
+	int iDxLibTexture = DxLib::LoadGraph(wcharPath.buffer());
+#else
+	int iDxLibTexture = DxLib::LoadGraph(path.buffer());
+#endif
 	if (iDxLibTexture == -1)return;
 
 	/*In case atlas size does not coincide with that of png, overwriting will collapse the layout.*/
