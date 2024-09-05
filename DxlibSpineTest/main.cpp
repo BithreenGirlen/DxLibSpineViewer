@@ -1,6 +1,6 @@
 
-#include "framework.h"
-#include "main_window.h"
+#include "../shared-src/framework.h"
+#include "../shared-src/main_window.h"
 
 #ifdef _DEBUG
 #include <spine/Debug.h>
