@@ -45,7 +45,6 @@ public:
 	void MixAnimations(const std::vector<std::string>& animationNames);
 private:
 	HWND m_hRenderWnd = nullptr;
-	int m_iDxLibInitialised = -1;
 
 	enum Constants { kBaseWidth = 1280, kBaseHeight = 720, kMinAtlas = 1024, };
 

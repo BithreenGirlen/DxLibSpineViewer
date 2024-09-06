@@ -10,10 +10,7 @@ CDxLibSpinePlayer::CDxLibSpinePlayer()
 
 CDxLibSpinePlayer::~CDxLibSpinePlayer()
 {
-	if (m_iDxLibInitialised != -1)
-	{
-		DxLib::DxLib_End();
-	}
+
 }
 
 void CDxLibSpinePlayer::SetRenderWindow(HWND hRenderWnd)
@@ -202,18 +199,14 @@ void CDxLibSpinePlayer::SwitchBlendModeAdoption()
 /*奥行き表現有効無効切り替え*/
 bool CDxLibSpinePlayer::SwitchDepthBufferValidity()
 {
-	if (m_iDxLibInitialised != -1)
-	{
-		int iRet = DxLib::SetUseZBufferFlag(m_bDepthBufferEnabled ? FALSE : TRUE);
-		if (iRet == -1)return false;
+	int iRet = DxLib::SetUseZBufferFlag(m_bDepthBufferEnabled ? FALSE : TRUE);
+	if (iRet == -1)return false;
 
-		iRet = DxLib::SetWriteZBufferFlag(m_bDepthBufferEnabled ? FALSE : TRUE);
-		if (iRet == -1)return false;
+	iRet = DxLib::SetWriteZBufferFlag(m_bDepthBufferEnabled ? FALSE : TRUE);
+	if (iRet == -1)return false;
 
-		m_bDepthBufferEnabled ^= true;
-		return true;
-	}
-	return false;
+	m_bDepthBufferEnabled ^= true;
+	return true;
 }
 /*槽溝名称引き渡し*/
 std::vector<std::string> CDxLibSpinePlayer::GetSlotList()
