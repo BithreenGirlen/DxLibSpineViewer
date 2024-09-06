@@ -147,11 +147,7 @@ LRESULT CMainWindow::OnCreate(HWND hWnd)
 
     InitialiseMenuBar();
 
-    bool bRet = m_DxLibSpinePlayer.SetupDxLib(m_hWnd);
-    if (!bRet)
-    {
-        ::MessageBoxW(nullptr, L"Failed to setup DxLib.", L"Error", MB_ICONERROR);
-    }
+    m_DxLibSpinePlayer.SetRenderWindow(m_hWnd);
 
     UpdateDrawingInterval();
 

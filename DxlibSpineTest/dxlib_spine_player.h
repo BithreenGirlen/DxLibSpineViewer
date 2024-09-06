@@ -15,7 +15,7 @@ public:
 	CDxLibSpinePlayer();
 	~CDxLibSpinePlayer();
 
-	bool SetupDxLib(HWND hRenderWnd);
+	void SetRenderWindow(HWND hRenderWnd);
 
 	bool SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
 	bool SetSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);

@@ -15,53 +15,10 @@ CDxLibSpinePlayer::~CDxLibSpinePlayer()
 		DxLib::DxLib_End();
 	}
 }
-/*初期設定*/
-bool CDxLibSpinePlayer::SetupDxLib(HWND hRenderWnd)
+
+void CDxLibSpinePlayer::SetRenderWindow(HWND hRenderWnd)
 {
-	if (m_iDxLibInitialised == 0)return true;
-
-	int iRet = -1;
-	iRet = DxLib::SetOutApplicationLogValidFlag(FALSE);
-	if (iRet == -1)return false;
-
-	if (hRenderWnd != nullptr)
-	{
-		iRet = DxLib::SetUserWindow(hRenderWnd);
-		if (iRet == -1)return false;
-	}
-	iRet = DxLib::SetUserWindowMessageProcessDXLibFlag(hRenderWnd != nullptr ? FALSE : TRUE);
-	if (iRet == -1)return false;
-
-	iRet = DxLib::SetChangeScreenModeGraphicsSystemResetFlag(hRenderWnd !=  nullptr ? FALSE : TRUE);
-	if (iRet == -1)return false;
 	m_hRenderWnd = hRenderWnd;
-
-	iRet = DxLib::ChangeWindowMode(TRUE);
-	if (iRet == -1)return false;
-
-	iRet = DxLib::SetDrawMode(DX_DRAWMODE_BILINEAR);
-	if (iRet == -1)return false;
-
-	iRet = DxLib::SetTextureAddressMode(DX_TEXADDRESS_WRAP);
-	if (iRet == -1)return false;
-
-	iRet = DxLib::SetMultiThreadFlag(TRUE);
-	if (iRet == -1)return false;
-
-	iRet = DxLib::SetUseTransColor(FALSE);
-	if (iRet == -1)return false;
-
-	m_iDxLibInitialised = DxLib::DxLib_Init();
-	if (m_iDxLibInitialised == -1)return false;
-
-	iRet = DxLib::SetDrawScreen(DX_SCREEN_BACK);
-	if (iRet == -1)
-	{
-		DxLib::DxLib_End();
-		m_iDxLibInitialised = -1;
-	}
-
-	return m_iDxLibInitialised != -1;
 }
 /*ファイル取り込み*/
 bool CDxLibSpinePlayer::SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary)

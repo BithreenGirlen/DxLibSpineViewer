@@ -27,9 +27,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="dxlib_spine.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -240,6 +237,12 @@
     <ClCompile Include="..\shared-src\main_window.cpp">
       <Filter>ソース ファイル\shared</Filter>
     </ClCompile>
+    <ClCompile Include="..\shared-src\dxlib_init.cpp">
+      <Filter>ソース ファイル\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared-src\main.cpp">
+      <Filter>ソース ファイル\shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dxlib_spine_player.h">
@@ -273,6 +276,9 @@
       <Filter>ヘッダー ファイル\shared</Filter>
     </ClInclude>
     <ClInclude Include="..\shared-src\spine_manipulator_dialogue.h">
+      <Filter>ヘッダー ファイル\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared-src\dxlib_init.h">
       <Filter>ヘッダー ファイル\shared</Filter>
     </ClInclude>
   </ItemGroup>

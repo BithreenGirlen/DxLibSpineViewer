@@ -1,4 +1,5 @@
 ﻿#ifndef SPINE_PLAYER_SHARED_H_
+#define SPINE_PLAYER_SHARED_H_
 
 #ifdef DXLIB_SPINE_CPP
 #include "../DxlibSpineTest/dxlib_spine_player.h"

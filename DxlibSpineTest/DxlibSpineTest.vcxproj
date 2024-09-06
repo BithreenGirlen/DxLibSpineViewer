@@ -196,6 +196,8 @@
     <ClCompile Include="..\shared-src\deps\spine-cpp\src\spine\Updatable.cpp" />
     <ClCompile Include="..\shared-src\deps\spine-cpp\src\spine\VertexAttachment.cpp" />
     <ClCompile Include="..\shared-src\deps\spine-cpp\src\spine\VertexEffect.cpp" />
+    <ClCompile Include="..\shared-src\dxlib_init.cpp" />
+    <ClCompile Include="..\shared-src\main.cpp" />
     <ClCompile Include="..\shared-src\main_window.cpp" />
     <ClCompile Include="..\shared-src\spine_manipulator_dialogue.cpp" />
     <ClCompile Include="..\shared-src\spine_setting_dialogue.cpp" />
@@ -204,10 +206,10 @@
     <ClCompile Include="..\shared-src\win_text.cpp" />
     <ClCompile Include="dxlib_spine.cpp" />
     <ClCompile Include="dxlib_spine_player.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="spine_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared-src\dxlib_init.h" />
     <ClInclude Include="..\shared-src\framework.h" />
     <ClInclude Include="..\shared-src\main_window.h" />
     <ClInclude Include="..\shared-src\spine_manipulator_dialogue.h" />
