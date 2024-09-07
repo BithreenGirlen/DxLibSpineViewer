@@ -266,6 +266,7 @@ void CDxLibSpinePlayerC::MixSkins(const std::vector<std::string>& skinNames)
 {
 	/*spine-c 3.6 does not have spSkin_addSkin(). It was added since spine-c 3.8*/
 #ifdef SPINE_3_8_OR_LATER
+	if (m_nSkinIndex >= m_skinNames.size())return;
 	const auto& currentSkinName = m_skinNames.at(m_nSkinIndex);
 
 	for (size_t i = 0; i < m_drawables.size(); ++i)
@@ -294,7 +295,7 @@ void CDxLibSpinePlayerC::MixSkins(const std::vector<std::string>& skinNames)
 void CDxLibSpinePlayerC::MixAnimations(const std::vector<std::string>& animationNames)
 {
 	ClearAnimationTracks();
-
+	if (m_nAnimationIndex >= m_animationNames.size())return;
 	const auto& currentAnimationName = m_animationNames.at(m_nAnimationIndex);
 
 	for (size_t i = 0; i < m_drawables.size(); ++i)
@@ -338,7 +339,7 @@ bool CDxLibSpinePlayerC::SetupDrawer()
 {
 	for (const auto& pSkeletonData : m_skeletonData)
 	{
-		const auto pDrawable = std::make_shared< CDxLibSpineDrawerC>(pSkeletonData.get());
+		const auto pDrawable = std::make_shared<CDxLibSpineDrawerC>(pSkeletonData.get());
 		if (pDrawable.get() == nullptr)continue;
 
 		pDrawable->timeScale = 1.0f;
@@ -468,19 +469,14 @@ void CDxLibSpinePlayerC::UpdateScaletonScale()
 	}
 #else
 	/*
-	* These scales will be reset to 1.f on _spScaleTimeline_apply(), called within spAnimationState_apply(),
+	* Scales for root will be reset to 1.f on _spScaleTimeline_apply(), called within spAnimationState_apply(),
 	* if the animation has no appropriate timeline properties.
-	* It seems that _spSkeletonJson_readAnimation() creates timeline for root with spScaleTimeline_create(),
-	* and scaling on runtime will be disabled.
 	*/
 	//for (const auto& pDrawble : m_drawables)
 	//{
 	//	pDrawble->skeleton->root->scaleX = m_fSkeletonScale;
 	//	pDrawble->skeleton->root->scaleY = m_fSkeletonScale;
 	//}
-
-	/*This results in dirty scaling, and shall not be adopted.*/
-	//DxLib::SetWindowSizeExtendRate(m_fSkeletonScale, m_fSkeletonScale);
 #endif
 }
 /*速度適用*/
