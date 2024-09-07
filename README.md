@@ -6,34 +6,52 @@ Implementation of Spine rendering with [DXライブラリ](https://dxlib.xsrv.jp
  
 https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/0ab643de-73fb-42f3-8143-a871a9382f51
 
-## Libraries
+## Build dependency
 
 - [DXライブラリ](https://dxlib.xsrv.jp/dxdload.html)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
-When building, supply the above libraries under the project directory. 
+When building, supply the above libraries under `/shared-src/deps`. 
 <pre>
-DxlibSpineTest
-  ├ deps
-  │  ├ dxlib // static libraries and headers of DXライブラリ
-  │  │ └ ...
-  │  └ spine-cpp // sources and headers of spine-cpp
-  │    ├ include
-  │    │ └ ...
-  │    └ src
-  │      └ ...
-  ├ dpiAwareness.manifest
-  └ ...
+...
+├ DxlibSpineTest
+│  └ ...
+├ DxlibSpineTestC
+│  └ ...
+├ shared-src
+│  ├ deps
+│  │  ├ dxlib // static libraries and headers of DXライブラリ
+│  │  │ └ ...
+│  │  ├ spine-c // sources and headers of spine-c
+│  │  │ ├ include
+│  │  │ │ └ ...
+│  │  │ └ src
+│  │  │   └ ...
+│  │  └ spine-cpp // sources and headers of spine-cpp
+│  │    ├ include
+│  │    │ └ ...
+│  │    └ src
+│  │      └ ...
+│  ├ dpiAwareness.manifest
+│  └ ...
+├ DxlibSpineTest.sln
+└ ...
 </pre>
 
 ## Brief explanation of files
 
+The files under `/DxlibSpineTest` are to be used with `spine-cpp` runtime. 
 - `dxlib_spine.cpp`
-  - Texture loader and spine rendering impelementation with DxLib.
+  - Texture loader and spine rendering implementation.
 - `spine_loader.cpp`
-  - spine resource loader functions.
+  - spine resource loader.
 - `dxlib_spine_player.cpp`
-  - Manages spine resources and some of its parameters; also sets up DxLib.
+  - Manager for spine resources and some of its parameters.
+
+There is `spine-c` runtime equivalent under `/DxlibSpineTestC`. This is intended to be used for spine 3.6 and older because there is no C++ runtime.
+
+- `shared-src/dxlib_init.cpp`
+  - DxLib setup.
 
 Other files are for GUI.
 
@@ -47,8 +65,8 @@ File| Open folder | Open folder-select-dialogue.
 Image| Through-seen | Switch window's transparancy.
  -| Manipulation | Open a dialogue to specify slots to be excluded, skins or animations to be mixed.
  
-`Open folder` is basically for rendering multiple spines, `Select files` is for rendering single spine.  
-In both case, whether the skeleton is binary or not should be configured through setting dialogue.
+- `Open folder` is basically for rendering multiple spines, `Select files` is for rendering single spine.  
+  - In both case, whether the skeleton is binary or not should be configured through setting dialogue.
 
 ## Mouse functions
 
