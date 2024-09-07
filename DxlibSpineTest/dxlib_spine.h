@@ -16,7 +16,7 @@ public:
 	~CDxLibSpineDrawer();
 
 	spine::Skeleton* skeleton = nullptr;
-	spine::AnimationState* state = nullptr;
+	spine::AnimationState* animationState = nullptr;
 	float timeScale = 1.f;
 
 	void Update(float fDelta);

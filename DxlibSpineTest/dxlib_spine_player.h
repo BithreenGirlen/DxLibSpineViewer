@@ -20,6 +20,8 @@ public:
 	bool SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
 	bool SetSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
 
+	void Redraw(float fDelta);
+
 	void OnStyleChanged();
 
 	void RescaleSkeleton(bool bUpscale);
@@ -29,8 +31,6 @@ public:
 	void MoveViewPoint(int iX, int iY);
 	void ShiftAnimation();
 	void ShiftSkin();
-
-	void Redraw(float fDelta);
 
 	void SwitchPma();
 	void SwitchBlendModeAdoption();
@@ -55,7 +55,7 @@ private:
 
 	DxLib::FLOAT2 m_fBaseSize = DxLib::FLOAT2{ kBaseWidth, kBaseHeight };
 
-	float m_fDefaultWindowScale = 1.f;
+	float m_fDefaultScale = 1.f;
 	DxLib::FLOAT2 m_fDefaultOffset{};
 
 	float m_fTimeScale = 1.f;
