@@ -110,7 +110,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;DXLIB_SPINE_C;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;DXLIB_SPINE_C;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -124,7 +124,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;DXLIB_SPINE_C;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;DXLIB_SPINE_C;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -136,6 +136,74 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Manifest Include="..\shared-src\dpiAwareness.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\shared-src\deps\spine-c\src\spine\Json.h" />
+    <ClInclude Include="..\shared-src\deps\spine-c\src\spine\kvec.h" />
+    <ClInclude Include="..\shared-src\dxlib_init.h" />
+    <ClInclude Include="..\shared-src\framework.h" />
+    <ClInclude Include="..\shared-src\main_window.h" />
+    <ClInclude Include="..\shared-src\spine_manipulator_dialogue.h" />
+    <ClInclude Include="..\shared-src\spine_player_shared.h" />
+    <ClInclude Include="..\shared-src\spine_setting_dialogue.h" />
+    <ClInclude Include="..\shared-src\win_dialogue.h" />
+    <ClInclude Include="..\shared-src\win_filesystem.h" />
+    <ClInclude Include="..\shared-src\win_text.h" />
+    <ClInclude Include="dxlib_spine_c.h" />
+    <ClInclude Include="dxlib_spine_player_c.h" />
+    <ClInclude Include="spine_loader_c.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Animation.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\AnimationState.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\AnimationStateData.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Array.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Atlas.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\AtlasAttachmentLoader.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Attachment.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\AttachmentLoader.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Bone.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\BoneData.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\BoundingBoxAttachment.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\ClippingAttachment.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Color.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Event.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\EventData.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\extension.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\IkConstraint.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\IkConstraintData.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Json.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\MeshAttachment.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\PathAttachment.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\PathConstraint.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\PathConstraintData.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\PointAttachment.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\RegionAttachment.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Skeleton.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\SkeletonBinary.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\SkeletonBounds.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\SkeletonClipping.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\SkeletonData.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\SkeletonJson.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Skin.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Slot.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\SlotData.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\TransformConstraint.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\TransformConstraintData.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Triangulator.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\VertexAttachment.c" />
+    <ClCompile Include="..\shared-src\deps\spine-c\src\spine\VertexEffect.c" />
+    <ClCompile Include="..\shared-src\dxlib_init.cpp" />
+    <ClCompile Include="..\shared-src\main.cpp" />
+    <ClCompile Include="..\shared-src\main_window.cpp" />
+    <ClCompile Include="..\shared-src\spine_manipulator_dialogue.cpp" />
+    <ClCompile Include="..\shared-src\spine_setting_dialogue.cpp" />
+    <ClCompile Include="..\shared-src\win_dialogue.cpp" />
+    <ClCompile Include="..\shared-src\win_filesystem.cpp" />
+    <ClCompile Include="..\shared-src\win_text.cpp" />
+    <ClCompile Include="dxlib_spine_c.cpp" />
+    <ClCompile Include="dxlib_spine_player_c.cpp" />
+    <ClCompile Include="spine_loader_c.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

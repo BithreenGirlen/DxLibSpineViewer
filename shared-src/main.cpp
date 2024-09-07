@@ -30,7 +30,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     int iRet = 0;
     CMainWindow sWindow;
+#ifdef DXLIB_SPINE_C
+    bool bRet = sWindow.Create(hInstance, L"Dxlib spine-c");
+#else
     bool bRet = sWindow.Create(hInstance, L"Dxlib spine");
+#endif
     if (bRet)
     {
         SDxLibInit sDxLibInit(sWindow.GetHwnd());
