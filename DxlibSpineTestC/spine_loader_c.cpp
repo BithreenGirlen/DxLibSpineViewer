@@ -9,7 +9,7 @@ std::shared_ptr<spAtlas> spine_loader_c::CreateAtlasFromFile(const char* filePat
 			spAtlas_createFromFile(filePath, rendererObject),
 			[](spAtlas *pAtlas)
 			{
-				spAtlas_dispose(pAtlas);
+				if(pAtlas != nullptr)spAtlas_dispose(pAtlas);
 			}
 		);
 	return atlas;
@@ -22,7 +22,7 @@ std::shared_ptr<spAtlas> spine_loader_c::CreateAtlasFromMemory(const char* atlas
 			spAtlas_create(atlasData, atlasLength, fileDirectory, rendererObject),
 			[](spAtlas* pAtlas)
 			{
-				spAtlas_dispose(pAtlas);
+				if (pAtlas != nullptr)spAtlas_dispose(pAtlas);
 			}
 		);
 	return atlas;
@@ -37,7 +37,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromFile(const c
 			spSkeletonJson_readSkeletonDataFile(json, filePath),
 			[](spSkeletonData* pSkeletonData)
 			{
-				spSkeletonData_dispose(pSkeletonData);
+				if(pSkeletonData != nullptr)spSkeletonData_dispose(pSkeletonData);
 			}
 		);
 	spSkeletonJson_dispose(json);
@@ -53,7 +53,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromFile(const
 			spSkeletonBinary_readSkeletonDataFile(binary, filePath),
 			[](spSkeletonData* pSkeletonData)
 			{
-				spSkeletonData_dispose(pSkeletonData);
+				if (pSkeletonData != nullptr)spSkeletonData_dispose(pSkeletonData);
 			}
 		);
 	spSkeletonBinary_dispose(binary);
@@ -69,7 +69,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromMemory(const
 			spSkeletonJson_readSkeletonData(json, skeletonJson),
 			[](spSkeletonData* pSkeletonData)
 			{
-				spSkeletonData_dispose(pSkeletonData);
+				if (pSkeletonData != nullptr)spSkeletonData_dispose(pSkeletonData);
 			}
 		);
 	spSkeletonJson_dispose(json);
@@ -85,7 +85,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromMemory(con
 			spSkeletonBinary_readSkeletonData(binary, skeletonBinary, skeletonLength),
 			[](spSkeletonData* pSkeletonData)
 			{
-				spSkeletonData_dispose(pSkeletonData);
+				if (pSkeletonData != nullptr)spSkeletonData_dispose(pSkeletonData);
 			}
 		);
 	spSkeletonBinary_dispose(binary);
