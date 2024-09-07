@@ -199,13 +199,13 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
     case VK_DOWN:
         KeyUpOnNextFolder();
         break;
-    case 0x41: // Key A
+    case 'A':
         m_DxLibSpinePlayer.SwitchPma();
         break;
-    case 0x42: // Key B
+    case 'B':
         m_DxLibSpinePlayer.SwitchBlendModeAdoption();
         break;
-    case 0x5a: // Key Z
+    case 'Z':
         m_DxLibSpinePlayer.SwitchDepthBufferValidity();
         break;
     default:
@@ -217,8 +217,8 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
 LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 {
     int wmId = LOWORD(wParam);
-    int iControlWnd = LOWORD(lParam);
-    if (iControlWnd == 0)
+    int wmKind = LOWORD(lParam);
+    if (wmKind == 0)
     {
         /*Menus*/
         switch (wmId)
@@ -251,20 +251,20 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 {
     int iScroll = -static_cast<short>(HIWORD(wParam)) / WHEEL_DELTA;
-    WORD wKey = LOWORD(wParam);
+    WORD usKey = LOWORD(wParam);
 
-    if (wKey == 0)
+    if (usKey == 0)
     {
         m_DxLibSpinePlayer.RescaleSkeleton(iScroll > 0);
     }
 
-    if (wKey == MK_LBUTTON)
+    if (usKey == MK_LBUTTON)
     {
         m_DxLibSpinePlayer.RescaleTime(iScroll > 0);
         m_bSpeedHavingChanged = true;
     }
 
-    if (wKey == MK_RBUTTON)
+    if (usKey == MK_RBUTTON)
     {
         m_DxLibSpinePlayer.ShiftSkin();
     }
@@ -543,31 +543,76 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 {
     if (pwzFolderPath == nullptr)return false;
 
-    std::vector<std::string> atlases;
-    std::vector<std::string> skels;
-
     const std::wstring& wstrAtlasExt = m_SpineSettingDialogue.GetAtlasExtension();
     const std::wstring& wstrSkelExt = m_SpineSettingDialogue.GetSkelExtension();
     bool bIsBinary = m_SpineSettingDialogue.IsSkelBinary();
 
-    std::vector<std::wstring> temps;
-    bool bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrAtlasExt.c_str(), temps);
-    if (bRet)
-    {
-        for (const std::wstring& temp : temps)
+    enum EExtensionRelation{ kExclusive = 0, kAltasInclusive, kSkelInclusive };
+    const auto GeExtensionRelation = [&wstrAtlasExt, wstrSkelExt]()
+        -> int
         {
-            atlases.push_back(win_text::NarrowANSI(temp));
+            if (wstrAtlasExt.find(wstrSkelExt) != std::wstring::npos)
+            {
+                return kAltasInclusive;
+            }
+            else if (wstrSkelExt.find(wstrAtlasExt) != std::wstring::npos)
+            {
+                return kSkelInclusive;
+            }
+            return kExclusive;
+        };
+
+    bool bRet = false;
+    std::vector<std::string> atlases;
+    std::vector<std::string> skels;
+
+    std::vector<std::wstring> temps;
+    int iExtensionRelation = GeExtensionRelation();
+    if (iExtensionRelation != kExclusive)
+    {
+        const std::wstring& wstrInclusive = iExtensionRelation == kAltasInclusive ? wstrAtlasExt : wstrSkelExt;
+        const std::wstring& wstrContained = iExtensionRelation == kAltasInclusive ? wstrSkelExt : wstrAtlasExt;
+        bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrContained.c_str(), temps);
+        if (bRet)
+        {
+            const std::wstring wstrDif = wstrInclusive.substr(0, wstrInclusive.size() - wstrContained.size());
+            auto& inclusive = iExtensionRelation == kAltasInclusive ? atlases : skels;
+            auto& contained = iExtensionRelation == kAltasInclusive ? skels : atlases;
+
+            for (const auto& temp : temps)
+            {
+                if (temp.find(wstrDif) != std::wstring::npos)
+                {
+                    inclusive.push_back(win_text::NarrowANSI(temp));
+                }
+                else
+                {
+                    contained.push_back(win_text::NarrowANSI(temp));
+                }
+            }
+            bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, bIsBinary);
         }
-        temps.clear();
-        bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrSkelExt.c_str(), temps);
+    }
+    else
+    {
+        bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrAtlasExt.c_str(), temps);
         if (bRet)
         {
             for (const std::wstring& temp : temps)
             {
-                skels.push_back(win_text::NarrowANSI(temp));
+                atlases.push_back(win_text::NarrowANSI(temp));
             }
+            temps.clear();
+            bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrSkelExt.c_str(), temps);
+            if (bRet)
+            {
+                for (const std::wstring& temp : temps)
+                {
+                    skels.push_back(win_text::NarrowANSI(temp));
+                }
 
-            bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, bIsBinary);
+                bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, bIsBinary);
+            }
         }
     }
     if (!bRet)
