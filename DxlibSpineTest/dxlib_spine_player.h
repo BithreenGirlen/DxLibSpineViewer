@@ -15,10 +15,12 @@ public:
 	CDxLibSpinePlayer();
 	~CDxLibSpinePlayer();
 
-	bool SetupDxLib(HWND hRenderWnd);
+	void SetRenderWindow(HWND hRenderWnd);
 
 	bool SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
 	bool SetSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
+
+	void Redraw(float fDelta);
 
 	void OnStyleChanged();
 
@@ -29,8 +31,6 @@ public:
 	void MoveViewPoint(int iX, int iY);
 	void ShiftAnimation();
 	void ShiftSkin();
-
-	void Redraw(float fDelta);
 
 	void SwitchPma();
 	void SwitchBlendModeAdoption();
@@ -45,7 +45,6 @@ public:
 	void MixAnimations(const std::vector<std::string>& animationNames);
 private:
 	HWND m_hRenderWnd = nullptr;
-	int m_iDxLibInitialised = -1;
 
 	enum Constants { kBaseWidth = 1280, kBaseHeight = 720, kMinAtlas = 1024, };
 
@@ -56,7 +55,7 @@ private:
 
 	DxLib::FLOAT2 m_fBaseSize = DxLib::FLOAT2{ kBaseWidth, kBaseHeight };
 
-	float m_fDefaultWindowScale = 1.f;
+	float m_fDefaultScale = 1.f;
 	DxLib::FLOAT2 m_fDefaultOffset{};
 
 	float m_fTimeScale = 1.f;

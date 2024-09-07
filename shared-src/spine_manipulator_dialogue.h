@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "dxlib_spine_player.h"
+#include "spine_player_shared.h"
 
 class CSpineManipulatorDialogue
 {

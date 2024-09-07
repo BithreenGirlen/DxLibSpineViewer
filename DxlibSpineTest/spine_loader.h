@@ -8,11 +8,11 @@
 
 namespace spine_loader
 {
-	std::shared_ptr<spine::SkeletonData> readTextSkeletonFromFile(const spine::String& filename, spine::Atlas* atlas, float scale);
-	std::shared_ptr<spine::SkeletonData> readBinarySkeletonFromFile(const spine::String& filename, spine::Atlas* atlas, float scale);
+	std::shared_ptr<spine::SkeletonData> ReadTextSkeletonFromFile(const spine::String& filePath, spine::Atlas* atlas, float scale = 1.f);
+	std::shared_ptr<spine::SkeletonData> ReadBinarySkeletonFromFile(const spine::String& filePath, spine::Atlas* atlas, float scale = 1.f);
 
-	std::shared_ptr<spine::SkeletonData> readTextSkeletonFromMemory(const std::string& skeleton, spine::Atlas* atlas, float scale);
-	std::shared_ptr<spine::SkeletonData> readBinarySkeletonFromMemory(const std::string& skeleton, spine::Atlas* atlas, float scale);
+	std::shared_ptr<spine::SkeletonData> ReadTextSkeletonFromMemory(const std::string& skeletonJson, spine::Atlas* atlas, float scale = 1.f);
+	std::shared_ptr<spine::SkeletonData> ReadBinarySkeletonFromMemory(const std::string& skeletonBinary, spine::Atlas* atlas, float scale = 1.f);
 }
 
 #endif

@@ -23,7 +23,7 @@ CDxLibSpineDrawer::CDxLibSpineDrawer(spine::SkeletonData* pSkeletonData, spine::
 		pAnimationStateData = new(__FILE__, __LINE__) spine::AnimationStateData(pSkeletonData);
 		m_bHasOwnAnimationStateData = true;
 	}
-	state = new(__FILE__, __LINE__) spine::AnimationState(pAnimationStateData);
+	animationState = new(__FILE__, __LINE__) spine::AnimationState(pAnimationStateData);
 
 	m_quadIndices.add(0);
 	m_quadIndices.add(1);
@@ -35,14 +35,14 @@ CDxLibSpineDrawer::CDxLibSpineDrawer(spine::SkeletonData* pSkeletonData, spine::
 
 CDxLibSpineDrawer::~CDxLibSpineDrawer()
 {
-	if (state != nullptr)
+	if (animationState != nullptr)
 	{
 		if (m_bHasOwnAnimationStateData)
 		{
-			delete state->getData();
+			delete animationState->getData();
 		}
 
-		delete state;
+		delete animationState;
 	}
 	if (skeleton != nullptr)
 	{
@@ -52,18 +52,18 @@ CDxLibSpineDrawer::~CDxLibSpineDrawer()
 
 void CDxLibSpineDrawer::Update(float fDelta)
 {
-	if (skeleton != nullptr && state != nullptr)
+	if (skeleton != nullptr && animationState != nullptr)
 	{
 		skeleton->update(fDelta);
-		state->update(fDelta * timeScale);
-		state->apply(*skeleton);
+		animationState->update(fDelta * timeScale);
+		animationState->apply(*skeleton);
 		skeleton->updateWorldTransform();
 	}
 }
 
 void CDxLibSpineDrawer::Draw(float fDepth)
 {
-	if (skeleton == nullptr || state == nullptr)return;
+	if (skeleton == nullptr || animationState == nullptr)return;
 
 	if (skeleton->getColor().a == 0)return; // Invisible case
 
