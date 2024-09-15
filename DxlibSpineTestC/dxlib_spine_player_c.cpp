@@ -380,6 +380,12 @@ bool CDxLibSpinePlayerC::SetupDrawer()
 			if (iter == m_animationNames.cend())m_animationNames.push_back(strAnimationName);
 		}
 
+		for (size_t i = 0; i < pSkeletonData->skinsCount; ++i)
+		{
+			const std::string& strSkinName = pSkeletonData->skins[i]->name;
+			auto iter = std::find(m_skinNames.begin(), m_skinNames.end(), strSkinName);
+			if (iter == m_skinNames.cend())m_skinNames.push_back(strSkinName);
+		}
 	}
 
 	if (!m_animationNames.empty())
