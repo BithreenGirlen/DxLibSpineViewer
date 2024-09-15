@@ -82,6 +82,57 @@ std::wstring win_dialogue::SelectOpenFile(const wchar_t* pwzFileType, const wcha
     return std::wstring();
 }
 
+std::vector<std::wstring> win_dialogue::SelectOpenFiles(const wchar_t* pwzFileType, const wchar_t* pwzSpec, const wchar_t* pwzTitle, void* hParentWnd)
+{
+    ComInit sInit;
+    CComPtr<IFileOpenDialog> pFileDialog;
+    HRESULT hr = pFileDialog.CoCreateInstance(CLSID_FileOpenDialog);
+
+    std::vector<std::wstring> selectedFilePaths;
+
+    if (SUCCEEDED(hr)) {
+        COMDLG_FILTERSPEC filter[1]{};
+        filter[0].pszName = pwzFileType;
+        filter[0].pszSpec = pwzSpec;
+        hr = pFileDialog->SetFileTypes(1, filter);
+        if (SUCCEEDED(hr))
+        {
+            FILEOPENDIALOGOPTIONS opt{};
+            pFileDialog->GetOptions(&opt);
+            pFileDialog->SetOptions(opt | FOS_PATHMUSTEXIST | FOS_FORCEFILESYSTEM | FOS_ALLOWMULTISELECT);
+            if (pwzTitle != nullptr)pFileDialog->SetTitle(pwzTitle);
+
+            if (SUCCEEDED(pFileDialog->Show(static_cast<HWND>(hParentWnd))))
+            {
+                CComPtr<IShellItemArray> pSelectedItems;
+                hr = pFileDialog->GetResults(&pSelectedItems);
+                if (SUCCEEDED(hr))
+                {
+                    DWORD dwCount = 0;
+                    pSelectedItems->GetCount(&dwCount);
+                    for (unsigned long i = 0; i < dwCount; ++i)
+                    {
+                        CComPtr<IShellItem> pItem;
+
+                        hr = pSelectedItems->GetItemAt(i, &pItem);
+                        if (SUCCEEDED(hr))
+                        {
+                            wchar_t* pPath = nullptr;
+                            pItem->GetDisplayName(SIGDN_FILESYSPATH, &pPath);
+                            if (pPath != nullptr)
+                            {
+                                selectedFilePaths.push_back(pPath);
+                                ::CoTaskMemFree(pPath);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return selectedFilePaths;
+}
+
 std::wstring win_dialogue::SelectSaveFile(const wchar_t* pwzFileType, const wchar_t* pwzSpec, const wchar_t* pwzDefaultFileName, void* hParentWnd)
 {
     ComInit sInit;
