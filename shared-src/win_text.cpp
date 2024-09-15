@@ -16,13 +16,13 @@ namespace win_text
         switch (codePage)
         {
         case CCodePage::kAnsi:
-            return CP_OEMCP;
+            return CP_ACP;
             break;
         case CCodePage::kUtf8:
             return CP_UTF8;
             break;
         default:
-            return CP_ACP;
+            return CP_OEMCP;
         }
     }
 
