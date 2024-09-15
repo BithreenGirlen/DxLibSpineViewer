@@ -205,6 +205,9 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
     case 'B':
         m_DxLibSpinePlayer.SwitchBlendModeAdoption();
         break;
+    case 'R':
+        m_DxLibSpinePlayer.SwitchDrawOrder();
+        break;
     case 'Z':
         m_DxLibSpinePlayer.SwitchDepthBufferValidity();
         break;
@@ -419,24 +422,38 @@ void CMainWindow::MenuOnFileSetting()
 /*ファイル選択*/
 void CMainWindow::MenuOnSelectFiles()
 {
-    std::wstring wstrAtlasFile = win_dialogue::SelectOpenFile(L"atlas file", L"", L"Select atlas file", m_hWnd);
-    if (!wstrAtlasFile.empty())
+    std::vector<std::wstring> wstrAtlasFiles = win_dialogue::SelectOpenFiles(L"atlas files", L"", L"Select atlas files", m_hWnd);
+    if (!wstrAtlasFiles.empty())
     {
-        std::wstring wstrSkelFile = win_dialogue::SelectOpenFile(L"skeleton file", L"", L"Select skeleton file", m_hWnd);
-        if (!wstrSkelFile.empty())
+        std::vector<std::wstring> wstrSkelFiles = win_dialogue::SelectOpenFiles(L"skeleton files", L"", L"Select skeleton files", m_hWnd);
+        if (!wstrSkelFiles.empty())
         {
+            if (wstrAtlasFiles.size() != wstrSkelFiles.size())
+            {
+                ::MessageBoxW(nullptr, L"The number of atlas and skeleton files should be the same.", L"Error", MB_ICONERROR);
+                return;
+            }
+
             ClearFolderInfo();
             std::vector<std::string> atlases;
             std::vector<std::string> skels;
 
-            atlases.push_back(win_text::NarrowANSI(wstrAtlasFile));
-            skels.push_back(win_text::NarrowANSI(wstrSkelFile));
+            for (const auto& atlas : wstrAtlasFiles)
+            {
+                atlases.push_back(win_text::NarrowANSI(atlas));
+            }
+
+            for (const auto& skel : wstrSkelFiles)
+            {
+                skels.push_back(win_text::NarrowANSI(skel));
+            }
 
             bool bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary());
             if (!bRet)
             {
-                ::MessageBoxW(nullptr, L"Failed to load spine", L"Error", MB_ICONERROR);
+                ::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
             }
+
         }
     }
 }
