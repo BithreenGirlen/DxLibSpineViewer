@@ -35,7 +35,7 @@ SDxLibInit::SDxLibInit(void* pWindowHandle)
 	iRet = DxLib::SetMultiThreadFlag(TRUE);
 	if (iRet == -1)return;
 
-	iRet = DxLib::SetUseTransColor(FALSE);
+	iRet = DxLib::SetUseTransColorGraphCreateFlag(TRUE);
 	if (iRet == -1)return;
 
 	iDxLibInitialised = DxLib::DxLib_Init();

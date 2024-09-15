@@ -35,6 +35,7 @@ public:
 	void SwitchPma();
 	void SwitchBlendModeAdoption();
 	bool SwitchDepthBufferValidity();
+	void SwitchDrawOrder();
 
 	std::vector<std::string> GetSlotList();
 	std::vector<std::string> GetSkinList() const;
@@ -69,6 +70,7 @@ private:
 	size_t m_nSkinIndex = 0;
 
 	bool m_bDepthBufferEnabled = false;
+	bool m_bDrawOrderReversed = false;
 
 	void ClearDrawables();
 	bool SetupDrawer();

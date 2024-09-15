@@ -74,11 +74,24 @@ void CDxLibSpinePlayer::Redraw(float fDelta)
 	if (!m_drawables.empty())
 	{
 		DxLib::ClearDrawScreen();
-		for (size_t i = 0; i < m_drawables.size(); ++i)
+
+		if (!m_bDrawOrderReversed)
 		{
-			m_drawables.at(i).get()->Update(fDelta);
-			m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
+			for (size_t i = 0; i < m_drawables.size(); ++i)
+			{
+				m_drawables.at(i).get()->Update(fDelta);
+				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
+			}
 		}
+		else
+		{
+			for (size_t i = 0; i < m_drawables.size(); ++i)
+			{
+				m_drawables.at(i).get()->Update(fDelta);
+				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
+			}
+		}
+
 		DxLib::ScreenFlip();
 
 		if (m_hRenderWnd != nullptr)
@@ -211,6 +224,11 @@ bool CDxLibSpinePlayer::SwitchDepthBufferValidity()
 	m_bDepthBufferEnabled ^= true;
 	return true;
 }
+/*描画順切り替え*/
+void CDxLibSpinePlayer::SwitchDrawOrder()
+{
+	m_bDrawOrderReversed ^= true;
+}
 /*槽溝名称引き渡し*/
 std::vector<std::string> CDxLibSpinePlayer::GetSlotList()
 {
@@ -254,6 +272,7 @@ void CDxLibSpinePlayer::SetSlotsToExclude(const std::vector<std::string>& slotNa
 /*装い合成*/
 void CDxLibSpinePlayer::MixSkins(const std::vector<std::string>& skinNames)
 {
+	if (m_nSkinIndex >= m_skinNames.size())return;
 	const auto& currentSkinName = m_skinNames.at(m_nSkinIndex);
 
 	for (size_t i = 0; i < m_drawables.size(); ++i)
@@ -282,6 +301,7 @@ void CDxLibSpinePlayer::MixAnimations(const std::vector<std::string>& animationN
 {
 	ClearAnimationTracks();
 
+	if (m_nAnimationIndex >= m_animationNames.size())return;
 	const auto& currentAnimationName = m_animationNames.at(m_nAnimationIndex);
 
 	for (size_t i = 0; i < m_drawables.size(); ++i)

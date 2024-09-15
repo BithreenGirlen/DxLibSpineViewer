@@ -82,19 +82,36 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 	if (!m_drawables.empty())
 	{
 		DxLib::ClearDrawScreen();
-		for (size_t i = 0; i < m_drawables.size(); ++i)
+
+		if (!m_bDrawOrderReversed)
 		{
-			m_drawables.at(i).get()->Update(fDelta);
+			for (size_t i = 0; i < m_drawables.size(); ++i)
+			{
+				m_drawables.at(i).get()->Update(fDelta);
 #ifdef SPINE_3_7_OR_LATER
-			m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
+				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
 #else 
-			/*
-			 * Implementation of scaling by multiplying factor and vertice.
-			 * A method suggested on official forum thread 4918.
-			*/
-			m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
+				/*
+				* Implementation of scaling by multiplying factor and vertice.
+				* A method suggested on official forum thread 4918.
+				*/
+				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
 #endif
+			}
 		}
+		else
+		{
+			for (long long i = m_drawables.size() - 1; i >= 0; --i)
+			{
+				m_drawables.at(i).get()->Update(fDelta);
+#ifdef SPINE_3_7_OR_LATER
+				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
+#else 
+				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
+#endif
+			}
+		}
+
 		DxLib::ScreenFlip();
 
 		if (m_hRenderWnd != nullptr)
@@ -231,6 +248,11 @@ bool CDxLibSpinePlayerC::SwitchDepthBufferValidity()
 	m_bDepthBufferEnabled ^= true;
 	return true;
 }
+/*描画順切り替え*/
+void CDxLibSpinePlayerC::SwitchDrawOrder()
+{
+	m_bDrawOrderReversed ^= true;
+}
 /*槽溝名称引き渡し*/
 std::vector<std::string> CDxLibSpinePlayerC::GetSlotList()
 {
@@ -295,6 +317,7 @@ void CDxLibSpinePlayerC::MixSkins(const std::vector<std::string>& skinNames)
 void CDxLibSpinePlayerC::MixAnimations(const std::vector<std::string>& animationNames)
 {
 	ClearAnimationTracks();
+
 	if (m_nAnimationIndex >= m_animationNames.size())return;
 	const auto& currentAnimationName = m_animationNames.at(m_nAnimationIndex);
 
