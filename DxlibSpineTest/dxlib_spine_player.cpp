@@ -85,7 +85,7 @@ void CDxLibSpinePlayer::Redraw(float fDelta)
 		}
 		else
 		{
-			for (size_t i = 0; i < m_drawables.size(); ++i)
+			for (long long i = m_drawables.size() - 1; i >= 0; --i)
 			{
 				m_drawables.at(i).get()->Update(fDelta);
 				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
