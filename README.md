@@ -61,7 +61,7 @@ Other files are for GUI.
 ----|---- |---- 
 File| Open folder | Open folder-select-dialogue.
  -| Setting | Open a dialogue to set atlas/skelton extensions to pick up when opening folder.
- -| Select files | Pick up atlas and skeleton file one by one regardless of its extension.
+ -| Select files | Pick up atlas and skeleton files one by one regardless of their extension.
 Image| Through-seen | Switch window's transparancy.
  -| Manipulation | Open a dialogue to specify slots to be excluded, skins or animations to be mixed.
  
@@ -86,8 +86,9 @@ Right button + mouse wheel| Switch the skin.
 | Input  | Action  |
 | --- | --- |
 | Esc | Close the application. |
-| A | Enable/disable premultiplied alpha.|  
-| B | Prefer/ignore blned-mode specified by slots.|  
+| A | Enable/disable premultiplied alpha.| 
+| B | Prefer/ignore blned-mode specified by slots.| 
+| R | Switch draw-order between filename asc/descending order.| 
 | Z | Enable/disable depth-buffer.|  
 
 ## Extra-demo
