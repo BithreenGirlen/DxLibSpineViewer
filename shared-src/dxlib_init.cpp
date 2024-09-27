@@ -26,16 +26,7 @@ SDxLibInit::SDxLibInit(void* pWindowHandle)
 	iRet = DxLib::ChangeWindowMode(TRUE);
 	if (iRet == -1)return;
 #endif
-	iRet = DxLib::SetDrawMode(DX_DRAWMODE_BILINEAR);
-	if (iRet == -1)return;
-
-	iRet = DxLib::SetTextureAddressMode(DX_TEXADDRESS_WRAP);
-	if (iRet == -1)return;
-
 	iRet = DxLib::SetMultiThreadFlag(TRUE);
-	if (iRet == -1)return;
-
-	iRet = DxLib::SetUseTransColorGraphCreateFlag(TRUE);
 	if (iRet == -1)return;
 
 	iDxLibInitialised = DxLib::DxLib_Init();
@@ -45,7 +36,14 @@ SDxLibInit::SDxLibInit(void* pWindowHandle)
 	{
 		DxLib::DxLib_End();
 		iDxLibInitialised = -1;
+		return;
 	}
+
+	iRet = DxLib::SetDrawMode(DX_DRAWMODE_BILINEAR);
+	if (iRet == -1)return;
+
+	iRet = DxLib::SetTextureAddressMode(DX_TEXADDRESS_WRAP);
+	if (iRet == -1)return;
 }
 
 SDxLibInit::~SDxLibInit()
