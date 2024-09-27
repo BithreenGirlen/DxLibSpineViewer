@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <CommCtrl.h>
 
+#include <algorithm>
 
 #include "main_window.h"
 #include "win_filesystem.h"
@@ -39,9 +40,14 @@ bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
     if (::RegisterClassExW(&wcex))
     {
         m_hInstance = hInstance;
+        if (pwzWindowName != nullptr)m_wstrWindowName = pwzWindowName;
+
+        UINT uiDpi = ::GetDpiForSystem();
+        int iWindowWidth = ::MulDiv(200, uiDpi, USER_DEFAULT_SCREEN_DPI);
+        int iWindowHeight = ::MulDiv(200, uiDpi, USER_DEFAULT_SCREEN_DPI);
 
         m_hWnd = ::CreateWindowW(m_swzClassName, pwzWindowName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
-            CW_USEDEFAULT, CW_USEDEFAULT, 200, 200, nullptr, nullptr, hInstance, this);
+            CW_USEDEFAULT, CW_USEDEFAULT, iWindowWidth, iWindowHeight, nullptr, nullptr, hInstance, this);
         if (m_hWnd != nullptr)
         {
             return true;
@@ -207,6 +213,9 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
         break;
     case 'R':
         m_DxLibSpinePlayer.SwitchDrawOrder();
+        break;
+    case 'S':
+        KeyUpOnSaveAsPng();
         break;
     case 'Z':
         m_DxLibSpinePlayer.SwitchDepthBufferValidity();
@@ -410,7 +419,7 @@ void CMainWindow::MenuOnOpenFolder()
         if (bRet)
         {
             ClearFolderInfo();
-            win_filesystem::GetFolderListAndIndex(wstrPickedFolder.c_str(), m_folders, &m_nFolderIndex);
+            win_filesystem::GetFilePathListAndIndex(wstrPickedFolder.c_str(), nullptr, m_folders, &m_nFolderIndex);
         }
     }
 }
@@ -434,6 +443,9 @@ void CMainWindow::MenuOnSelectFiles()
                 return;
             }
 
+            std::sort(wstrAtlasFiles.begin(), wstrAtlasFiles.end());
+            std::sort(wstrSkelFiles.begin(), wstrSkelFiles.end());
+
             ClearFolderInfo();
             std::vector<std::string> atlases;
             std::vector<std::string> skels;
@@ -448,18 +460,33 @@ void CMainWindow::MenuOnSelectFiles()
                 skels.push_back(win_text::NarrowANSI(skel));
             }
 
-            bool bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary());
-            if (!bRet)
+            m_bPlayReady = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary());
+            if (!m_bPlayReady)
             {
                 ::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
             }
 
+            const auto ExtractFileName = [&wstrAtlasFiles]()
+                -> std::wstring
+                {
+                    const std::wstring& wstrFilePath = wstrAtlasFiles.at(0);
+                    size_t nPos = wstrFilePath.find_last_of(L"\\/");
+                    nPos = nPos == std::string::npos ? 0 : nPos + 1;
+
+                    size_t nPos2 = wstrFilePath.find(L".", nPos);
+                    if (nPos2 == std::wstring::npos)nPos2 = wstrFilePath.size() - 1;
+
+                    return wstrFilePath.substr(nPos, nPos2 - nPos);
+                };
+            ChangeWindowTitle(m_bPlayReady ? ExtractFileName().c_str() : nullptr);
         }
     }
 }
 /*透過*/
 void CMainWindow::MenuOnSeeThroughImage()
 {
+    if (!m_bPlayReady)return;
+
     HMENU hMenuBar = ::GetMenu(m_hWnd);
     if (hMenuBar != nullptr)
     {
@@ -519,6 +546,45 @@ void CMainWindow::KeyUpOnForeFolder()
     if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = m_folders.size() - 1;
     SetupResources(m_folders.at(m_nFolderIndex).c_str());
 }
+/*PNGとして保存*/
+void CMainWindow::KeyUpOnSaveAsPng()
+{
+    if (!m_bPlayReady)return;
+
+    const auto GetWindowTitleName = [this]()
+        -> std::wstring
+        {
+            for (int iSize = 256; iSize <= 1024; iSize *= 2)
+            {
+                std::vector<wchar_t> vBuffer(iSize, L'\0');
+                int iLen = ::GetWindowTextW(m_hWnd, vBuffer.data(), static_cast<int>(vBuffer.size()));
+                if (iLen < iSize - 1)
+                {
+                    return vBuffer.data();
+                }
+            }
+            return std::wstring();
+        };
+    std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitleName());
+    wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
+    wstrFilePath += L".png";
+
+    RECT rect;
+    ::GetClientRect(m_hWnd, &rect);
+    int iClientWidth = rect.right - rect.left;
+    int iClientHeight = rect.bottom - rect.top;
+
+    int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
+    int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+
+    DxLib::SaveDrawScreenToPNG
+    (
+        0, 0,
+        iClientWidth > iDesktopWidth ? iDesktopWidth : iClientWidth,
+        iClientHeight > iDesktopHeight ? iDesktopHeight : iClientHeight,
+        wstrFilePath.c_str()
+    );
+}
 /*標題変更*/
 void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
 {
@@ -530,11 +596,13 @@ void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
         wstr = nPos == std::wstring::npos ? wstrTitle : wstrTitle.substr(nPos + 1);
     }
 
-    ::SetWindowTextW(m_hWnd, wstr.c_str());
+    ::SetWindowTextW(m_hWnd, wstr.empty() ? m_wstrWindowName.c_str() : wstr.c_str());
 }
 /*表示形式変更*/
 void CMainWindow::SwitchWindowMode()
 {
+    if (!m_bPlayReady)return;
+
     RECT rect;
     ::GetWindowRect(m_hWnd, &rect);
     LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
@@ -607,7 +675,6 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
                     contained.push_back(win_text::NarrowANSI(temp));
                 }
             }
-            bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, bIsBinary);
         }
     }
     else
@@ -627,10 +694,14 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
                 {
                     skels.push_back(win_text::NarrowANSI(temp));
                 }
-
-                bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, bIsBinary);
             }
         }
+    }
+    if (bRet)
+    {
+        bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, bIsBinary);
+        ChangeWindowTitle(bRet ? pwzFolderPath : nullptr);
+        m_bPlayReady = bRet;
     }
     if (!bRet)
     {

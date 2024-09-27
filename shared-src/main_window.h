@@ -20,6 +20,7 @@ public:
 	HWND GetHwnd()const { return m_hWnd;}
 private:
 	const wchar_t* m_swzClassName = L"Dxlib-spine window";
+	std::wstring m_wstrWindowName = L"DxLib spine";
 	HINSTANCE m_hInstance = nullptr;
 	HWND m_hWnd = nullptr;
 
@@ -40,9 +41,9 @@ private:
 	enum Menu
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
-		kSeeThroughImage, kSkeletonSetting,
+		kSeeThroughImage, kSkeletonSetting
 	};
-	enum MenuBar{kFolder, kImage};
+	enum MenuBar{kFile, kImage};
 
 	POINT m_CursorPos{};
 	bool m_bSpeedHavingChanged = false;
@@ -51,6 +52,7 @@ private:
 	HMENU m_hMenuBar = nullptr;
 	bool m_bBarHidden = false;
 	bool m_bTransparent = false;
+	bool m_bPlayReady = false;
 
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
@@ -68,6 +70,7 @@ private:
 
 	void KeyUpOnNextFolder();
 	void KeyUpOnForeFolder();
+	void KeyUpOnSaveAsPng();
 
 	void ChangeWindowTitle(const wchar_t* pwzTitle);
 	void SwitchWindowMode();
