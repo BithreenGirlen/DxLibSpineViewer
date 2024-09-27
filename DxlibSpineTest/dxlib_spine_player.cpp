@@ -229,6 +229,27 @@ void CDxLibSpinePlayer::SwitchDrawOrder()
 {
 	m_bDrawOrderReversed ^= true;
 }
+/*現在の動作名と経過時間取得*/
+std::string CDxLibSpinePlayer::GetCurrentAnimationNameWithTrackTime()
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		auto& tracks = pDrawable->animationState->getTracks();
+		for (size_t i = 0; i < tracks.size(); ++i)
+		{
+			float fCurrentTime = tracks[i]->getTrackTime();
+			spine::Animation* pAnimation = tracks[i]->getAnimation();
+			if (pAnimation != nullptr)
+			{
+				std::string str = pAnimation->getName().buffer();
+				str += "_" + std::to_string(fCurrentTime);
+				return str;
+			}
+		}
+	}
+
+	return std::string();
+}
 /*槽溝名称引き渡し*/
 std::vector<std::string> CDxLibSpinePlayer::GetSlotList()
 {
@@ -398,16 +419,30 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 			}
 		};
 
-	for (size_t i = 0; i < m_skeletonData.size(); ++i)
+	for (const auto& pSkeletonData : m_skeletonData)
 	{
-		if (m_skeletonData.at(i).get()->getWidth() > 0.f && m_skeletonData.at(i).get()->getHeight() > 0.f)
+		if (pSkeletonData->getWidth() > 0.f && pSkeletonData->getHeight() > 0.f)
 		{
-			CompareDimention(m_skeletonData.at(i).get()->getWidth(), m_skeletonData.at(i).get()->getHeight());
+			CompareDimention(pSkeletonData->getWidth(), pSkeletonData->getHeight());
 		}
 		else
 		{
 			/*If skeletonData does not store size, deduce from the attachment of the default skin.*/
-			spine::Attachment* pAttachment = m_skeletonData.at(i).get()->getDefaultSkin()->getAttachments().next()._attachment;
+			const auto FindDefaultSkinAttachment = [&pSkeletonData]()
+				-> spine::Attachment*
+				{
+					spine::Skin::AttachmentMap::Entries attachmentMapEntries = pSkeletonData.get()->getDefaultSkin()->getAttachments();
+					for (; attachmentMapEntries.hasNext();)
+					{
+						spine::Skin::AttachmentMap::Entry attachmentMapEntry = attachmentMapEntries.next();
+						if (attachmentMapEntry._slotIndex == 0)
+						{
+							return attachmentMapEntry._attachment;
+						}
+					}
+					return nullptr;
+				};
+			spine::Attachment* pAttachment = FindDefaultSkinAttachment();
 			if (pAttachment != nullptr)
 			{
 				if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
@@ -498,34 +533,17 @@ void CDxLibSpinePlayer::ResizeWindow()
 {
 	if (m_hRenderWnd != nullptr)
 	{
-		bool bBarHidden = IsWidowBarHidden();
 		RECT rect;
-		if (!bBarHidden)
-		{
-			::GetWindowRect(m_hRenderWnd, &rect);
-		}
-		else
-		{
-			::GetClientRect(m_hRenderWnd, &rect);
-		}
-
-		float fDpiScale = ::GetDpiForWindow(m_hRenderWnd) / 96.f;
+		::GetWindowRect(m_hRenderWnd, &rect);
 		int iX = static_cast<int>(m_fBaseSize.u * m_fSkeletonScale);
 		int iY = static_cast<int>(m_fBaseSize.v * m_fSkeletonScale);
+
 		rect.right = iX + rect.left;
 		rect.bottom = iY + rect.top;
-		if (!bBarHidden)
-		{
-			LONG lStyle = ::GetWindowLong(m_hRenderWnd, GWL_STYLE);
-			::AdjustWindowRect(&rect, lStyle, TRUE);
-			::SetWindowPos(m_hRenderWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
-		}
-		else
-		{
-			RECT rc;
-			::GetWindowRect(m_hRenderWnd, &rc);
-			::MoveWindow(m_hRenderWnd, rc.left, rc.top, rect.right, rect.bottom, TRUE);
-		}
+		LONG lStyle = ::GetWindowLong(m_hRenderWnd, GWL_STYLE);
+		bool bBarHidden = IsWidowBarHidden();
+		::AdjustWindowRect(&rect, lStyle, bBarHidden ? FALSE : TRUE);
+		::SetWindowPos(m_hRenderWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
 
 		ResizeBuffer();
 	}

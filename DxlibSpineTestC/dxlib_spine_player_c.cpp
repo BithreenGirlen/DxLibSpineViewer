@@ -253,6 +253,29 @@ void CDxLibSpinePlayerC::SwitchDrawOrder()
 {
 	m_bDrawOrderReversed ^= true;
 }
+/*現在の動作名と経過時間取得*/
+std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime()
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		for (size_t i = 0; i < pDrawable->animationState->tracksCount; ++i)
+		{
+			spTrackEntry* pTrackEntry = pDrawable->animationState->tracks[i];
+			if (pTrackEntry != nullptr)
+			{
+				spAnimation* pAnimation = pTrackEntry->animation;
+				if (pAnimation != nullptr && pAnimation->name != nullptr)
+				{
+					std::string str = pAnimation->name;
+					str += "_" + std::to_string(pTrackEntry->trackTime);
+					return str;
+				}
+			}
+		}
+	}
+
+	return std::string();
+}
 /*槽溝名称引き渡し*/
 std::vector<std::string> CDxLibSpinePlayerC::GetSlotList()
 {
@@ -532,34 +555,17 @@ void CDxLibSpinePlayerC::ResizeWindow()
 {
 	if (m_hRenderWnd != nullptr)
 	{
-		bool bBarHidden = IsWidowBarHidden();
 		RECT rect;
-		if (!bBarHidden)
-		{
-			::GetWindowRect(m_hRenderWnd, &rect);
-		}
-		else
-		{
-			::GetClientRect(m_hRenderWnd, &rect);
-		}
-
-		float fDpiScale = ::GetDpiForWindow(m_hRenderWnd) / 96.f;
+		::GetWindowRect(m_hRenderWnd, &rect);
 		int iX = static_cast<int>(m_fBaseSize.u * m_fSkeletonScale);
 		int iY = static_cast<int>(m_fBaseSize.v * m_fSkeletonScale);
+
 		rect.right = iX + rect.left;
 		rect.bottom = iY + rect.top;
-		if (!bBarHidden)
-		{
-			LONG lStyle = ::GetWindowLong(m_hRenderWnd, GWL_STYLE);
-			::AdjustWindowRect(&rect, lStyle, TRUE);
-			::SetWindowPos(m_hRenderWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
-		}
-		else
-		{
-			RECT rc;
-			::GetWindowRect(m_hRenderWnd, &rc);
-			::MoveWindow(m_hRenderWnd, rc.left, rc.top, rect.right, rect.bottom, TRUE);
-		}
+		LONG lStyle = ::GetWindowLong(m_hRenderWnd, GWL_STYLE);
+		bool bBarHidden = IsWidowBarHidden();
+		::AdjustWindowRect(&rect, lStyle, bBarHidden ? FALSE : TRUE);
+		::SetWindowPos(m_hRenderWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
 
 		ResizeBuffer();
 	}
