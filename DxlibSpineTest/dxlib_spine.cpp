@@ -31,6 +31,29 @@ CDxLibSpineDrawer::CDxLibSpineDrawer(spine::SkeletonData* pSkeletonData, spine::
 	m_quadIndices.add(2);
 	m_quadIndices.add(3);
 	m_quadIndices.add(0);
+
+	/*
+	* This custom blend mode is used to avoid the pixels drawn with blend-mode-multiply to be transparent.
+	* ---------- Formula for blend-mode-multiply ----------
+	*   dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA))
+	*   dstA = dstA
+	* -----------------------------------------------------
+	* This blend mode retains destination alpha, so in case initial alpha of the screen being 0, 
+	* it happens that drawn pixels are seen on the screen but unseen when saved as PNG.
+	* 
+	* The solution taken here, not definitive though, is to overwrite alpha formula with that of blend-mode-normal.
+	*/
+	DxLib::SetDrawCustomBlendMode
+	(
+		TRUE,
+		DX_BLEND_DEST_COLOR,
+		DX_BLEND_INV_SRC_ALPHA,
+		DX_BLENDOP_ADD,
+		DX_BLEND_ONE,
+		DX_BLEND_INV_SRC_ALPHA,
+		DX_BLENDOP_ADD,
+		255
+	);
 }
 
 CDxLibSpineDrawer::~CDxLibSpineDrawer()
@@ -198,7 +221,7 @@ void CDxLibSpineDrawer::Draw(float fDepth)
 			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ADD : DX_BLENDMODE_SPINE_ADDITIVE;
 			break;
 		case spine::BlendMode_Multiply:
-			iDxLibBlendMode = DX_BLENDMODE_SPINE_MULTIPLY;
+			iDxLibBlendMode = DX_BLENDMODE_CUSTOM;
 			break;
 		case spine::BlendMode_Screen:
 			iDxLibBlendMode = DX_BLENDMODE_SPINE_SCREEN;

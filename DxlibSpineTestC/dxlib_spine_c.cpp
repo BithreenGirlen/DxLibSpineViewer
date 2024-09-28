@@ -94,6 +94,18 @@ CDxLibSpineDrawerC::CDxLibSpineDrawerC(spSkeletonData* pSkeletonData, spAnimatio
 	}
 	animationState = spAnimationState_create(pAnimationStateData);
 	m_clipper = spSkeletonClipping_create();
+
+	DxLib::SetDrawCustomBlendMode
+	(
+		TRUE,
+		DX_BLEND_DEST_COLOR,
+		DX_BLEND_INV_SRC_ALPHA,
+		DX_BLENDOP_ADD,
+		DX_BLEND_ONE,
+		DX_BLEND_INV_SRC_ALPHA,
+		DX_BLENDOP_ADD,
+		255
+	);
 }
 
 CDxLibSpineDrawerC::~CDxLibSpineDrawerC()
@@ -265,7 +277,7 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ADD : DX_BLENDMODE_SPINE_ADDITIVE;
 			break;
 		case spBlendMode::SP_BLEND_MODE_MULTIPLY:
-			iDxLibBlendMode = DX_BLENDMODE_SPINE_MULTIPLY;
+			iDxLibBlendMode = DX_BLENDMODE_CUSTOM;
 			break;
 		case spBlendMode::SP_BLEND_MODE_SCREEN:
 			iDxLibBlendMode = DX_BLENDMODE_SPINE_SCREEN;
