@@ -254,7 +254,7 @@ void CDxLibSpinePlayerC::SwitchDrawOrder()
 	m_bDrawOrderReversed ^= true;
 }
 /*現在の動作名と経過時間取得*/
-std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime()
+std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime(float* fTrackTime)
 {
 	for (const auto& pDrawable : m_drawables)
 	{
@@ -266,9 +266,11 @@ std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime()
 				spAnimation* pAnimation = pTrackEntry->animation;
 				if (pAnimation != nullptr && pAnimation->name != nullptr)
 				{
-					std::string str = pAnimation->name;
-					str += "_" + std::to_string(pTrackEntry->trackTime);
-					return str;
+					if (fTrackTime != nullptr)
+					{
+						*fTrackTime = pTrackEntry->trackTime;
+					}
+					return pAnimation->name;
 				}
 			}
 		}

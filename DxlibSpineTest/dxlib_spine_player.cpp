@@ -230,20 +230,21 @@ void CDxLibSpinePlayer::SwitchDrawOrder()
 	m_bDrawOrderReversed ^= true;
 }
 /*現在の動作名と経過時間取得*/
-std::string CDxLibSpinePlayer::GetCurrentAnimationNameWithTrackTime()
+std::string CDxLibSpinePlayer::GetCurrentAnimationNameWithTrackTime(float* fTrackTime)
 {
 	for (const auto& pDrawable : m_drawables)
 	{
 		auto& tracks = pDrawable->animationState->getTracks();
 		for (size_t i = 0; i < tracks.size(); ++i)
 		{
-			float fCurrentTime = tracks[i]->getTrackTime();
 			spine::Animation* pAnimation = tracks[i]->getAnimation();
 			if (pAnimation != nullptr)
 			{
-				std::string str = pAnimation->getName().buffer();
-				str += "_" + std::to_string(fCurrentTime);
-				return str;
+				if (fTrackTime != nullptr)
+				{
+					*fTrackTime = tracks[i]->getTrackTime();
+				}
+				return pAnimation->getName().buffer();
 			}
 		}
 	}

@@ -37,7 +37,7 @@ public:
 	bool SwitchDepthBufferValidity();
 	void SwitchDrawOrder();
 
-	std::string GetCurrentAnimationNameWithTrackTime();
+	std::string GetCurrentAnimationNameWithTrackTime(float* fTrackTime = nullptr);
 
 	std::vector<std::string> GetSlotList();
 	std::vector<std::string> GetSkinList() const;
