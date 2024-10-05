@@ -9,6 +9,7 @@
 #include "spine_player_shared.h"
 #include "spine_setting_dialogue.h"
 #include "spine_manipulator_dialogue.h"
+#include "win_image.h"
 
 class CMainWindow
 {
@@ -36,26 +37,33 @@ private:
 	LRESULT OnMouseWheel(WPARAM wParam, LPARAM lParam);
 	LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
 	LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
+	LRESULT OnRButtonUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMButtonUp(WPARAM wParam, LPARAM lParam);
 
 	enum Menu
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
-		kSeeThroughImage, kSkeletonSetting
+		kSeeThroughImage, kSkeletonSetting,
+		kSnapAsPNG, kStartRecording, kSaveAsGIF, kSaveAsPNGs
 	};
 	enum MenuBar{kFile, kImage};
 
 	POINT m_CursorPos{};
 	bool m_bSpeedHavingChanged = false;
 	bool m_bLeftDowned = false;
+	bool m_bRightCombinated = false;
 
 	HMENU m_hMenuBar = nullptr;
 	bool m_bBarHidden = false;
 	bool m_bTransparent = false;
 	bool m_bPlayReady = false;
+	bool m_bUnderRecording = false;
 
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
+
+	std::vector<SImageFrame> m_imageFrames;
+	std::vector<std::wstring> m_imageFrameNames;
 
 	float m_fDelta = 1 / 60.f;
 
@@ -67,12 +75,15 @@ private:
 
 	void MenuOnSeeThroughImage();
 	void MenuOnSkeletonSetting();
+	void MenuOnStartRecording();
+	void MenuOnEndRecording(bool bAsGif = true);
 
 	void KeyUpOnNextFolder();
 	void KeyUpOnForeFolder();
-	void KeyUpOnSaveAsPng();
+	void MenuOnSaveAsPng();
 
 	void ChangeWindowTitle(const wchar_t* pwzTitle);
+	std::wstring GerWindowTitle();
 	void SwitchWindowMode();
 
 	bool SetupResources(const wchar_t* pwzFolderPath);

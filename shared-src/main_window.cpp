@@ -8,6 +8,7 @@
 #include "win_filesystem.h"
 #include "win_dialogue.h"
 #include "win_text.h"
+#include "dxlib_image_encoder.h"
 
 CMainWindow::CMainWindow()
 {
@@ -138,6 +139,8 @@ LRESULT CMainWindow::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
         return OnLButtonDown(wParam, lParam);
     case WM_LBUTTONUP:
         return OnLButtonUp(wParam, lParam);
+    case WM_RBUTTONUP:
+        return OnRButtonUp(wParam, lParam);
     case WM_MBUTTONUP:
         return OnMButtonUp(wParam, lParam);
     default:
@@ -182,6 +185,37 @@ LRESULT CMainWindow::OnPaint()
 
     m_DxLibSpinePlayer.Redraw(m_fDelta);
 
+    if (m_bPlayReady && m_bUnderRecording)
+    {
+        static int iCount = 0;
+        ++iCount;
+        constexpr int iRecordingInterval = 8;
+        //int iInterval = static_cast<int>(::ceilf(1 / m_fDelta / 60.f));
+        if (iCount > iRecordingInterval)
+        {
+            int iWidth = 0;
+            int iHeight = 0;
+            int iStride = 0;
+            std::vector<unsigned char> pixels;
+            bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels, m_hWnd);
+            if (bRet)
+            {
+                SImageFrame s;
+                s.uiWidth = iWidth;
+                s.uiHeight = iHeight;
+                s.iStride = iStride;
+                s.pixels = std::move(pixels);
+                m_imageFrames.push_back(std::move(s));
+                float fTrackTime = 0.f;
+                std::wstring wstrFrameName = win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
+                wstrFrameName += L"_" + std::to_wstring(fTrackTime);
+                m_imageFrameNames.push_back(std::move(wstrFrameName));
+            }
+
+            iCount = 0;
+        }
+    }
+
     ::EndPaint(m_hWnd, &ps);
 
     return 0;
@@ -194,6 +228,7 @@ LRESULT CMainWindow::OnSize()
 /*WM_KEYUP*/
 LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
 {
+    static std::vector<SImageFrame> imageFrames;
     switch (wParam)
     {
     case VK_ESCAPE:
@@ -213,9 +248,6 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
         break;
     case 'R':
         m_DxLibSpinePlayer.SwitchDrawOrder();
-        break;
-    case 'S':
-        KeyUpOnSaveAsPng();
         break;
     case 'Z':
         m_DxLibSpinePlayer.SwitchDepthBufferValidity();
@@ -250,6 +282,18 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         case Menu::kSkeletonSetting:
             MenuOnSkeletonSetting();
             break;
+        case Menu::kSnapAsPNG:
+            MenuOnSaveAsPng();
+            break;
+        case Menu::kStartRecording:
+            MenuOnStartRecording();
+            break;
+        case Menu::kSaveAsGIF:
+            MenuOnEndRecording();
+            break;
+        case Menu::kSaveAsPNGs:
+            MenuOnEndRecording(false);
+            break;
         }
     }
     else
@@ -279,6 +323,8 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     if (usKey == MK_RBUTTON)
     {
         m_DxLibSpinePlayer.ShiftSkin();
+
+        m_bRightCombinated = true;
     }
 
     return 0;
@@ -310,6 +356,8 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
         input.type = INPUT_KEYBOARD;
         input.ki.wVk = VK_DOWN;
         ::SendInput(1, &input, sizeof(input));
+
+        m_bRightCombinated = true;
     }
 
     if (usKey == 0 && m_bLeftDowned)
@@ -333,6 +381,57 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 
     return 0;
 }
+/*WM_RBUTTONUP*/
+LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
+{
+    if (m_bRightCombinated)
+    {
+        m_bRightCombinated = false;
+        return 0;
+    }
+    WORD usKey = LOWORD(wParam);
+
+    if (usKey == 0 && m_bPlayReady)
+    {
+        const auto PreparePupupMenu = [this](HMENU *hMenu)
+            -> bool
+            {
+                if (hMenu == nullptr)return false;
+
+                HMENU hPopupMenu = ::CreatePopupMenu();
+                if (hPopupMenu == nullptr)return false;
+
+                if (!m_bUnderRecording)
+                {
+                    int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSnapAsPNG, L"Snap as PNG");
+                    if (iRet == 0)return false;
+                    iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kStartRecording, L"Start recording");
+                    if (iRet == 0)return false;
+                }
+                else
+                {
+                    int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSaveAsGIF, L"Save as GIF");
+                    if (iRet == 0)return false;
+                    iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSaveAsPNGs, L"Save as PNGs");
+                    if (iRet == 0)return false;
+                }
+                *hMenu = hPopupMenu;
+                return true;
+            };
+
+        HMENU hPopupMenu = nullptr;
+        PreparePupupMenu(&hPopupMenu);
+        if (hPopupMenu != nullptr)
+        {
+            POINT point{};
+            ::GetCursorPos(&point);
+            ::TrackPopupMenu(hPopupMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, point.x, point.y, 0, m_hWnd, nullptr);
+            ::DestroyMenu(hPopupMenu);
+        }
+    }
+
+    return 0;
+}
 /*WM_MBUTTONUP*/
 LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 {
@@ -346,6 +445,8 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
     if (usKey == MK_RBUTTON)
     {
         SwitchWindowMode();
+
+        m_bRightCombinated = true;
     }
 
     return 0;
@@ -412,6 +513,8 @@ failed:
 /*フォルダ選択*/
 void CMainWindow::MenuOnOpenFolder()
 {
+    if (m_bUnderRecording)return;
+
     std::wstring wstrPickedFolder = win_dialogue::SelectWorkFolder(m_hWnd);
     if (!wstrPickedFolder.empty())
     {
@@ -528,6 +631,51 @@ void CMainWindow::MenuOnSkeletonSetting()
         ::SetFocus(m_SpineManipulatorDialogue.GetHwnd());
     }
 }
+/*PNGとして保存*/
+void CMainWindow::MenuOnSaveAsPng()
+{
+    if (!m_bPlayReady)return;
+
+    std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GerWindowTitle());
+    float fTrackTime = 0.f;
+    wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
+    wstrFilePath += L"_" + std::to_wstring(fTrackTime);
+    wstrFilePath += L".png";
+
+    CDxLibImageEncoder::SaveScreenAsPng(wstrFilePath, m_hWnd);
+}
+/*記録開始*/
+void CMainWindow::MenuOnStartRecording()
+{
+    if (!m_bPlayReady)return;
+
+    m_bUnderRecording = true;
+}
+/*記録終了*/
+void CMainWindow::MenuOnEndRecording(bool bAsGif)
+{
+    m_bUnderRecording = false;
+    if (bAsGif)
+    {
+        std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GerWindowTitle());
+        wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
+        wstrFilePath += L".gif";
+        win_image::SaveImagesAsGif(wstrFilePath.c_str(), m_imageFrames);
+    }
+    else
+    {
+        std::wstring wstrFolderPath = win_filesystem::CreateWorkFolder(GerWindowTitle());
+        for (size_t i = 0; i < m_imageFrames.size() && i < m_imageFrameNames.size(); ++i)
+        {
+            std::wstring wstrFilePath = wstrFolderPath;
+            wstrFilePath += m_imageFrameNames.at(i);
+            wstrFilePath += L".png";
+            win_image::SaveImageAsPng(wstrFilePath.c_str(), &m_imageFrames.at(i));
+        }
+    }
+    m_imageFrames.clear();
+    m_imageFrameNames.clear();
+}
 /*次のフォルダに移動*/
 void CMainWindow::KeyUpOnNextFolder()
 {
@@ -540,50 +688,11 @@ void CMainWindow::KeyUpOnNextFolder()
 /*前のフォルダに移動*/
 void CMainWindow::KeyUpOnForeFolder()
 {
-    if (m_folders.empty())return;
+    if (m_folders.empty() || m_bUnderRecording)return;
 
     --m_nFolderIndex;
     if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = m_folders.size() - 1;
     SetupResources(m_folders.at(m_nFolderIndex).c_str());
-}
-/*PNGとして保存*/
-void CMainWindow::KeyUpOnSaveAsPng()
-{
-    if (!m_bPlayReady)return;
-
-    const auto GetWindowTitleName = [this]()
-        -> std::wstring
-        {
-            for (int iSize = 256; iSize <= 1024; iSize *= 2)
-            {
-                std::vector<wchar_t> vBuffer(iSize, L'\0');
-                int iLen = ::GetWindowTextW(m_hWnd, vBuffer.data(), static_cast<int>(vBuffer.size()));
-                if (iLen < iSize - 1)
-                {
-                    return vBuffer.data();
-                }
-            }
-            return std::wstring();
-        };
-    std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitleName());
-    wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
-    wstrFilePath += L".png";
-
-    RECT rect;
-    ::GetClientRect(m_hWnd, &rect);
-    int iClientWidth = rect.right - rect.left;
-    int iClientHeight = rect.bottom - rect.top;
-
-    int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
-    int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
-
-    DxLib::SaveDrawScreenToPNG
-    (
-        0, 0,
-        iClientWidth > iDesktopWidth ? iDesktopWidth : iClientWidth,
-        iClientHeight > iDesktopHeight ? iDesktopHeight : iClientHeight,
-        wstrFilePath.c_str()
-    );
 }
 /*標題変更*/
 void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
@@ -597,6 +706,20 @@ void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
     }
 
     ::SetWindowTextW(m_hWnd, wstr.empty() ? m_wstrWindowName.c_str() : wstr.c_str());
+}
+/*標題取得*/
+std::wstring CMainWindow::GerWindowTitle()
+{
+    for (int iSize = 256; iSize <= 1024; iSize *= 2)
+    {
+        std::vector<wchar_t> vBuffer(iSize, L'\0');
+        int iLen = ::GetWindowTextW(m_hWnd, vBuffer.data(), static_cast<int>(vBuffer.size()));
+        if (iLen < iSize - 1)
+        {
+            return vBuffer.data();
+        }
+    }
+    return std::wstring();
 }
 /*表示形式変更*/
 void CMainWindow::SwitchWindowMode()
