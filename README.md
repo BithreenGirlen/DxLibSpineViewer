@@ -1,5 +1,5 @@
 # DxlibSpineTest
-Implementation of Spine rendering with [DXライブラリ](https://dxlib.xsrv.jp/index.html), accompanied with a viewer for Windows.
+Spine runtime for [DxLib](https://dxlib.xsrv.jp/index.html), accompanied with a viewer for Windows.
 
 ## Demonstration
 - Built on spine-cpp 3.8.
@@ -20,7 +20,7 @@ When building, supply the above libraries under `/shared-src/deps`.
 │  └ ...
 ├ shared-src
 │  ├ deps
-│  │  ├ dxlib // static libraries and headers of DXライブラリ
+│  │  ├ dxlib // static libraries and headers of DxLib
 │  │  │ └ ...
 │  │  ├ spine-c // sources and headers of spine-c
 │  │  │ ├ include
@@ -42,16 +42,15 @@ When building, supply the above libraries under `/shared-src/deps`.
 
 The files under `/DxlibSpineTest` are to be used with `spine-cpp` runtime. 
 - `dxlib_spine.cpp`
-  - Texture loader and spine rendering implementation.
+  - Spine texture loader and skeleton renderer.
 - `spine_loader.cpp`
-  - Spine resource loader.
+  - Atlas/skeleton loader.
 - `dxlib_spine_player.cpp`
   - Manager for spine resources and some of its parameters.
 
 There are `spine-c` runtime equivalents under `/DxlibSpineTestC`, which are intended to be used for spine 3.6 and older because there was not C++ runtime.  
 
-The setup for DxLib is written in `shared-src/dxlib_init.cpp`.  
-Other files are for GUI.
+The setup for DxLib is written in `shared-src/dxlib_init.cpp`. Other files are for viewer.
 
 ## Menu functions
 
@@ -63,19 +62,30 @@ File| Open folder | Open folder-select-dialogue.
 Image| Through-seen | Switch window's transparancy.
  -| Manipulation | Open a dialogue to specify slots to be excluded, skins or animations to be mixed.
 
-### How to load spine(s) via `Open folder` 
- 1. Click `Setting` menu item.
- 2. Specify atlas and skeleton extensions.
- 3. Uncheck `Binary` if skeleton is text format.
- 4. Click `Open folder` menu item.
- 5. Select a folder containing spine resources with specified extensions.
+### Load spine(s) via `Open folder` 
+1. In the `Setting` dialogue, specify atlas and skeleton extensions.
+2. Uncheck `Binary` if skeketon is text.format.
+3. In the dialogue appeared when clicking `Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
-### How to load spine(s) via `Select files`
- 1. Click `Setting` menu item.
- 2. Uncheck `Binary` if skeketon is text format.
- 3. Click `Select files` menu item.
- 4. In the first dialogue titled as `Select atlas files`, select atlas file(s) to load.
- 5. In the second dialogue, select skel file(s) which is/are pair(s) of atlas.
+### Load spine(s) via `Select files`
+1. If skeleton is text format, uncheck `Binary` in the `Setting` dialogue.
+2. In the first dialogue appeared when clicking `Select files`, select atlas file(s) to load. 
+3. In the second dialogue, select skel file(s) which is/are pair(s) of atlas.
+
+## Context-menu function
+
+| Item | Action |
+|---- |---- 
+| Snap as PNG | Save the current screen as PNG.
+| Start recording | Start storing screen frames at intervals.
+| Save as GIF | Save stored frames into a single GIF file.
+| Save as PNGs | Save stored frames as separate PNG files.
+
+- The context-menu appears only when spine is loaded, and the items of which varies depending on whether it is under recording or not.
+- The files are saved in the subdirectory of the execution file.
+  -  The folder is named after folder-name when loaded via `Open folder`, and the first atlas filename when via `Select files`.
+- The PNG file will be named like `home_4.475018.png` where `home` is animation name, and `4.475018` is animation frame when saved.
+- The GIF file will be named like `wait.gif` where `wait` is animation name.
 
 ## Mouse functions
 
@@ -86,11 +96,11 @@ Left button + mouse wheel| Speed up/down the animation.
 Left button click| Switch the animation.
 Left button drag| Move view-point.
 Middle button| Reset scale, speed, and view-point to default.
-Right button + middle button| Hide/show window's frame and menu bar. Having hidden, the window goes to the origin of the primary display.
+Right button + middle button| Hide/show window's frame and menu. Having hidden, the window goes to the origin of the primary display.
 Right button + left button| Move window. This works only when the window's frame/menu are hidden.
 Right button + mouse wheel| Switch the skin.
 
-## Key functions
+## Keyboard functions
 
 | Input  | Action  |
 | --- | --- |
@@ -100,11 +110,9 @@ Right button + mouse wheel| Switch the skin.
 | A | Enable/disable premultiplied alpha.| 
 | B | Prefer/ignore blned-mode specified by slots.| 
 | R | Switch draw-order between filename asc/descending order.| 
-| S | Save the screen as PNG in the subdirectory of the execution file.| 
 | Z | Enable/disable depth-buffer.|  
 
 - `Up` and `Down` key are valid only when the current spine(s) is/are loaded via `Open folder`.
-- The PNG file will be named like `home_4.475018.png` where `home` is animation name, and `4.475018` is animation frame when saved.
 
 ## Extra-demo
 - Depth-buffer
