@@ -234,8 +234,8 @@ LRESULT CSpineSettingDialogue::OnSize()
 LRESULT CSpineSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 {
     int wmId = LOWORD(wParam);
-    int iControlWnd = LOWORD(lParam);
-    if (iControlWnd == 0)
+    int wmKind = LOWORD(lParam);
+    if (wmKind == 0)
     {
         /*Menus*/
     }
