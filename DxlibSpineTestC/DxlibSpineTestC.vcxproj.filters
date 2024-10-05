@@ -74,6 +74,12 @@
     <ClInclude Include="..\shared-src\win_text.h">
       <Filter>ヘッダー ファイル\shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared-src\dxlib_image_encoder.h">
+      <Filter>ヘッダー ファイル\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared-src\win_image.h">
+      <Filter>ヘッダー ファイル\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dxlib_spine_c.cpp">
@@ -224,6 +230,12 @@
       <Filter>ソース ファイル\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\shared-src\win_text.cpp">
+      <Filter>ソース ファイル\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared-src\dxlib_image_encoder.cpp">
+      <Filter>ソース ファイル\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared-src\win_image.cpp">
       <Filter>ソース ファイル\shared</Filter>
     </ClCompile>
   </ItemGroup>

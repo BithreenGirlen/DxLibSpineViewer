@@ -140,6 +140,7 @@
   <ItemGroup>
     <ClInclude Include="..\shared-src\deps\spine-c\src\spine\Json.h" />
     <ClInclude Include="..\shared-src\deps\spine-c\src\spine\kvec.h" />
+    <ClInclude Include="..\shared-src\dxlib_image_encoder.h" />
     <ClInclude Include="..\shared-src\dxlib_init.h" />
     <ClInclude Include="..\shared-src\framework.h" />
     <ClInclude Include="..\shared-src\main_window.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="..\shared-src\spine_setting_dialogue.h" />
     <ClInclude Include="..\shared-src\win_dialogue.h" />
     <ClInclude Include="..\shared-src\win_filesystem.h" />
+    <ClInclude Include="..\shared-src\win_image.h" />
     <ClInclude Include="..\shared-src\win_text.h" />
     <ClInclude Include="dxlib_spine_c.h" />
     <ClInclude Include="dxlib_spine_player_c.h" />
@@ -193,6 +195,7 @@
     <ClCompile Include="..\shared-src\deps\spine-c\src\spine\Triangulator.c" />
     <ClCompile Include="..\shared-src\deps\spine-c\src\spine\VertexAttachment.c" />
     <ClCompile Include="..\shared-src\deps\spine-c\src\spine\VertexEffect.c" />
+    <ClCompile Include="..\shared-src\dxlib_image_encoder.cpp" />
     <ClCompile Include="..\shared-src\dxlib_init.cpp" />
     <ClCompile Include="..\shared-src\main.cpp" />
     <ClCompile Include="..\shared-src\main_window.cpp" />
@@ -200,6 +203,7 @@
     <ClCompile Include="..\shared-src\spine_setting_dialogue.cpp" />
     <ClCompile Include="..\shared-src\win_dialogue.cpp" />
     <ClCompile Include="..\shared-src\win_filesystem.cpp" />
+    <ClCompile Include="..\shared-src\win_image.cpp" />
     <ClCompile Include="..\shared-src\win_text.cpp" />
     <ClCompile Include="dxlib_spine_c.cpp" />
     <ClCompile Include="dxlib_spine_player_c.cpp" />
