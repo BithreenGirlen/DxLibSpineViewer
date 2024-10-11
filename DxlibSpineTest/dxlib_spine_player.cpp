@@ -119,6 +119,8 @@ void CDxLibSpinePlayer::RescaleSkeleton(bool bUpscale)
 		m_fSkeletonScale -= kfScalePortion;
 		if (m_fSkeletonScale < kfMinScale)m_fSkeletonScale = kfMinScale;
 	}
+
+	AdjustViewOffset();
 	UpdateScaletonScale();
 	ResizeWindow();
 }
@@ -147,18 +149,15 @@ void CDxLibSpinePlayer::ResetScale()
 
 	UpdateScaletonScale();
 	UpdateTimeScale();
-	MoveViewPoint(0, 0);
 	ResizeWindow();
+	AdjustViewOffset();
 }
 /*視点移動*/
 void CDxLibSpinePlayer::MoveViewPoint(int iX, int iY)
 {
 	m_fOffset.u += iX;
 	m_fOffset.v += iY;
-	for (size_t i = 0; i < m_drawables.size(); ++i)
-	{
-		m_drawables.at(i).get()->skeleton->setPosition(m_fBaseSize.u / 2 - m_fOffset.u, m_fBaseSize.v / 2 - m_fOffset.v);
-	}
+	UpdatePosition();
 }
 /*動作移行*/
 void CDxLibSpinePlayer::ShiftAnimation()
@@ -500,6 +499,35 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 		m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight - iDesktopHeight) * fScaleY : 0.f;
 	}
 }
+/*視点補正*/
+void CDxLibSpinePlayer::AdjustViewOffset()
+{
+	if (m_hRenderWnd != nullptr)
+	{
+		RECT rc;
+		::GetClientRect(m_hRenderWnd, &rc);
+
+		int iClientWidth = rc.right - rc.left;
+		int iClientHeight = rc.bottom - rc.top;
+
+		int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
+		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+		if (iClientWidth < iDesktopWidth && iClientHeight < iDesktopHeight)
+		{
+			m_fViewOffset.u = m_fBaseSize.u * m_fDefaultScale * (1 - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.v = m_fBaseSize.v * m_fDefaultScale * (1 - m_fSkeletonScale) / 2.f;
+		}
+	}
+	UpdatePosition();
+}
+/*位置適用*/
+void CDxLibSpinePlayer::UpdatePosition()
+{
+	for (size_t i = 0; i < m_drawables.size(); ++i)
+	{
+		m_drawables.at(i).get()->skeleton->setPosition(m_fBaseSize.u / 2 - m_fOffset.u - m_fViewOffset.u, m_fBaseSize.v / 2 - m_fOffset.v - m_fViewOffset.v);
+	}
+}
 /*尺度適用*/
 void CDxLibSpinePlayer::UpdateScaletonScale()
 {
@@ -542,8 +570,12 @@ void CDxLibSpinePlayer::ResizeWindow()
 		rect.right = iX + rect.left;
 		rect.bottom = iY + rect.top;
 		LONG lStyle = ::GetWindowLong(m_hRenderWnd, GWL_STYLE);
-		bool bBarHidden = IsWidowBarHidden();
-		::AdjustWindowRect(&rect, lStyle, bBarHidden ? FALSE : TRUE);
+		const auto HasWindowMenu = [&lStyle]()
+			-> bool
+			{
+				return !((lStyle & WS_CAPTION) && (lStyle & WS_SYSMENU));
+			};
+		::AdjustWindowRect(&rect, lStyle, HasWindowMenu() ? FALSE : TRUE);
 		::SetWindowPos(m_hRenderWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
 
 		ResizeBuffer();
@@ -570,14 +602,4 @@ void CDxLibSpinePlayer::ResizeBuffer()
 			32
 		);
 	}
-}
-/*枠縁有無*/
-bool CDxLibSpinePlayer::IsWidowBarHidden()
-{
-	if (m_hRenderWnd != nullptr)
-	{
-		LONG lStyle = ::GetWindowLong(m_hRenderWnd, GWL_STYLE);
-		return !((lStyle & WS_CAPTION) && (lStyle & WS_SYSMENU));
-	}
-	return false;
 }

@@ -64,6 +64,7 @@ private:
 	float m_fTimeScale = 1.f;
 	float m_fSkeletonScale = 1.f;
 	DxLib::FLOAT2 m_fOffset{};
+	DxLib::FLOAT2 m_fViewOffset{};
 
 	std::vector<std::string> m_animationNames;
 	size_t m_nAnimationIndex = 0;
@@ -77,7 +78,9 @@ private:
 	void ClearDrawables();
 	bool SetupDrawer();
 	void WorkOutDefaultScale();
+	void AdjustViewOffset();
 
+	void UpdatePosition();
 	void UpdateScaletonScale();
 	void UpdateTimeScale();
 
@@ -85,7 +88,5 @@ private:
 
 	void ResizeWindow();
 	void ResizeBuffer();
-
-	bool IsWidowBarHidden();
 };
 #endif // !DXLIB_SPINE_PLAYER_H_

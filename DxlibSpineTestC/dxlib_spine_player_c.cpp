@@ -139,6 +139,9 @@ void CDxLibSpinePlayerC::RescaleSkeleton(bool bUpscale)
 		m_fSkeletonScale -= kfScalePortion;
 		if (m_fSkeletonScale < kfMinScale)m_fSkeletonScale = kfMinScale;
 	}
+#ifdef SPINE_3_7_OR_LATER
+	AdjustViewOffset();
+#endif
 	UpdateScaletonScale();
 	ResizeWindow();
 }
@@ -167,19 +170,15 @@ void CDxLibSpinePlayerC::ResetScale()
 
 	UpdateScaletonScale();
 	UpdateTimeScale();
-	MoveViewPoint(0, 0);
 	ResizeWindow();
+	AdjustViewOffset();
 }
 /*視点移動*/
 void CDxLibSpinePlayerC::MoveViewPoint(int iX, int iY)
 {
 	m_fOffset.u += iX;
 	m_fOffset.v += iY;
-	for (const auto& drawable : m_drawables)
-	{
-		drawable->skeleton->x = (m_fBaseSize.u - m_fOffset.u) / 2;
-		drawable->skeleton->y = (m_fBaseSize.v - m_fOffset.v) / 2;
-	}
+	UpdatePosition();
 }
 /*動作移行*/
 void CDxLibSpinePlayerC::ShiftAnimation()
@@ -306,7 +305,16 @@ std::vector<std::string> CDxLibSpinePlayerC::GetAnimationList() const
 /*描画除外リスト設定*/
 void CDxLibSpinePlayerC::SetSlotsToExclude(const std::vector<std::string>& slotNames)
 {
-	
+	std::vector<const char*> vBuffer;
+	vBuffer.resize(slotNames.size());
+	for (size_t i = 0; i < slotNames.size(); ++i)
+	{
+		vBuffer[i] = slotNames[i].data();
+	}
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->SetLeaveOutList(vBuffer.data(), static_cast<int>(vBuffer.size()));
+	}
 }
 /*装い合成*/
 void CDxLibSpinePlayerC::MixSkins(const std::vector<std::string>& skinNames)
@@ -511,26 +519,52 @@ void CDxLibSpinePlayerC::WorkOutDefaultScale()
 		m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight - iDesktopHeight) * fScaleY : 0.f;
 	}
 }
+/*視点補正*/
+void CDxLibSpinePlayerC::AdjustViewOffset()
+{
+#ifdef SPINE_3_7_OR_LATER
+	if (m_hRenderWnd != nullptr)
+	{
+		RECT rc;
+		::GetClientRect(m_hRenderWnd, &rc);
+
+		int iClientWidth = rc.right - rc.left;
+		int iClientHeight = rc.bottom - rc.top;
+
+		int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
+		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+		if (iClientWidth < iDesktopWidth && iClientHeight < iDesktopHeight)
+		{
+			m_fViewOffset.u = m_fBaseSize.u * m_fDefaultScale * (1 - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.v = m_fBaseSize.v * m_fDefaultScale * (1 - m_fSkeletonScale) / 2.f;
+		}
+	}
+#endif
+	UpdatePosition();
+}
+/*位置適用*/
+void CDxLibSpinePlayerC::UpdatePosition()
+{
+	for (const auto& drawable : m_drawables)
+	{
+		drawable->skeleton->x = m_fBaseSize.u / 2 - m_fOffset.u - m_fViewOffset.u;
+		drawable->skeleton->y = m_fBaseSize.v / 2 - m_fOffset.v - m_fViewOffset.v;
+	}
+}
 /*尺度適用*/
 void CDxLibSpinePlayerC::UpdateScaletonScale()
 {
-	/*scaleX and scaleY in spSkeleton were added since spine-3.7*/
+	/*
+	* scaleX and scaleY in spSkeleton were added since spine-3.7.
+	* It is true that skeleton->root has scaleX and scaleY, but these values will be reset to 1.f
+	* on _spScaleTimeline_apply() if the animation has no appropriate timeline properties.
+	*/
 #ifdef SPINE_3_7_OR_LATER
 	for (const auto& drawbale : m_drawables)
 	{
 		drawbale->skeleton->scaleX = m_fSkeletonScale;
 		drawbale->skeleton->scaleY = m_fSkeletonScale;
 	}
-#else
-	/*
-	* Scales for root will be reset to 1.f on _spScaleTimeline_apply(), called within spAnimationState_apply(),
-	* if the animation has no appropriate timeline properties.
-	*/
-	//for (const auto& pDrawble : m_drawables)
-	//{
-	//	pDrawble->skeleton->root->scaleX = m_fSkeletonScale;
-	//	pDrawble->skeleton->root->scaleY = m_fSkeletonScale;
-	//}
 #endif
 }
 /*速度適用*/
@@ -565,8 +599,12 @@ void CDxLibSpinePlayerC::ResizeWindow()
 		rect.right = iX + rect.left;
 		rect.bottom = iY + rect.top;
 		LONG lStyle = ::GetWindowLong(m_hRenderWnd, GWL_STYLE);
-		bool bBarHidden = IsWidowBarHidden();
-		::AdjustWindowRect(&rect, lStyle, bBarHidden ? FALSE : TRUE);
+		const auto HasWindowMenu = [this, &lStyle]()
+			-> bool
+			{
+				return !((lStyle & WS_CAPTION) && (lStyle & WS_SYSMENU));
+			};
+		::AdjustWindowRect(&rect, lStyle, HasWindowMenu() ? FALSE : TRUE);
 		::SetWindowPos(m_hRenderWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
 
 		ResizeBuffer();
@@ -593,14 +631,4 @@ void CDxLibSpinePlayerC::ResizeBuffer()
 			32
 		);
 	}
-}
-
-bool CDxLibSpinePlayerC::IsWidowBarHidden()
-{
-	if (m_hRenderWnd != nullptr)
-	{
-		LONG lStyle = ::GetWindowLong(m_hRenderWnd, GWL_STYLE);
-		return !((lStyle & WS_CAPTION) && (lStyle & WS_SYSMENU));
-	}
-	return false;
 }
