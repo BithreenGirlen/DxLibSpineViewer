@@ -140,6 +140,8 @@ CDxLibSpineDrawerC::~CDxLibSpineDrawerC()
 	{
 		spSkeletonClipping_dispose(m_clipper);
 	}
+
+	ClearLeaveOutList();
 }
 
 void CDxLibSpineDrawerC::Update(float fDelta)
@@ -166,6 +168,12 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 		spAttachment* pAttachment = pSlot->attachment;
 		/*spine-c 3.6 lacks pSlot->bone->active*/
 		if (pAttachment == nullptr || pSlot->color.a == 0)
+		{
+			spSkeletonClipping_clipEnd(m_clipper, pSlot);
+			continue;
+		}
+
+		if (IsToBeLeftOut(pSlot->data->name))
 		{
 			spSkeletonClipping_clipEnd(m_clipper, pSlot);
 			continue;
@@ -303,4 +311,41 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 		spSkeletonClipping_clipEnd(m_clipper, pSlot);
 	}
 	spSkeletonClipping_clipEnd2(m_clipper);
+}
+
+void CDxLibSpineDrawerC::SetLeaveOutList(const char** list, int listCount)
+{
+	ClearLeaveOutList();
+
+	m_leaveOutList = CALLOC(char*, listCount);
+	if (m_leaveOutList == nullptr)return;
+
+	m_leaveOutListCount = listCount;
+	for (int i = 0; i < m_leaveOutListCount; ++i)
+	{
+		m_leaveOutList[i] = MALLOC_STR(m_leaveOutList[i], list[i]);
+	}
+}
+
+void CDxLibSpineDrawerC::ClearLeaveOutList()
+{
+	if (m_leaveOutList != nullptr)
+	{
+		for (int i = 0; i < m_leaveOutListCount; ++i)
+		{
+			if(m_leaveOutList[i] != nullptr)FREE(m_leaveOutList[i]);
+		}
+		FREE(m_leaveOutList);
+	}
+	m_leaveOutList = nullptr;
+	m_leaveOutListCount = 0;
+}
+
+bool CDxLibSpineDrawerC::IsToBeLeftOut(const char* slotName)
+{
+	for (int i = 0; i < m_leaveOutListCount; ++i)
+	{
+		if (strcmp(slotName, m_leaveOutList[i]) == 0)return true;
+	}
+	return false;
 }

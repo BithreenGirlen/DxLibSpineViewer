@@ -85,7 +85,7 @@ public:
 
 	void SwitchPma() { m_bAlphaPremultiplied ^= true; }
 	void SwitchBlendModeAdoption() { m_bForceBlendModeNormal ^= true; }
-
+    void SetLeaveOutList(const char** list, int listCount);
 private:
 	bool m_bHasOwnAnimationStateData = false;
 	bool m_bAlphaPremultiplied = true;
@@ -97,5 +97,10 @@ private:
 
 	spSkeletonClipping* m_clipper = nullptr;
 
+    char** m_leaveOutList = nullptr;
+    int m_leaveOutListCount = 0;
+
+    void ClearLeaveOutList();
+    bool IsToBeLeftOut(const char* slotName);
 };
 #endif // !DXLIB_SPINE_C_H_
