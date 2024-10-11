@@ -401,6 +401,7 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
                 HMENU hPopupMenu = ::CreatePopupMenu();
                 if (hPopupMenu == nullptr)return false;
 
+                *hMenu = hPopupMenu;
                 if (!m_bUnderRecording)
                 {
                     int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSnapAsPNG, L"Snap as PNG");
@@ -415,17 +416,20 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
                     iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSaveAsPNGs, L"Save as PNGs");
                     if (iRet == 0)return false;
                 }
-                *hMenu = hPopupMenu;
+
                 return true;
             };
 
         HMENU hPopupMenu = nullptr;
-        PreparePupupMenu(&hPopupMenu);
+        bool bRet = PreparePupupMenu(&hPopupMenu);
         if (hPopupMenu != nullptr)
         {
-            POINT point{};
-            ::GetCursorPos(&point);
-            ::TrackPopupMenu(hPopupMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, point.x, point.y, 0, m_hWnd, nullptr);
+            if (bRet)
+            {
+                POINT point{};
+                ::GetCursorPos(&point);
+                ::TrackPopupMenu(hPopupMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, point.x, point.y, 0, m_hWnd, nullptr);
+            }
             ::DestroyMenu(hPopupMenu);
         }
     }
