@@ -582,15 +582,18 @@ void CDxLibSpinePlayerC::UpdateTimeScale()
 /*合成動作消去*/
 void CDxLibSpinePlayerC::ClearAnimationTracks()
 {
-#ifndef SPINE_2_1
 	for (const auto& pDdrawble : m_drawables)
 	{
-		for (int iTrack = 1; iTrack < pDdrawble->animationState->tracksCount;++iTrack)
+#ifdef SPINE_2_1
+		/*This clears 0-th track as well.*/
+		spAnimationState_clearTracks(pDdrawble->animationState);
+#else
+		for (int iTrack = 1; iTrack < pDdrawble->animationState->tracksCount; ++iTrack)
 		{
 			spAnimationState_setEmptyAnimation(pDdrawble->animationState, iTrack, 0.f);
 		}
-	}
 #endif
+	}
 }
 /*窓寸法調整*/
 void CDxLibSpinePlayerC::ResizeWindow()
