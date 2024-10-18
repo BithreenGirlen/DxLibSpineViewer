@@ -1,7 +1,7 @@
-﻿
+
 #include <spine/extension.h>
 
-#include "dxlib_spine_c.h"
+#include "dxlib_spine_c_21.h"
 
 _SP_ARRAY_IMPLEMENT_TYPE_NO_CONTAINS(spDxLibVertexArray, DxLib::VERTEX2D)
 
@@ -78,7 +78,7 @@ char* _spUtil_readFile(const char* path, int* length)
 }
 // end of implementations for <extension.h>
 
-CDxLibSpineDrawerC::CDxLibSpineDrawerC(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
+CDxLibSpineDrawerC21::CDxLibSpineDrawerC21(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
 {
 	spBone_setYDown(1);
 
@@ -93,22 +93,9 @@ CDxLibSpineDrawerC::CDxLibSpineDrawerC(spSkeletonData* pSkeletonData, spAnimatio
 		m_bHasOwnAnimationStateData = true;
 	}
 	animationState = spAnimationState_create(pAnimationStateData);
-	m_clipper = spSkeletonClipping_create();
-
-	DxLib::SetDrawCustomBlendMode
-	(
-		TRUE,
-		DX_BLEND_DEST_COLOR,
-		DX_BLEND_INV_SRC_ALPHA,
-		DX_BLENDOP_ADD,
-		DX_BLEND_ONE,
-		DX_BLEND_INV_SRC_ALPHA,
-		DX_BLENDOP_ADD,
-		255
-	);
 }
 
-CDxLibSpineDrawerC::~CDxLibSpineDrawerC()
+CDxLibSpineDrawerC21::~CDxLibSpineDrawerC21()
 {
 	if (m_worldVertices != nullptr)
 	{
@@ -136,15 +123,11 @@ CDxLibSpineDrawerC::~CDxLibSpineDrawerC()
 	{
 		spSkeleton_dispose(skeleton);
 	}
-	if (m_clipper != nullptr)
-	{
-		spSkeletonClipping_dispose(m_clipper);
-	}
 
 	ClearLeaveOutList();
 }
 
-void CDxLibSpineDrawerC::Update(float fDelta)
+void CDxLibSpineDrawerC21::Update(float fDelta)
 {
 	if (skeleton == nullptr || animationState == nullptr)return;
 
@@ -154,28 +137,26 @@ void CDxLibSpineDrawerC::Update(float fDelta)
 	spSkeleton_updateWorldTransform(skeleton);
 }
 
-void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
+void CDxLibSpineDrawerC21::Draw(float fDepth, float fScale)
 {
-	if (m_worldVertices == nullptr || m_clipper == nullptr || skeleton == nullptr || animationState == nullptr)return;
+	if (m_worldVertices == nullptr || skeleton == nullptr || animationState == nullptr)return;
 
-	if (skeleton->color.a == 0) return;
+	if (skeleton->a == 0) return;
 
-	static unsigned short quadIndices[] = { 0, 1, 2, 2, 3, 0 };
+	static int quadIndices[] = { 0, 1, 2, 2, 3, 0 };
 
 	for (int i = 0; i < skeleton->slotsCount; ++i)
 	{
 		spSlot* pSlot = skeleton->drawOrder[i];
 		spAttachment* pAttachment = pSlot->attachment;
-		/*spine-c 3.6 lacks pSlot->bone->active*/
-		if (pAttachment == nullptr || pSlot->color.a == 0)
+
+		if (pAttachment == nullptr)
 		{
-			spSkeletonClipping_clipEnd(m_clipper, pSlot);
 			continue;
 		}
 
 		if (IsToBeLeftOut(pSlot->data->name))
 		{
-			spSkeletonClipping_clipEnd(m_clipper, pSlot);
 			continue;
 		}
 
@@ -183,77 +164,79 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 		int verticesCount = 0;
 		float* pAttachmentUvs = nullptr;
 
-		unsigned short* pIndices = nullptr;
+		int* pIndices = nullptr;
 		int indicesCount = 0;
 
-		spColor* pAttachmentColor = nullptr;
+		DxLib::COLOR_F attachmentColour{};
 
 		int iDxLibTexture = -1;
 
 		if (pAttachment->type == SP_ATTACHMENT_REGION)
 		{
 			spRegionAttachment* pRegionAttachment = (spRegionAttachment*)pAttachment;
-			pAttachmentColor = &pRegionAttachment->color;
 
-			if (pAttachmentColor->a == 0)
-			{
-				spSkeletonClipping_clipEnd(m_clipper, pSlot);
-				continue;
-			}
+			attachmentColour.r = pRegionAttachment->r;
+			attachmentColour.g = pRegionAttachment->g;
+			attachmentColour.b = pRegionAttachment->b;
+			attachmentColour.a = pRegionAttachment->a;
 
 			spFloatArray_setSize(pVertices, 8);
-			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, pVertices->items, 0, 2);
+			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, pVertices->items);
 			verticesCount = 4;
 			pAttachmentUvs = pRegionAttachment->uvs;
 			pIndices = quadIndices;
 			indicesCount = 6;
+
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spAtlasRegion*>(pRegionAttachment->rendererObject)->page->rendererObject)));
 		}
 		else if (pAttachment->type == SP_ATTACHMENT_MESH)
 		{
 			spMeshAttachment* pMeshAttachment = (spMeshAttachment*)pAttachment;
-			pAttachmentColor = &pMeshAttachment->color;
 
-			if (pAttachmentColor->a == 0)
-			{
-				spSkeletonClipping_clipEnd(m_clipper, pSlot);
-				continue;
-			}
-			spFloatArray_setSize(pVertices, pMeshAttachment->super.worldVerticesLength);
-			spVertexAttachment_computeWorldVertices(SUPER(pMeshAttachment), pSlot, 0, pMeshAttachment->super.worldVerticesLength, pVertices->items, 0, 2);
-			verticesCount = pMeshAttachment->super.worldVerticesLength / 2;
+			attachmentColour.r = pMeshAttachment->r;
+			attachmentColour.g = pMeshAttachment->g;
+			attachmentColour.b = pMeshAttachment->b;
+			attachmentColour.a = pMeshAttachment->a;
+
+			spFloatArray_setSize(pVertices, pMeshAttachment->verticesCount);
+			spMeshAttachment_computeWorldVertices(pMeshAttachment, pSlot, pVertices->items);
+
+			verticesCount = pMeshAttachment->verticesCount / 2;
 			pAttachmentUvs = pMeshAttachment->uvs;
 			pIndices = pMeshAttachment->triangles;
 			indicesCount = pMeshAttachment->trianglesCount;
-			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spAtlasRegion*>(pMeshAttachment->rendererObject)->page->rendererObject)));
 
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spAtlasRegion*>(pMeshAttachment->rendererObject)->page->rendererObject)));
 		}
-		else if (pAttachment->type == SP_ATTACHMENT_CLIPPING)
+		else if (pAttachment->type == SP_ATTACHMENT_SKINNED_MESH)
 		{
-			spClippingAttachment* clip = (spClippingAttachment*)pSlot->attachment;
-			spSkeletonClipping_clipStart(m_clipper, pSlot, clip);
-			continue;
+			spSkinnedMeshAttachment* pSkinnedMeshAttachment = (spSkinnedMeshAttachment*)pAttachment;
+
+			attachmentColour.r = pSkinnedMeshAttachment->r;
+			attachmentColour.g = pSkinnedMeshAttachment->g;
+			attachmentColour.b = pSkinnedMeshAttachment->b;
+			attachmentColour.a = pSkinnedMeshAttachment->a;
+
+			spFloatArray_setSize(pVertices, pSkinnedMeshAttachment->bonesCount);
+			spSkinnedMeshAttachment_computeWorldVertices(pSkinnedMeshAttachment, pSlot, pVertices->items);
+
+			verticesCount = pSkinnedMeshAttachment->uvsCount / 2;
+			pAttachmentUvs = pSkinnedMeshAttachment->uvs;
+			pIndices = pSkinnedMeshAttachment->triangles;
+			indicesCount = pSkinnedMeshAttachment->trianglesCount;
+
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spAtlasRegion*>(pSkinnedMeshAttachment->rendererObject)->page->rendererObject)));
 		}
 		else
 		{
 			continue;
 		}
 
-		if (spSkeletonClipping_isClipping(m_clipper))
-		{
-			spSkeletonClipping_clipTriangles(m_clipper, pVertices->items, verticesCount / 2, pIndices, indicesCount, pAttachmentUvs, 2);
-			pVertices = m_clipper->clippedVertices;
-			verticesCount = m_clipper->clippedVertices->size / 2;
-			pAttachmentUvs = m_clipper->clippedUVs->items;
-			pIndices = m_clipper->clippedTriangles->items;
-			indicesCount = m_clipper->clippedTriangles->size;
-		}
-
-		spColor tint;
-		tint.r = skeleton->color.r * pSlot->color.r * pAttachmentColor->r;
-		tint.g = skeleton->color.g * pSlot->color.g * pAttachmentColor->g;
-		tint.b = skeleton->color.b * pSlot->color.b * pAttachmentColor->b;
-		tint.a = skeleton->color.a * pSlot->color.a * pAttachmentColor->a;
+		DxLib::COLOR_F tint{};
+		tint.r = skeleton->r * pSlot->r * attachmentColour.r;
+		tint.g = skeleton->g * pSlot->g * attachmentColour.g;
+		tint.b = skeleton->b * pSlot->b * attachmentColour.b;
+		tint.a = skeleton->a * pSlot->a * attachmentColour.a;
 
 		spDxLibVertexArray_clear(m_dxLibVertices);
 		for (int ii = 0; ii < verticesCount * 2; ii += 2)
@@ -279,25 +262,15 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 		}
 
 		int iDxLibBlendMode;
-		switch (pSlot->data->blendMode)
+		if (!m_bForceBlendModeNormal && pSlot->data->additiveBlending)
 		{
-		case spBlendMode::SP_BLEND_MODE_ADDITIVE:
 			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ADD : DX_BLENDMODE_SPINE_ADDITIVE;
-			break;
-		case spBlendMode::SP_BLEND_MODE_MULTIPLY:
-			iDxLibBlendMode = DX_BLENDMODE_CUSTOM;
-			break;
-		case spBlendMode::SP_BLEND_MODE_SCREEN:
-			iDxLibBlendMode = DX_BLENDMODE_SPINE_SCREEN;
-			break;
-		default:
-			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
-			break;
 		}
-		if (m_bForceBlendModeNormal)
+		else
 		{
 			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
 		}
+
 		DxLib::SetDrawBlendMode(iDxLibBlendMode, 255);
 		DxLib::DrawPolygonIndexed2D
 		(
@@ -307,13 +280,10 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 			m_dxLibIndices->size / 3,
 			iDxLibTexture, TRUE
 		);
-
-		spSkeletonClipping_clipEnd(m_clipper, pSlot);
 	}
-	spSkeletonClipping_clipEnd2(m_clipper);
 }
 
-void CDxLibSpineDrawerC::SetLeaveOutList(const char** list, int listCount)
+void CDxLibSpineDrawerC21::SetLeaveOutList(const char** list, int listCount)
 {
 	ClearLeaveOutList();
 
@@ -323,17 +293,17 @@ void CDxLibSpineDrawerC::SetLeaveOutList(const char** list, int listCount)
 	m_leaveOutListCount = listCount;
 	for (int i = 0; i < m_leaveOutListCount; ++i)
 	{
-		m_leaveOutList[i] = MALLOC_STR(m_leaveOutList[i], list[i]);
+		MALLOC_STR(m_leaveOutList[i], list[i]);
 	}
 }
 
-void CDxLibSpineDrawerC::ClearLeaveOutList()
+void CDxLibSpineDrawerC21::ClearLeaveOutList()
 {
 	if (m_leaveOutList != nullptr)
 	{
 		for (int i = 0; i < m_leaveOutListCount; ++i)
 		{
-			if(m_leaveOutList[i] != nullptr)FREE(m_leaveOutList[i]);
+			if (m_leaveOutList[i] != nullptr)FREE(m_leaveOutList[i]);
 		}
 		FREE(m_leaveOutList);
 	}
@@ -341,7 +311,7 @@ void CDxLibSpineDrawerC::ClearLeaveOutList()
 	m_leaveOutListCount = 0;
 }
 
-bool CDxLibSpineDrawerC::IsToBeLeftOut(const char* slotName)
+bool CDxLibSpineDrawerC21::IsToBeLeftOut(const char* slotName)
 {
 	for (int i = 0; i < m_leaveOutListCount; ++i)
 	{
