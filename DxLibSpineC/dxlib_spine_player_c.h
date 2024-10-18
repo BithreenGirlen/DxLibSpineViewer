@@ -7,7 +7,12 @@
 #include <vector>
 #include <memory>
 
+#ifdef SPINE_2_1
+#include "../projects//DxLibSpineViewerC-2.1/dxlib_spine_c_21.h"
+using CDxLibSpineDrawerC = CDxLibSpineDrawerC21;
+#else
 #include "dxlib_spine_c.h"
+#endif
 
 class CDxLibSpinePlayerC
 {

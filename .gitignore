@@ -397,5 +397,9 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /shared-src/deps/dxlib
-/shared-src/deps/spine-c
-/shared-src/deps/spine-cpp
+/shared-src/deps/spine-c-2.1
+/shared-src/deps/spine-c-3.5
+/shared-src/deps/spine-c-3.6
+/shared-src/deps/spine-c-3.7
+/shared-src/deps/spine-cpp-3.8
+/shared-src/deps/spine-cpp-4.0

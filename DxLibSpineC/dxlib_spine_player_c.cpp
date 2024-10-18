@@ -267,7 +267,11 @@ std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime(float* fTra
 				{
 					if (fTrackTime != nullptr)
 					{
-						*fTrackTime = pTrackEntry->trackTime;
+#ifdef SPINE_2_1
+						* fTrackTime = pTrackEntry->time;
+#else
+						* fTrackTime = pTrackEntry->trackTime;
+#endif
 					}
 					return pAnimation->name;
 				}
@@ -578,6 +582,7 @@ void CDxLibSpinePlayerC::UpdateTimeScale()
 /*合成動作消去*/
 void CDxLibSpinePlayerC::ClearAnimationTracks()
 {
+#ifndef SPINE_2_1
 	for (const auto& pDdrawble : m_drawables)
 	{
 		for (int iTrack = 1; iTrack < pDdrawble->animationState->tracksCount;++iTrack)
@@ -585,6 +590,7 @@ void CDxLibSpinePlayerC::ClearAnimationTracks()
 			spAnimationState_setEmptyAnimation(pDdrawble->animationState, iTrack, 0.f);
 		}
 	}
+#endif
 }
 /*窓寸法調整*/
 void CDxLibSpinePlayerC::ResizeWindow()

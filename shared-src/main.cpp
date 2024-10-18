@@ -31,9 +31,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int iRet = 0;
     CMainWindow sWindow;
 #ifdef DXLIB_SPINE_C
-    bool bRet = sWindow.Create(hInstance, L"Dxlib spine-c");
+    bool bRet = sWindow.Create(hInstance, L"DxLib spine-c");
 #else
-    bool bRet = sWindow.Create(hInstance, L"Dxlib spine-cpp");
+    bool bRet = sWindow.Create(hInstance, L"DxLib spine-cpp");
 #endif
     if (bRet)
     {
