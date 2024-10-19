@@ -147,8 +147,9 @@ CDxLibSpineDrawerC::~CDxLibSpineDrawerC()
 void CDxLibSpineDrawerC::Update(float fDelta)
 {
 	if (skeleton == nullptr || animationState == nullptr)return;
-
+#ifndef SPINE_4_1_OR_LATER
 	spSkeleton_update(skeleton, fDelta);
+#endif
 	spAnimationState_update(animationState, fDelta * timeScale);
 	spAnimationState_apply(animationState, skeleton);
 	spSkeleton_updateWorldTransform(skeleton);
@@ -202,11 +203,16 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 			}
 
 			spFloatArray_setSize(pVertices, 8);
+#ifdef SPINE_4_1_OR_LATER
+			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot, pVertices->items, 0, 2);
+#else
 			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, pVertices->items, 0, 2);
+#endif
 			verticesCount = 4;
 			pAttachmentUvs = pRegionAttachment->uvs;
 			pIndices = quadIndices;
 			indicesCount = 6;
+
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spAtlasRegion*>(pRegionAttachment->rendererObject)->page->rendererObject)));
 		}
 		else if (pAttachment->type == SP_ATTACHMENT_MESH)
@@ -225,6 +231,7 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 			pAttachmentUvs = pMeshAttachment->uvs;
 			pIndices = pMeshAttachment->triangles;
 			indicesCount = pMeshAttachment->trianglesCount;
+
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spAtlasRegion*>(pMeshAttachment->rendererObject)->page->rendererObject)));
 
 		}
