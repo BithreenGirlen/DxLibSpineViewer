@@ -77,7 +77,9 @@ void CDxLibSpineDrawer::Update(float fDelta)
 {
 	if (skeleton != nullptr && animationState != nullptr)
 	{
+#ifndef SPINE_4_1_OR_LATER
 		skeleton->update(fDelta);
+#endif
 		animationState->update(fDelta * timeScale);
 		animationState->apply(*skeleton);
 		skeleton->updateWorldTransform();
@@ -128,16 +130,24 @@ void CDxLibSpineDrawer::Draw(float fDepth)
 				m_clipper.clipEnd(slot);
 				continue;
 			}
-			/*Fetch texture handle stored in AltasPage*/
-			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pRegionAttachment->getRendererObject())->page->getRendererObject())));
 
 			m_worldVertices.setSize(8, 0);
-			/*Depends on spine's version whether the first argument is slot or bone.*/
+#ifdef SPINE_4_1_OR_LATER
+			pRegionAttachment->computeWorldVertices(slot, m_worldVertices, 0, 2);
+#else
 			pRegionAttachment->computeWorldVertices(slot.getBone(), m_worldVertices, 0, 2);
+#endif
 			verticesCount = 4;
 			pAttachmentUvs = &pRegionAttachment->getUVs();
 			pIndices = &m_quadIndices;
 			indicesCount = 6;
+
+			/*Fetch texture handle stored in AltasPage*/
+#ifdef SPINE_4_1_OR_LATER
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pRegionAttachment->getRegion())->rendererObject)));
+#else
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pRegionAttachment->getRendererObject())->page->getRendererObject())));
+#endif
 		}
 		else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
 		{
@@ -149,14 +159,18 @@ void CDxLibSpineDrawer::Draw(float fDepth)
 				m_clipper.clipEnd(slot);
 				continue;
 			}
-			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pMeshAttachment->getRendererObject())->page->getRendererObject())));
-
 			m_worldVertices.setSize(pMeshAttachment->getWorldVerticesLength(), 0);
 			pMeshAttachment->computeWorldVertices(slot, 0, pMeshAttachment->getWorldVerticesLength(), m_worldVertices, 0, 2);
 			verticesCount = static_cast<int>(pMeshAttachment->getWorldVerticesLength() / 2);
 			pAttachmentUvs = &pMeshAttachment->getUVs();
 			pIndices = &pMeshAttachment->getTriangles();
 			indicesCount = static_cast<int>(pIndices->size());
+
+#ifdef SPINE_4_1_OR_LATER
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pMeshAttachment->getRegion())->rendererObject)));
+#else
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pMeshAttachment->getRendererObject())->page->getRendererObject())));
+#endif
 		}
 		else if (pAttachment->getRTTI().isExactly(spine::ClippingAttachment::rtti))
 		{
@@ -308,7 +322,11 @@ void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path
 	}
 	void* p = reinterpret_cast<void*>(static_cast<unsigned long long>(iDxLibTexture));
 
+#ifdef SPINE_4_1_OR_LATER
+	page.texture = p;
+#else
 	page.setRendererObject(p);
+#endif
 }
 
 void CDxLibTextureLoader::unload(void* texture)

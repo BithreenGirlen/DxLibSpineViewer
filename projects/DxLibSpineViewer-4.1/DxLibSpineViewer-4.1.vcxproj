@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{1a4f420f-c51f-4a0c-aa75-87cd9a2de02c}</ProjectGuid>
+    <RootNamespace>DxLibSpineViewer41</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;DXLIB_SPINE_CPP;SPINE_4_1_OR_LATER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-cpp-4.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)shared-src\deps\dxlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;DXLIB_SPINE_CPP;SPINE_4_1_OR_LATER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-cpp-4.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)shared-src\deps\dxlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Manifest Include="..\..\shared-src\dpiAwareness.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\DxLibSpineCpp\dxlib_spine.h" />
+    <ClInclude Include="..\..\DxLibSpineCpp\dxlib_spine_player.h" />
+    <ClInclude Include="..\..\DxLibSpineCpp\spine_loader.h" />
+    <ClInclude Include="..\..\shared-src\dxlib_image_encoder.h" />
+    <ClInclude Include="..\..\shared-src\dxlib_init.h" />
+    <ClInclude Include="..\..\shared-src\framework.h" />
+    <ClInclude Include="..\..\shared-src\main_window.h" />
+    <ClInclude Include="..\..\shared-src\spine_manipulator_dialogue.h" />
+    <ClInclude Include="..\..\shared-src\spine_player_shared.h" />
+    <ClInclude Include="..\..\shared-src\spine_setting_dialogue.h" />
+    <ClInclude Include="..\..\shared-src\win_dialogue.h" />
+    <ClInclude Include="..\..\shared-src\win_filesystem.h" />
+    <ClInclude Include="..\..\shared-src\win_image.h" />
+    <ClInclude Include="..\..\shared-src\win_text.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\DxLibSpineCpp\dxlib_spine.cpp" />
+    <ClCompile Include="..\..\DxLibSpineCpp\dxlib_spine_player.cpp" />
+    <ClCompile Include="..\..\DxLibSpineCpp\spine_loader.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Animation.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\AnimationState.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\AnimationStateData.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Atlas.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\AtlasAttachmentLoader.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Attachment.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\AttachmentLoader.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\AttachmentTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Bone.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\BoneData.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\BoundingBoxAttachment.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\ClippingAttachment.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\ColorTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\ConstraintData.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\CurveTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\DeformTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\DrawOrderTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Event.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\EventData.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\EventTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Extension.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\IkConstraint.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\IkConstraintData.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\IkConstraintTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Json.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\LinkedMesh.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Log.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\MathUtil.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\MeshAttachment.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\PathAttachment.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\PathConstraint.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\PathConstraintData.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\PathConstraintMixTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\PathConstraintPositionTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\PathConstraintSpacingTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\PointAttachment.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\RegionAttachment.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\RotateTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\RTTI.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\ScaleTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Sequence.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\SequenceTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\ShearTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Skeleton.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\SkeletonBinary.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\SkeletonBounds.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\SkeletonClipping.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\SkeletonData.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\SkeletonJson.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Skin.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Slot.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\SlotData.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\SpineObject.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\TextureLoader.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Timeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\TransformConstraint.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\TransformConstraintData.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\TransformConstraintTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\TranslateTimeline.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Triangulator.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\Updatable.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.1\src\spine\VertexAttachment.cpp" />
+    <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp" />
+    <ClCompile Include="..\..\shared-src\dxlib_init.cpp" />
+    <ClCompile Include="..\..\shared-src\main.cpp" />
+    <ClCompile Include="..\..\shared-src\main_window.cpp" />
+    <ClCompile Include="..\..\shared-src\spine_manipulator_dialogue.cpp" />
+    <ClCompile Include="..\..\shared-src\spine_setting_dialogue.cpp" />
+    <ClCompile Include="..\..\shared-src\win_dialogue.cpp" />
+    <ClCompile Include="..\..\shared-src\win_filesystem.cpp" />
+    <ClCompile Include="..\..\shared-src\win_image.cpp" />
+    <ClCompile Include="..\..\shared-src\win_text.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
