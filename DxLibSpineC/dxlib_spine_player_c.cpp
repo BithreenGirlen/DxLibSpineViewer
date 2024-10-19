@@ -139,11 +139,12 @@ void CDxLibSpinePlayerC::RescaleSkeleton(bool bUpscale)
 		m_fSkeletonScale -= kfScalePortion;
 		if (m_fSkeletonScale < kfMinScale)m_fSkeletonScale = kfMinScale;
 	}
+
+	UpdateScaletonScale();
+	ResizeWindow();
 #ifdef SPINE_3_7_OR_LATER
 	AdjustViewOffset();
 #endif
-	UpdateScaletonScale();
-	ResizeWindow();
 }
 /*時間尺度変更*/
 void CDxLibSpinePlayerC::RescaleTime(bool bHasten)
@@ -167,6 +168,7 @@ void CDxLibSpinePlayerC::ResetScale()
 	m_fTimeScale = 1.0f;
 	m_fSkeletonScale = m_fDefaultScale;
 	m_fOffset = m_fDefaultOffset;
+	m_fViewOffset = DxLib::FLOAT2{};
 
 	UpdateScaletonScale();
 	UpdateTimeScale();
@@ -539,8 +541,8 @@ void CDxLibSpinePlayerC::AdjustViewOffset()
 		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
 		if (iClientWidth < iDesktopWidth && iClientHeight < iDesktopHeight)
 		{
-			m_fViewOffset.u = m_fBaseSize.u * m_fDefaultScale * (1 - m_fSkeletonScale) / 2.f;
-			m_fViewOffset.v = m_fBaseSize.v * m_fDefaultScale * (1 - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.u = m_fBaseSize.u * m_fDefaultScale * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.v = m_fBaseSize.v * m_fDefaultScale * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
 		}
 	}
 #endif

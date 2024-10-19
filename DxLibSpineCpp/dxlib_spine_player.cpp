@@ -120,9 +120,9 @@ void CDxLibSpinePlayer::RescaleSkeleton(bool bUpscale)
 		if (m_fSkeletonScale < kfMinScale)m_fSkeletonScale = kfMinScale;
 	}
 
-	AdjustViewOffset();
 	UpdateScaletonScale();
 	ResizeWindow();
+	AdjustViewOffset();
 }
 /*時間尺度変更*/
 void CDxLibSpinePlayer::RescaleTime(bool bHasten)
@@ -146,6 +146,7 @@ void CDxLibSpinePlayer::ResetScale()
 	m_fTimeScale = 1.0f;
 	m_fSkeletonScale = m_fDefaultScale;
 	m_fOffset = m_fDefaultOffset;
+	m_fViewOffset = DxLib::FLOAT2{};
 
 	UpdateScaletonScale();
 	UpdateTimeScale();
@@ -514,8 +515,8 @@ void CDxLibSpinePlayer::AdjustViewOffset()
 		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
 		if (iClientWidth < iDesktopWidth && iClientHeight < iDesktopHeight)
 		{
-			m_fViewOffset.u = m_fBaseSize.u * m_fDefaultScale * (1 - m_fSkeletonScale) / 2.f;
-			m_fViewOffset.v = m_fBaseSize.v * m_fDefaultScale * (1 - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.u = m_fBaseSize.u * m_fDefaultScale * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.v = m_fBaseSize.v * m_fDefaultScale * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
 		}
 	}
 	UpdatePosition();
