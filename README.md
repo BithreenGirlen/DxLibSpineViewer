@@ -1,4 +1,4 @@
-# DxlibSpineTest
+# DxLibSpineViewer
 Spine runtime for [DxLib](https://dxlib.xsrv.jp/index.html), accompanied with a viewer for Windows.
 
 ## Demonstration
@@ -6,51 +6,25 @@ Spine runtime for [DxLib](https://dxlib.xsrv.jp/index.html), accompanied with a 
  
 https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/0ab643de-73fb-42f3-8143-a871a9382f51
 
-## Build dependency
+## Runtime files
 
-- [DXライブラリ](https://dxlib.xsrv.jp/dxdload.html)
-- [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
+- Runtime means functionality to (1) load texture and (2) render skeleton.
+- There are two runtime files.
+  - `dxlib_spine.cpp` is to be used with `spine-cpp` runtime. (`3.8` to `4.1`)
+    - Written without C++ STL.
+  - `dxlib_spine_c.cpp` is to be used with `spine-c` runtime (`3.5` to `3.7`).
+    - In `3.6` and older, there was not C++ runtime.
+    - Class is used because DxLib is C++ library, but STL is avoided.
 
-When building, supply the above libraries under `/shared-src/deps`. 
-<pre>
-...
-├ DxlibSpineTest
-│  └ ...
-├ DxlibSpineTestC
-│  └ ...
-├ shared-src
-│  ├ deps
-│  │  ├ dxlib // static libraries and headers of DxLib
-│  │  │ └ ...
-│  │  ├ spine-c // sources and headers of spine-c
-│  │  │ ├ include
-│  │  │ │ └ ...
-│  │  │ └ src
-│  │  │   └ ...
-│  │  └ spine-cpp // sources and headers of spine-cpp
-│  │    ├ include
-│  │    │ └ ...
-│  │    └ src
-│  │      └ ...
-│  ├ dpiAwareness.manifest
-│  └ ...
-├ DxlibSpineTest.sln
-└ ...
-</pre>
+Besides, there is a runtime for spine `2.1` under `projects/DxLibSpineViewerC-2.1`, but considering the conditions below, no guarantee is given that this version runtime works well.
+1. There is no bug fix backport on this version, especially among timelines.
+2. Transform method is totally [different](https://ja.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions
+3. There is no offical support for binary format reader. 
 
-## Brief explanation of files
+## Viewer overview
 
-The files under `/DxlibSpineTest` are to be used with `spine-cpp` runtime. 
-- `dxlib_spine.cpp`
-  - Spine texture loader and skeleton renderer.
-- `spine_loader.cpp`
-  - Atlas/skeleton loader.
-- `dxlib_spine_player.cpp`
-  - Manager for spine resources and some of its parameters.
-
-There are `spine-c` runtime equivalents under `/DxlibSpineTestC`, which are intended to be used for spine 3.6 and older because there was not C++ runtime.  
-
-The setup for DxLib is written in `shared-src/dxlib_init.cpp`. Other files are for viewer.
+The viewer helps to see how it is like when rendered using DxLib.  
+The following sections explain how to use the viewer.
 
 ## Menu functions
 
@@ -124,3 +98,48 @@ https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/7075f77a-afa0-
   - Some spines require mixing skins or animations to supplement facial parts.
 
 https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/a5ca45df-ad1c-4f9e-b968-b2cd36f069f5
+
+- Slot exclusion
+  - Sometimes it is desirable to leave out visually nuisance effect.
+
+https://github.com/user-attachments/assets/f4b5e1fa-faf7-4711-918f-2d0fbd2bb859
+
+## Build
+
+- [DXライブラリ](https://dxlib.xsrv.jp/dxdload.html)
+- [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
+
+To build viewer, supply the above libraries under `/shared-src/deps`. 
+
+<pre>
+...
+├ DxLibSpineC
+│  └ ...
+├ DxLibSpineCpp
+│  └ ...
+├ projects
+│  └ ...
+├ shared-src
+│  ├ deps
+│  │  ├ dxlib // static libraries and headers of DxLib
+│  │  │  └ ...
+│  │  ├ spine-c-x.x // sources and headers of spine-c x.x
+│  │  │  ├ include
+│  │  │  │  └ ...
+│  │  │  └ src
+│  │  │     └ ...
+│  │  ├ ...
+│  │  ├ spine-cpp-x.x // sources and headers of spine-cpp x.x
+│  │  │  ├ include
+│  │  │  │  └ ...
+│  │  │  └ src
+│  │  │     └ ...
+│  │  └ ...
+│  ├ dpiAwareness.manifest
+│  └ ...
+├ DxLibSpineViewer.sln
+└ ...
+</pre>
+
+- For spine 3.5, rename some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `spine-c 3.6` and later.
+- For spine 2.1, supply binary skeleton reader [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
