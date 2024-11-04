@@ -161,9 +161,7 @@ void CDxLibSpineDrawerC21::Draw(float fDepth, float fScale)
 		}
 
 		spFloatArray* pVertices = m_worldVertices;
-		int verticesCount = 0;
 		float* pAttachmentUvs = nullptr;
-
 		int* pIndices = nullptr;
 		int indicesCount = 0;
 
@@ -182,10 +180,9 @@ void CDxLibSpineDrawerC21::Draw(float fDepth, float fScale)
 
 			spFloatArray_setSize(pVertices, 8);
 			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, pVertices->items);
-			verticesCount = 4;
 			pAttachmentUvs = pRegionAttachment->uvs;
 			pIndices = quadIndices;
-			indicesCount = 6;
+			indicesCount = sizeof(quadIndices) / sizeof(int);
 
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spAtlasRegion*>(pRegionAttachment->rendererObject)->page->rendererObject)));
 		}
@@ -200,8 +197,6 @@ void CDxLibSpineDrawerC21::Draw(float fDepth, float fScale)
 
 			spFloatArray_setSize(pVertices, pMeshAttachment->verticesCount);
 			spMeshAttachment_computeWorldVertices(pMeshAttachment, pSlot, pVertices->items);
-
-			verticesCount = pMeshAttachment->verticesCount / 2;
 			pAttachmentUvs = pMeshAttachment->uvs;
 			pIndices = pMeshAttachment->triangles;
 			indicesCount = pMeshAttachment->trianglesCount;
@@ -219,8 +214,6 @@ void CDxLibSpineDrawerC21::Draw(float fDepth, float fScale)
 
 			spFloatArray_setSize(pVertices, pSkinnedMeshAttachment->bonesCount);
 			spSkinnedMeshAttachment_computeWorldVertices(pSkinnedMeshAttachment, pSlot, pVertices->items);
-
-			verticesCount = pSkinnedMeshAttachment->uvsCount / 2;
 			pAttachmentUvs = pSkinnedMeshAttachment->uvs;
 			pIndices = pSkinnedMeshAttachment->triangles;
 			indicesCount = pSkinnedMeshAttachment->trianglesCount;
@@ -239,7 +232,7 @@ void CDxLibSpineDrawerC21::Draw(float fDepth, float fScale)
 		tint.a = skeleton->a * pSlot->a * attachmentColour.a;
 
 		spDxLibVertexArray_clear(m_dxLibVertices);
-		for (int ii = 0; ii < verticesCount * 2; ii += 2)
+		for (int ii = 0; ii < pVertices->size; ii += 2)
 		{
 			DxLib::VERTEX2D dxLibVertex{};
 			dxLibVertex.pos.x = pVertices->items[ii] * fScale;

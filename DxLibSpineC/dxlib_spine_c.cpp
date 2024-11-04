@@ -181,9 +181,7 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 		}
 
 		spFloatArray* pVertices = m_worldVertices;
-		int verticesCount = 0;
 		float* pAttachmentUvs = nullptr;
-
 		unsigned short* pIndices = nullptr;
 		int indicesCount = 0;
 
@@ -208,10 +206,9 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 #else
 			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, pVertices->items, 0, 2);
 #endif
-			verticesCount = 4;
 			pAttachmentUvs = pRegionAttachment->uvs;
 			pIndices = quadIndices;
-			indicesCount = 6;
+			indicesCount = sizeof(quadIndices)/sizeof(unsigned short);
 
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spAtlasRegion*>(pRegionAttachment->rendererObject)->page->rendererObject)));
 		}
@@ -227,7 +224,6 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 			}
 			spFloatArray_setSize(pVertices, pMeshAttachment->super.worldVerticesLength);
 			spVertexAttachment_computeWorldVertices(SUPER(pMeshAttachment), pSlot, 0, pMeshAttachment->super.worldVerticesLength, pVertices->items, 0, 2);
-			verticesCount = pMeshAttachment->super.worldVerticesLength / 2;
 			pAttachmentUvs = pMeshAttachment->uvs;
 			pIndices = pMeshAttachment->triangles;
 			indicesCount = pMeshAttachment->trianglesCount;
@@ -243,14 +239,19 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 		}
 		else
 		{
+			spSkeletonClipping_clipEnd(m_clipper, pSlot);
 			continue;
 		}
 
 		if (spSkeletonClipping_isClipping(m_clipper))
 		{
-			spSkeletonClipping_clipTriangles(m_clipper, pVertices->items, verticesCount / 2, pIndices, indicesCount, pAttachmentUvs, 2);
+			spSkeletonClipping_clipTriangles(m_clipper, pVertices->items, pVertices->size, pIndices, indicesCount, pAttachmentUvs, 2);
+			if (m_clipper->clippedTriangles->size == 0)
+			{
+				spSkeletonClipping_clipEnd(m_clipper, pSlot);
+				continue;
+			}
 			pVertices = m_clipper->clippedVertices;
-			verticesCount = m_clipper->clippedVertices->size / 2;
 			pAttachmentUvs = m_clipper->clippedUVs->items;
 			pIndices = m_clipper->clippedTriangles->items;
 			indicesCount = m_clipper->clippedTriangles->size;
@@ -263,7 +264,7 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 		tint.a = skeleton->color.a * pSlot->color.a * pAttachmentColor->a;
 
 		spDxLibVertexArray_clear(m_dxLibVertices);
-		for (int ii = 0; ii < verticesCount * 2; ii += 2)
+		for (int ii = 0; ii < pVertices->size; ii += 2)
 		{
 			DxLib::VERTEX2D dxLibVertex{};
 			dxLibVertex.pos.x = pVertices->items[ii] * fScale;
