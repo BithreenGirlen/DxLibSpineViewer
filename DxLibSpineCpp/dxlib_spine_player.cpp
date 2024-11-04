@@ -412,7 +412,7 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 	const auto CompareDimention = [this, &fMaxSize](float fWidth, float fHeight)
 		-> void
 		{
-			if (fWidth * fHeight > fMaxSize)
+			if (fWidth > 0.f && fHeight > 0.f && fWidth * fHeight > fMaxSize)
 			{
 				m_fBaseSize.u = fWidth;
 				m_fBaseSize.v = fHeight;
@@ -449,23 +449,16 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 				if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
 				{
 					spine::RegionAttachment* pRegionAttachment = (spine::RegionAttachment*)pAttachment;
-					if (pRegionAttachment->getWidth() > 0.f && pRegionAttachment->getHeight() > 0.f)
-					{
-						CompareDimention
-						(
-							pRegionAttachment->getWidth() * pRegionAttachment->getScaleX(),
-							pRegionAttachment->getHeight() * pRegionAttachment->getScaleY()
-						);
-					}
+
+					CompareDimention(pRegionAttachment->getWidth() * pRegionAttachment->getScaleX(), pRegionAttachment->getHeight() * pRegionAttachment->getScaleY());
 				}
 				else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
 				{
 					spine::MeshAttachment* pMeshAttachment = (spine::MeshAttachment*)pAttachment;
-					if (pMeshAttachment->getWidth() > 0.f && pMeshAttachment->getHeight() > 0.f)
-					{
-						float fScale = pMeshAttachment->getWidth() > Constants::kMinAtlas && pMeshAttachment->getHeight() > Constants::kMinAtlas ? 1.f : 2.f;
-						CompareDimention(pMeshAttachment->getWidth() * fScale, pMeshAttachment->getHeight() * fScale);
-					}
+
+					float fScale = pMeshAttachment->getWidth() > Constants::kMinAtlas && pMeshAttachment->getHeight() > Constants::kMinAtlas ? 1.f : 2.f;
+
+					CompareDimention(pMeshAttachment->getWidth() * fScale, pMeshAttachment->getHeight() * fScale);
 				}
 			}
 		}
@@ -483,21 +476,31 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 	if (iSkeletonWidth > iDesktopWidth || iSkeletonHeight > iDesktopHeight)
 	{
 		float fScaleX = static_cast<float>(iDesktopWidth) / iSkeletonWidth;
-		if (fScaleX < 0.49f)fScaleX = 0.5f;
 		float fScaleY = static_cast<float>(iDesktopHeight) / iSkeletonHeight;
-		if (fScaleY < 0.49f)fScaleY = 0.5f;
 
-		if (iDesktopWidth > iDesktopHeight)
+		if (fScaleX > fScaleY)
 		{
 			m_fDefaultScale = fScaleY;
+
+			/*
+			* The sum of
+			* (1) Centre-point difference between world- and locale-view.
+			* (2) deviance from ideal scaling. (This becomes zero when ideally scaled.)
+			* results in
+			* (iSkeletonWidth - iDesktopWidth) / 2.f + (iDesktopWidth - iSkeletonWidth * fScaleY) / 2.f
+			*  = (iSkeletonWidth * (1 - fScaleY)) / 2.f
+			*/
+			m_fDefaultOffset.u = iSkeletonWidth > iDesktopWidth ? (iSkeletonWidth * (1 - fScaleY)) / 2.f : 0.f;
+			m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight - iDesktopHeight) / 2.f : 0.f;
 		}
 		else
 		{
 			m_fDefaultScale = fScaleX;
+
+			m_fDefaultOffset.u = iSkeletonWidth > iDesktopWidth ? (iSkeletonWidth - iDesktopWidth) / 2.f : 0.f;
+			m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight * (1 - fScaleX)) / 2.f : 0.f;
 		}
 
-		m_fDefaultOffset.u = iSkeletonWidth > iDesktopWidth ? (iSkeletonWidth - iDesktopWidth) * fScaleX : 0.f;
-		m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight - iDesktopHeight) * fScaleY : 0.f;
 	}
 }
 /*視点補正*/
@@ -515,8 +518,8 @@ void CDxLibSpinePlayer::AdjustViewOffset()
 		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
 		if (iClientWidth < iDesktopWidth && iClientHeight < iDesktopHeight)
 		{
-			m_fViewOffset.u = m_fBaseSize.u * m_fDefaultScale * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
-			m_fViewOffset.v = m_fBaseSize.v * m_fDefaultScale * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.u = m_fBaseSize.u * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.v = m_fBaseSize.v * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
 		}
 	}
 	UpdatePosition();

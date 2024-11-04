@@ -508,21 +508,24 @@ void CDxLibSpinePlayerC::WorkOutDefaultScale()
 	if (iSkeletonWidth > iDesktopWidth || iSkeletonHeight > iDesktopHeight)
 	{
 		float fScaleX = static_cast<float>(iDesktopWidth) / iSkeletonWidth;
-		if (fScaleX < 0.49f)fScaleX = 0.5f;
 		float fScaleY = static_cast<float>(iDesktopHeight) / iSkeletonHeight;
-		if (fScaleY < 0.49f)fScaleY = 0.5f;
 
-		if (iDesktopWidth > iDesktopHeight)
+		if (fScaleX > fScaleY)
 		{
 			m_fDefaultScale = fScaleY;
+#ifdef SPINE_3_7_OR_LATER
+			m_fDefaultOffset.u = iSkeletonWidth > iDesktopWidth ? (iSkeletonWidth * (1 - fScaleY)) / 2.f : 0.f;
+			m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight - iDesktopHeight) / 2.f : 0.f;
+#endif
 		}
 		else
 		{
 			m_fDefaultScale = fScaleX;
+#ifdef SPINE_3_7_OR_LATER
+			m_fDefaultOffset.u = iSkeletonWidth > iDesktopWidth ? (iSkeletonWidth - iDesktopWidth) / 2.f : 0.f;
+			m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight * (1 - fScaleX)) / 2.f : 0.f;
+#endif
 		}
-
-		m_fDefaultOffset.u = iSkeletonWidth > iDesktopWidth ? (iSkeletonWidth - iDesktopWidth) * fScaleX : 0.f;
-		m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight - iDesktopHeight) * fScaleY : 0.f;
 	}
 }
 /*視点補正*/
@@ -541,8 +544,8 @@ void CDxLibSpinePlayerC::AdjustViewOffset()
 		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
 		if (iClientWidth < iDesktopWidth && iClientHeight < iDesktopHeight)
 		{
-			m_fViewOffset.u = m_fBaseSize.u * m_fDefaultScale * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
-			m_fViewOffset.v = m_fBaseSize.v * m_fDefaultScale * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.u = m_fBaseSize.u * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
+			m_fViewOffset.v = m_fBaseSize.v * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
 		}
 	}
 #endif
