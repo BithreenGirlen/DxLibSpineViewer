@@ -8,18 +8,16 @@ https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/0ab643de-73fb-
 
 ## Runtime files
 
-- Runtime means functionality to (1) load texture and (2) render skeleton.
+- Spine runtime for DxLib provides functionality to (1) load texture and (2) render skeleton.
 - There are two runtime files.
-  - `dxlib_spine.cpp` is to be used with `spine-cpp` runtime. (`3.8` to `4.1`)
-    - Written without C++ STL.
-  - `dxlib_spine_c.cpp` is to be used with `spine-c` runtime (`3.5` to `3.7`).
-    - In `3.6` and older, there was not C++ runtime.
+  - `dxlib_spine.cpp` is to be used with `spine-cpp`. (`3.8` to `4.1`)
+  - `dxlib_spine_c.cpp` is to be used with `spine-c`. (`3.5` to `4.1`)
     - Class is used because DxLib is C++ library, but STL is avoided.
 
 Besides, there is a runtime for spine `2.1` under `projects/DxLibSpineViewerC-2.1`, but considering the conditions below, no guarantee is given that this version runtime works well.
-1. There is no bug fix backport on this version, especially among timelines.
+1. There is no bug fix backport on this version, especially among timelines and entries.
 2. Transform method is totally [different](https://ja.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions
-3. There is no offical support for binary format reader. 
+3. There is no offical support for binary skeleton reader. 
 
 ## Viewer overview
 
@@ -38,13 +36,13 @@ Image| Through-seen | Switch window's transparancy.
 
 ### Load spine(s) via `Open folder` 
 1. In the `Setting` dialogue, specify atlas and skeleton extensions.
-2. Uncheck `Binary` if skeketon is text.format.
-3. In the dialogue appeared when clicking `Open folder`, select a folder containing atlas/skel(s) with specified extensions.
+2. Uncheck `Binary` if skeketon is json format.
+3. From `Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
 ### Load spine(s) via `Select files`
-1. If skeleton is text format, uncheck `Binary` in the `Setting` dialogue.
-2. In the first dialogue appeared when clicking `Select files`, select atlas file(s) to load. 
-3. In the second dialogue, select skel file(s) which is/are pair(s) of atlas.
+1. If skeleton is json format, uncheck `Binary` in the `Setting` dialogue.
+2. From `Select files`, first select atlas file(s) to load. 
+3. Then select skel file(s) which is/are pair(s) of atlas.
 
 ## Context-menu function
 
@@ -60,6 +58,7 @@ Image| Through-seen | Switch window's transparancy.
   -  The folder is named after folder-name when loaded via `Open folder`, and the first atlas filename when via `Select files`.
 - The PNG file will be named like `home_4.475018.png` where `home` is animation name, and `4.475018` is animation frame when saved.
 - The GIF file will be named like `wait.gif` where `wait` is animation name.
+- Mind that `width * height * 4` byte of memory will be consumed every recording frame
 
 ## Mouse functions
 
@@ -104,13 +103,20 @@ https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/a5ca45df-ad1c-
 
 https://github.com/user-attachments/assets/f4b5e1fa-faf7-4711-918f-2d0fbd2bb859
 
-## Build
+## External libraries
 
 - [DXライブラリ](https://dxlib.xsrv.jp/dxdload.html)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
-To build viewer, supply the above libraries under `/shared-src/deps`. 
+## Build
+1. Run `shared-src/deps/CMakeLists.txt` to set up external libraries. `out` and `.vs` folder can be deleted once set up has been done.
+2. Open `DxLibSpineViewer.sln` with Visual Studio.
 
+The script `shared-src/deps/CMakeLists.txt` modifies some of the external sources as well as obtains them.
+- For spine 3.5, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `spine-c 3.6` and later.
+- For spine 2.1, supplies binary skeleton reader from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
+
+The final directories should be like the following.
 <pre>
 ...
 ├ DxLibSpineC
@@ -141,5 +147,3 @@ To build viewer, supply the above libraries under `/shared-src/deps`.
 └ ...
 </pre>
 
-- For spine 3.5, rename some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `spine-c 3.6` and later.
-- For spine 2.1, supply binary skeleton reader [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
