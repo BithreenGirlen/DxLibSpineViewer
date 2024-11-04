@@ -20,8 +20,6 @@ if (NOT EXISTS "${DIR_DXLIB}")
 		file(ARCHIVE_EXTRACT INPUT "${DIR_TEMP}/${DXLIB_ARCHIVE_NAME}.zip" DESTINATION "${DIR_TEMP}")
 	endif()
 
-	file(MAKE_DIRECTORY ${DIR_DXLIB})
-
 	file(GLOB DXLIB_LIBS "${DIR_TEMP}/DxLibVCTest/*.lib")
 	foreach(FILE IN LISTS DXLIB_LIBS)
 		if(FILE MATCHES "_vs2015_x64_MDd.lib" OR FILE MATCHES "_vs2015_x64_MD.lib")
@@ -51,6 +49,7 @@ set(
 	"3.8:spine-cpp-3.8"
 	"4.0:spine-cpp-4.0"
 	"4.1:spine-cpp-4.1"
+	"4.1:spine-c-4.1"
 )
 
 function(donwload_spine_runtime BRANCH_NAME FOLDER_PATH)
@@ -64,7 +63,7 @@ function(donwload_spine_runtime BRANCH_NAME FOLDER_PATH)
 		file(ARCHIVE_EXTRACT INPUT "${SPINE_RUNTIME_FILEPATH}.zip" DESTINATION "${DIR_TEMP}")
 	endif()
 
-	if (BRANCH_NAME VERSION_LESS "3.8")
+	if (FOLDER_PATH MATCHES "spine-c-")
 		file(COPY "${DIR_TEMP}/spine-runtimes-${BRANCH_NAME}/spine-c/spine-c/src" DESTINATION "${FOLDER_PATH}")
 		file(COPY "${DIR_TEMP}/spine-runtimes-${BRANCH_NAME}/spine-c/spine-c/include" DESTINATION "${FOLDER_PATH}")
 	else()
@@ -81,7 +80,6 @@ foreach(VERSION IN LISTS SPINE_VERSIONS)
 	set(DIR_SPINE "${CMAKE_CURRENT_LIST_DIR}/${FOLDER_NAME}")
 
 	if (NOT EXISTS "${DIR_SPINE}")
-		file(MAKE_DIRECTORY ${DIR_SPINE})
 		donwload_spine_runtime(${BRANCH_NAME} ${DIR_SPINE})
 	endif()
 endforeach()
@@ -89,8 +87,6 @@ endforeach()
 # Exceptional procedure for spine 2.1 runtime
 set(DIR_SPINE_C_21 ${CMAKE_CURRENT_LIST_DIR}/spine-c-2.1)
 if (NOT EXISTS "${DIR_SPINE_C_21}")
-	file(MAKE_DIRECTORY ${DIR_SPINE_C_21})
-
 	set (SPINE_21_RUNTIME_URL "https://github.com/EsotericSoftware/spine-runtimes/archive/refs/tags/2.1.25.zip")
 	set (SPINE_21_RUNTIME_FILEPATH "${DIR_TEMP}/spine-runtimes-2.1.25")
 	if (NOT EXISTS "${SPINE_21_RUNTIME_FILEPATH}.zip")
@@ -151,5 +147,3 @@ function(MODIFY_SPINE_35)
 endfunction()
 
 MODIFY_SPINE_35()
-
-# file(REMOVE_RECURSE ${DIR_TEMP})
