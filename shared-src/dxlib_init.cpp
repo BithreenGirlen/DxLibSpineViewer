@@ -29,6 +29,9 @@ SDxLibInit::SDxLibInit(void* pWindowHandle)
 	iRet = DxLib::SetMultiThreadFlag(TRUE);
 	if (iRet == -1)return;
 
+	iRet = DxLib::SetUseCharCodeFormat(DX_CHARCODEFORMAT_UTF8);
+	if (iRet == -1)return;
+
 	iDxLibInitialised = DxLib::DxLib_Init();
 
 	iRet = DxLib::SetDrawScreen(DX_SCREEN_BACK);

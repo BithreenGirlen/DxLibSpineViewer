@@ -200,7 +200,7 @@ void CSpineManipulatorDialogue::OnApplyButton()
 					std::wstring wstr = GetListViewItemText(hListView, i, 0);
 					if (!wstr.empty())
 					{
-						checkedItems.push_back(win_text::NarrowANSI(wstr));
+						checkedItems.push_back(win_text::NarrowUtf8(wstr));
 					}
 				}
 			}

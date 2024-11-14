@@ -1,4 +1,6 @@
 
+#include <locale.h>
+
 #include "framework.h"
 #include "main_window.h"
 #include "dxlib_init.h"
@@ -24,6 +26,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_ LPWSTR    lpCmdLine,
     _In_ int       nCmdShow)
 {
+    setlocale(LC_ALL, ".utf8");
 #if defined(_DEBUG) && defined(DXLIB_SPINE_CPP)
     static SSpineDebug spineDebug;
 #endif

@@ -559,12 +559,12 @@ void CMainWindow::MenuOnSelectFiles()
 
             for (const auto& atlas : wstrAtlasFiles)
             {
-                atlases.push_back(win_text::NarrowANSI(atlas));
+                atlases.push_back(win_text::NarrowUtf8(atlas));
             }
 
             for (const auto& skel : wstrSkelFiles)
             {
-                skels.push_back(win_text::NarrowANSI(skel));
+                skels.push_back(win_text::NarrowUtf8(skel));
             }
 
             m_bPlayReady = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary());
@@ -795,11 +795,11 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
             {
                 if (temp.find(wstrDif) != std::wstring::npos)
                 {
-                    inclusive.push_back(win_text::NarrowANSI(temp));
+                    inclusive.push_back(win_text::NarrowUtf8(temp));
                 }
                 else
                 {
-                    contained.push_back(win_text::NarrowANSI(temp));
+                    contained.push_back(win_text::NarrowUtf8(temp));
                 }
             }
         }
@@ -811,7 +811,7 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
         {
             for (const std::wstring& temp : temps)
             {
-                atlases.push_back(win_text::NarrowANSI(temp));
+                atlases.push_back(win_text::NarrowUtf8(temp));
             }
             temps.clear();
             bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrSkelExt.c_str(), temps);
@@ -819,7 +819,7 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
             {
                 for (const std::wstring& temp : temps)
                 {
-                    skels.push_back(win_text::NarrowANSI(temp));
+                    skels.push_back(win_text::NarrowUtf8(temp));
                 }
             }
         }
