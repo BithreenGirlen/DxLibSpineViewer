@@ -33,14 +33,14 @@ CDxLibSpineDrawer::CDxLibSpineDrawer(spine::SkeletonData* pSkeletonData, spine::
 	m_quadIndices.add(0);
 
 	/*
-	* This custom blend mode is used to avoid the pixels drawn with blend-mode-multiply to be transparent.
+	* Here custom blend mode is used to avoid the pixels drawn with blend-mode-multiply to be transparent.
 	* ---------- Formula for blend-mode-multiply ----------
 	*   dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA))
 	*   dstA = dstA
 	* -----------------------------------------------------
-	* This blend mode retains destination alpha, so in case initial alpha of the screen being 0, 
+	* The fomula above retains destination alpha, so in case initial alpha of the screen being 0,
 	* it happens that drawn pixels are seen on the screen but unseen when saved as PNG.
-	* 
+	*
 	* The solution taken here, not definitive though, is to overwrite alpha formula with that of blend-mode-normal.
 	*/
 	DxLib::SetDrawCustomBlendMode
@@ -90,7 +90,7 @@ void CDxLibSpineDrawer::Draw(float fDepth)
 {
 	if (skeleton == nullptr || animationState == nullptr)return;
 
-	if (skeleton->getColor().a == 0)return; // Invisible case
+	if (skeleton->getColor().a == 0)return;
 
 	for (size_t i = 0; i < skeleton->getSlots().size(); ++i)
 	{
@@ -283,7 +283,6 @@ void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path
 	const auto WidenPath = [&path]()
 		-> spine::Vector<wchar_t>
 		{
-			/*DxLib sets the default char set if it were not set, thus there is no error here*/
 			int iCharCode = DxLib::GetUseCharCodeFormat();
 			int iWcharCode = DxLib::Get_wchar_t_CharCodeFormat();
 

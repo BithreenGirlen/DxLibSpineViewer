@@ -37,7 +37,7 @@ static wchar_t* WidenPath(const char* path)
 	return pResult;
 }
 
-/*Implementations for <extension.h>*/
+/* ==================== Implementations for <extension.h> ==================== */
 
 void _spAtlasPage_createTexture(spAtlasPage* pAtlasPage, const char* path)
 {
@@ -76,7 +76,8 @@ char* _spUtil_readFile(const char* path, int* length)
 {
 	return _spReadFile(path, length);
 }
-// end of implementations for <extension.h>
+
+/* ==================== end of implementations for <extension.h> ==================== */
 
 CDxLibSpineDrawerC21::CDxLibSpineDrawerC21(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
 {

@@ -37,7 +37,7 @@ static wchar_t* WidenPath(const char* path)
 	return pResult;
 }
 
-/*Implementations for <extension.h>*/
+/* ==================== Implementations for <extension.h> ==================== */
 
 void _spAtlasPage_createTexture(spAtlasPage* pAtlasPage, const char* path)
 {
@@ -76,7 +76,8 @@ char* _spUtil_readFile(const char* path, int* length)
 {
 	return _spReadFile(path, length);
 }
-// end of implementations for <extension.h>
+
+/* ==================== end of implementations for <extension.h> ==================== */
 
 CDxLibSpineDrawerC::CDxLibSpineDrawerC(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
 {
@@ -167,8 +168,11 @@ void CDxLibSpineDrawerC::Draw(float fDepth, float fScale)
 	{
 		spSlot* pSlot = skeleton->drawOrder[i];
 		spAttachment* pAttachment = pSlot->attachment;
-		/*spine-c 3.6 lacks pSlot->bone->active*/
+#ifdef SPINE_3_8_OR_LATER
+		if (pAttachment == nullptr || pSlot->color.a == 0 || !pSlot->bone->active)
+#else
 		if (pAttachment == nullptr || pSlot->color.a == 0)
+#endif
 		{
 			spSkeletonClipping_clipEnd(m_clipper, pSlot);
 			continue;
