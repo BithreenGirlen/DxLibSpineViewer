@@ -81,8 +81,6 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 {
 	if (!m_drawables.empty())
 	{
-		DxLib::ClearDrawScreen();
-
 		if (!m_bDrawOrderReversed)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
@@ -110,13 +108,6 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
 #endif
 			}
-		}
-
-		DxLib::ScreenFlip();
-
-		if (m_hRenderWnd != nullptr)
-		{
-			::InvalidateRect(m_hRenderWnd, nullptr, FALSE);
 		}
 	}
 }
@@ -185,22 +176,11 @@ void CDxLibSpinePlayerC::MoveViewPoint(int iX, int iY)
 /*動作移行*/
 void CDxLibSpinePlayerC::ShiftAnimation()
 {
-	if (m_animationNames.empty())return;
-
 	++m_nAnimationIndex;
-	if (m_nAnimationIndex > m_animationNames.size() - 1)m_nAnimationIndex = 0;
+	if (m_nAnimationIndex >= m_animationNames.size())m_nAnimationIndex = 0;
 
 	ClearAnimationTracks();
-
-	for (size_t i = 0; i < m_drawables.size(); ++i)
-	{
-		const std::string& animationName = m_animationNames.at(m_nAnimationIndex);
-		spAnimation *pAnimation = spSkeletonData_findAnimation(m_skeletonData.at(i).get(), animationName.c_str());
-		if (pAnimation != nullptr)
-		{
-			spAnimationState_setAnimationByName(m_drawables.at(i)->animationState, 0, pAnimation->name, 1);
-		}
-	}
+	UpdateAnimation();
 }
 /*装い移行*/
 void CDxLibSpinePlayerC::ShiftSkin()
@@ -208,7 +188,7 @@ void CDxLibSpinePlayerC::ShiftSkin()
 	if (m_skinNames.empty())return;
 
 	++m_nSkinIndex;
-	if (m_nSkinIndex > m_skinNames.size() - 1)m_nSkinIndex = 0;
+	if (m_nSkinIndex >= m_skinNames.size())m_nSkinIndex = 0;
 
 	for (size_t i = 0; i < m_drawables.size(); ++i)
 	{
@@ -427,13 +407,7 @@ bool CDxLibSpinePlayerC::SetupDrawer()
 		}
 	}
 
-	if (!m_animationNames.empty())
-	{
-		for (size_t i = 0; i < m_skeletonData.size(); ++i)
-		{
-			spAnimationState_setAnimationByName(m_drawables.at(i)->animationState, 0, m_animationNames.at(0).c_str(), true);
-		}
-	}
+	UpdateAnimation();
 
 	ResetScale();
 
@@ -582,6 +556,21 @@ void CDxLibSpinePlayerC::UpdateTimeScale()
 	for (const auto& pDrawble : m_drawables)
 	{
 		pDrawble->timeScale = m_fTimeScale;
+	}
+}
+/*動作適用*/
+void CDxLibSpinePlayerC::UpdateAnimation()
+{
+	if (m_nAnimationIndex >= m_animationNames.size())return;
+
+	for (size_t i = 0; i < m_drawables.size(); ++i)
+	{
+		const std::string& animationName = m_animationNames.at(m_nAnimationIndex);
+		spAnimation* pAnimation = spSkeletonData_findAnimation(m_skeletonData.at(i).get(), animationName.c_str());
+		if (pAnimation != nullptr)
+		{
+			spAnimationState_setAnimationByName(m_drawables.at(i)->animationState, 0, pAnimation->name, 1);
+		}
 	}
 }
 /*合成動作消去*/

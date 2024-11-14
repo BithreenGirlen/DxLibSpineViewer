@@ -183,36 +183,48 @@ LRESULT CMainWindow::OnPaint()
     PAINTSTRUCT ps;
     HDC hdc = ::BeginPaint(m_hWnd, &ps);
 
-    m_DxLibSpinePlayer.Redraw(m_fDelta);
-
-    if (m_bPlayReady && m_bUnderRecording)
+    if (m_bPlayReady)
     {
-        static int iCount = 0;
-        ++iCount;
-        constexpr int iRecordingInterval = 8;
-        //int iInterval = static_cast<int>(::ceilf(1 / m_fDelta / 60.f));
-        if (iCount > iRecordingInterval)
-        {
-            int iWidth = 0;
-            int iHeight = 0;
-            int iStride = 0;
-            std::vector<unsigned char> pixels;
-            bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels, m_hWnd);
-            if (bRet)
-            {
-                SImageFrame s;
-                s.uiWidth = iWidth;
-                s.uiHeight = iHeight;
-                s.iStride = iStride;
-                s.pixels = std::move(pixels);
-                m_imageFrames.push_back(std::move(s));
-                float fTrackTime = 0.f;
-                std::wstring wstrFrameName = win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
-                wstrFrameName += L"_" + std::to_wstring(fTrackTime);
-                m_imageFrameNames.push_back(std::move(wstrFrameName));
-            }
+        DxLib::ClearDrawScreen();
 
-            iCount = 0;
+        m_DxLibSpinePlayer.Redraw(m_fDelta);
+
+        if (m_bUnderRecording)
+        {
+            static int iCount = 0;
+            ++iCount;
+            constexpr int iRecordingInterval = 8;
+            //int iInterval = static_cast<int>(::ceilf(1 / m_fDelta / 60.f));
+            if (iCount > iRecordingInterval)
+            {
+                int iWidth = 0;
+                int iHeight = 0;
+                int iStride = 0;
+                std::vector<unsigned char> pixels;
+                bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels, m_hWnd);
+                if (bRet)
+                {
+                    SImageFrame s;
+                    s.uiWidth = iWidth;
+                    s.uiHeight = iHeight;
+                    s.iStride = iStride;
+                    s.pixels = std::move(pixels);
+                    m_imageFrames.push_back(std::move(s));
+                    float fTrackTime = 0.f;
+                    std::wstring wstrFrameName = win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
+                    wstrFrameName += L"_" + std::to_wstring(fTrackTime);
+                    m_imageFrameNames.push_back(std::move(wstrFrameName));
+                }
+
+                iCount = 0;
+            }
+        }
+
+        DxLib::ScreenFlip();
+
+        if (m_hWnd != nullptr)
+        {
+            ::InvalidateRect(m_hWnd, nullptr, FALSE);
         }
     }
 

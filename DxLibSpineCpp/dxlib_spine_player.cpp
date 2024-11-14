@@ -73,8 +73,6 @@ void CDxLibSpinePlayer::Redraw(float fDelta)
 {
 	if (!m_drawables.empty())
 	{
-		DxLib::ClearDrawScreen();
-
 		if (!m_bDrawOrderReversed)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
@@ -90,13 +88,6 @@ void CDxLibSpinePlayer::Redraw(float fDelta)
 				m_drawables.at(i).get()->Update(fDelta);
 				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
 			}
-		}
-
-		DxLib::ScreenFlip();
-
-		if (m_hRenderWnd != nullptr)
-		{
-			::InvalidateRect(m_hRenderWnd, nullptr, FALSE);
 		}
 	}
 }
@@ -163,21 +154,11 @@ void CDxLibSpinePlayer::MoveViewPoint(int iX, int iY)
 /*動作移行*/
 void CDxLibSpinePlayer::ShiftAnimation()
 {
-	if (m_animationNames.empty())return;
-
 	++m_nAnimationIndex;
-	if (m_nAnimationIndex > m_animationNames.size() - 1)m_nAnimationIndex = 0;
+	if (m_nAnimationIndex >= m_animationNames.size())m_nAnimationIndex = 0;
 
 	ClearAnimationTracks();
-
-	for (size_t i = 0; i < m_drawables.size(); ++i)
-	{
-		spine::Animation* animation = m_skeletonData.at(i).get()->findAnimation(m_animationNames.at(m_nAnimationIndex).c_str());
-		if (animation != nullptr)
-		{
-			m_drawables.at(i).get()->animationState->setAnimation(0, animation->getName(), true);
-		}
-	}
+	UpdateAnimation();
 }
 /*装い移行*/
 void CDxLibSpinePlayer::ShiftSkin()
@@ -387,17 +368,7 @@ bool CDxLibSpinePlayer::SetupDrawer()
 		}
 	}
 
-	if (!m_animationNames.empty())
-	{
-		for (size_t i = 0; i < m_skeletonData.size(); ++i)
-		{
-			spine::Animation *animation = m_skeletonData.at(i).get()->findAnimation(m_animationNames.at(0).c_str());
-			if (animation != nullptr)
-			{
-				m_drawables.at(i).get()->animationState->setAnimation(0, animation->getName(), true);
-			}
-		}
-	}
+	UpdateAnimation();
 
 	ResetScale();
 
@@ -547,6 +518,20 @@ void CDxLibSpinePlayer::UpdateTimeScale()
 	for (size_t i = 0; i < m_drawables.size(); ++i)
 	{
 		m_drawables.at(i).get()->timeScale = m_fTimeScale;
+	}
+}
+/*動作適用*/
+void CDxLibSpinePlayer::UpdateAnimation()
+{
+	if (m_nAnimationIndex >= m_animationNames.size())return;
+
+	for (size_t i = 0; i < m_drawables.size(); ++i)
+	{
+		spine::Animation* animation = m_skeletonData.at(i).get()->findAnimation(m_animationNames.at(m_nAnimationIndex).c_str());
+		if (animation != nullptr)
+		{
+			m_drawables.at(i).get()->animationState->setAnimation(0, animation->getName(), true);
+		}
 	}
 }
 /*合成動作消去*/
