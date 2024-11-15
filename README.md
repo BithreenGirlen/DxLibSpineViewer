@@ -9,17 +9,14 @@ https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/0ab643de-73fb-
 ## Runtime files
 
 - Spine runtime for DxLib provides functionality to (1) load texture and (2) render skeleton.
-- There are two runtime files.
-  - `dxlib_spine.cpp` is to be used with `spine-cpp`. (`3.8` to `4.1`)
-  - `dxlib_spine_c.cpp` is to be used with `spine-c`. (`3.5` to `4.1`)
+- There are two kind of runtimes depending on the official generic runtimes to be used with.
+  - `dxlib_spine.cpp` and `dxlib_spine.h` are to be used with `spine-cpp`. (`3.8` to `4.1`)
+  - `dxlib_spine_c.cpp` and `dxlib_spine_c.h` are to be used with `spine-c`. (`3.5` to `4.1`)
     - Class is used because DxLib is C++ library, but STL is avoided.
 
-Besides, there is a runtime for spine `2.1` under `projects/DxLibSpineViewerC-2.1`, but considering the conditions below, no guarantee is given that this version runtime works well.
-1. There is no bug fix backport on this version, especially among timelines and entries.
-2. Transform method is totally [different](https://ja.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions
-3. There is no offical support for binary skeleton reader. 
+Besides, there is a runtime for spine `2.1.27` under `projects/DxLibSpineViewerC-2.1`. 
 
-## Viewer overview
+## Viewer for Windows
 
 The viewer helps to see how it is like when rendered using DxLib.  
 The following sections explain how to use the viewer.
@@ -42,7 +39,7 @@ Image| Through-seen | Switch window's transparancy.
 ### Load spine(s) via `Select files`
 1. If skeleton is json format, uncheck `Binary` in the `Setting` dialogue.
 2. From `Select files`, first select atlas file(s) to load. 
-3. Then select skel file(s) which is/are pair(s) of atlas.
+3. In the secoend dialigue, select skel file(s) which is/are pair(s) of atlas.
 
 ## Context-menu function
 
@@ -58,13 +55,13 @@ Image| Through-seen | Switch window's transparancy.
   -  The folder is named after folder-name when loaded via `Open folder`, and the first atlas filename when via `Select files`.
 - The PNG file will be named like `home_4.475018.png` where `home` is animation name, and `4.475018` is animation frame when saved.
 - The GIF file will be named like `wait.gif` where `wait` is animation name.
-- Mind that `width * height * 4` byte of memory will be consumed every recording frame
+- Mind that `width * height * 4` byte of memory will be consumed every recording frame.
 
 ## Mouse functions
 
 | Command | Action |
 ----|---- 
-Mouse wheel| Scale up/down
+Mouse wheel| Scale up/down. Combining with `Ctrl` to retain window size.
 Left button + mouse wheel| Speed up/down the animation.
 Left button click| Switch the animation.
 Left button drag| Move view-point.
@@ -108,15 +105,15 @@ https://github.com/user-attachments/assets/f4b5e1fa-faf7-4711-918f-2d0fbd2bb859
 - [DXライブラリ](https://dxlib.xsrv.jp/dxdload.html)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
-## Build
+## Build viewer
 1. Run `shared-src/deps/CMakeLists.txt` to set up external libraries. `out` and `.vs` folder can be deleted once set up has been done.
 2. Open `DxLibSpineViewer.sln` with Visual Studio.
 
 The script `shared-src/deps/CMakeLists.txt` modifies some of the external sources as well as obtains them.
 - For spine 3.5, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `spine-c 3.6` and later.
-- For spine 2.1, supplies binary skeleton reader from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
+- For spine 2.1, supplies binary skeleton reader which lacks in official `2.1.25` runtime and mofifies some of the files with those from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
 
-The final directories should be like the following.
+The `deps` directory should be as follows:
 <pre>
 ...
 ├ DxLibSpineC
@@ -127,7 +124,7 @@ The final directories should be like the following.
 │  └ ...
 ├ shared-src
 │  ├ deps
-│  │  ├ dxlib // static libraries and headers of DxLib
+│  │  ├ dxlib // static libraries and headers of DxLib for VC
 │  │  │  └ ...
 │  │  ├ spine-c-x.x // sources and headers of spine-c x.x
 │  │  │  ├ include
