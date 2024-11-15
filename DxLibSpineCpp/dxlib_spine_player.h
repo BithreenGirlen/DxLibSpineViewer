@@ -24,7 +24,7 @@ public:
 
 	void OnStyleChanged();
 
-	void RescaleSkeleton(bool bUpscale);
+	void RescaleSkeleton(bool bUpscale, bool bWindowToBeResized = true);
 	void RescaleTime(bool bHasten);
 	void ResetScale();
 

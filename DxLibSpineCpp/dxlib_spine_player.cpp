@@ -97,7 +97,7 @@ void CDxLibSpinePlayer::OnStyleChanged()
 	ResizeWindow();
 }
 /*拡縮変更*/
-void CDxLibSpinePlayer::RescaleSkeleton(bool bUpscale)
+void CDxLibSpinePlayer::RescaleSkeleton(bool bUpscale, bool bWindowToBeResized)
 {
 	constexpr float kfScalePortion = 0.025f;
 	constexpr float kfMinScale = 0.15f;
@@ -112,8 +112,11 @@ void CDxLibSpinePlayer::RescaleSkeleton(bool bUpscale)
 	}
 
 	UpdateScaletonScale();
-	ResizeWindow();
-	AdjustViewOffset();
+	if (bWindowToBeResized)
+	{
+		ResizeWindow();
+		AdjustViewOffset();
+	}
 }
 /*時間尺度変更*/
 void CDxLibSpinePlayer::RescaleTime(bool bHasten)
@@ -487,11 +490,12 @@ void CDxLibSpinePlayer::AdjustViewOffset()
 
 		int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
 		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
-		if (iClientWidth < iDesktopWidth && iClientHeight < iDesktopHeight)
-		{
-			m_fViewOffset.u = m_fBaseSize.u * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
-			m_fViewOffset.v = m_fBaseSize.v * (m_fDefaultScale - m_fSkeletonScale) / 2.f;
-		}
+
+		iClientWidth = iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth;
+		iClientHeight = iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight;
+
+		m_fViewOffset.u = (m_fBaseSize.u * m_fDefaultScale - iClientWidth) / 2.f;
+		m_fViewOffset.v = (m_fBaseSize.v * m_fDefaultScale - iClientHeight) / 2.f;
 	}
 	UpdatePosition();
 }

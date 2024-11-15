@@ -321,22 +321,20 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     int iScroll = -static_cast<short>(HIWORD(wParam)) / WHEEL_DELTA;
     WORD usKey = LOWORD(wParam);
 
-    if (usKey == 0)
-    {
-        m_DxLibSpinePlayer.RescaleSkeleton(iScroll > 0);
-    }
-
     if (usKey == MK_LBUTTON)
     {
         m_DxLibSpinePlayer.RescaleTime(iScroll > 0);
         m_bSpeedHavingChanged = true;
     }
-
-    if (usKey == MK_RBUTTON)
+    else if (usKey == MK_RBUTTON)
     {
         m_DxLibSpinePlayer.ShiftSkin();
 
         m_bRightCombinated = true;
+    }
+    else
+    {
+        m_DxLibSpinePlayer.RescaleSkeleton(iScroll > 0, !(usKey & MK_CONTROL));
     }
 
     return 0;
