@@ -106,12 +106,12 @@ https://github.com/user-attachments/assets/f4b5e1fa-faf7-4711-918f-2d0fbd2bb859
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
 ## Build viewer
-1. Run `shared-src/deps/CMakeLists.txt` to set up external libraries. `out` and `.vs` folder can be deleted once set up has been done.
+1. Run `shared-src/deps/CMakeLists.txt` to set up external libraries.
 2. Open `DxLibSpineViewer.sln` with Visual Studio.
 
-The script `shared-src/deps/CMakeLists.txt` modifies some of the external sources as well as obtains them.
-- For spine 3.5, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `spine-c 3.6` and later.
-- For spine 2.1, supplies binary skeleton reader which lacks in official `2.1.25` runtime and mofifies some of the files with those from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
+The `CMakeLists.txt` modifies some of the external sources as well as obtains them.
+- For spine-c `3.5`, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `3.6` and later.
+- For spine-c `2.1`, supplies binary skeleton reader which is lacking in official `2.1.25` runtime, and overwrites some of the files with those from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
 
 The `deps` directory should be as follows:
 <pre>
