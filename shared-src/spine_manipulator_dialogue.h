@@ -22,7 +22,9 @@ private:
 	LRESULT HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT OnInit(HWND hWnd);
 	LRESULT OnClose();
+	LRESULT OnSize();
 	LRESULT OnCommand(WPARAM wParam, LPARAM lParam);
+	LRESULT OnLButtonDblClk(WPARAM wParam, LPARAM lParam);
 
 	enum Constants { kFontSize = 16 };
 	enum Controls

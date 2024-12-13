@@ -35,7 +35,7 @@ HWND CSpineManipulatorDialogue::Create(HINSTANCE hInstance, HWND hWndParent, con
 		0xff, 0xff, // signature
 		0x00, 0x00, 0x00, 0x00, // helpID
 		0x00, 0x00, 0x00, 0x00, // exStyle
-		0xc8, 0x00, 0xc8, 0x80, // style
+		0x48, 0x00, 0xcc, 0x80, // style; here DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 		0x00, 0x00, // cDlgItems
 		0x00, 0x00, // x
 		0x00, 0x00, // y
@@ -80,10 +80,14 @@ LRESULT CSpineManipulatorDialogue::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wP
 	{
 	case WM_INITDIALOG:
 		return OnInit(hWnd);
+	case WM_SIZE:
+		return OnSize();
 	case WM_CLOSE:
 		return OnClose();
 	case WM_COMMAND:
 		return OnCommand(wParam, lParam);
+	case WM_LBUTTONDBLCLK:
+		return OnLButtonDblClk(wParam, lParam);
 	default:
 		break;
 	}
@@ -103,6 +107,9 @@ LRESULT CSpineManipulatorDialogue::OnInit(HWND hWnd)
 	m_hApplyButton = ::CreateWindowExW(0, WC_BUTTONW, L"Apply", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON, 0, 0, 0, 0, m_hWnd, reinterpret_cast<HMENU>(Controls::kApplyButton), ::GetModuleHandle(NULL), nullptr);
 
 	ResizeControls();
+	/* If the dialogue was created with DS_MODALFRAME style, it cannot be resized even if its style has been changed to WS_THICKFRAME */
+	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
+	::SetWindowLong(m_hWnd, GWL_STYLE, lStyle & ~WS_THICKFRAME | DS_MODALFRAME);
 
 	if (m_pDxLibSpinePlayer != nullptr)
 	{
@@ -142,6 +149,11 @@ LRESULT CSpineManipulatorDialogue::OnClose()
 	m_hWnd = nullptr;
 	return 0;
 }
+LRESULT CSpineManipulatorDialogue::OnSize()
+{
+	ResizeControls();
+	return 0;
+}
 /*WM_COMMAND*/
 LRESULT CSpineManipulatorDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 {
@@ -164,6 +176,20 @@ LRESULT CSpineManipulatorDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 		}
 	}
 
+	return 0;
+}
+/* WM_LBUTTONDBLCLK */
+LRESULT CSpineManipulatorDialogue::OnLButtonDblClk(WPARAM wParam, LPARAM lParam)
+{
+	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
+	if (lStyle & DS_MODALFRAME)
+	{
+		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle & ~DS_MODALFRAME | WS_THICKFRAME);
+	}
+	else
+	{
+		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle & ~WS_THICKFRAME | DS_MODALFRAME);
+	}
 	return 0;
 }
 /*EnumChildWindows CALLBACK*/
