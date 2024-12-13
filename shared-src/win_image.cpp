@@ -8,7 +8,13 @@
 
 namespace win_image
 {
-	bool CommitImageFrame(IWICImagingFactory *pWicImagingFactory, IWICBitmapEncoder* pWicBitmapEncoder, SImageFrame* s, bool bHasAlpha)
+	enum class EFrameMetadata
+	{
+		None,
+		Gif
+	};
+
+	bool CommitImageFrame(IWICImagingFactory *pWicImagingFactory, IWICBitmapEncoder* pWicBitmapEncoder, SImageFrame* s, bool bHasAlpha = true, EFrameMetadata frameMetaData = EFrameMetadata::None)
 	{
 		if (pWicImagingFactory == nullptr || pWicBitmapEncoder == nullptr || s == nullptr)return false;
 
@@ -28,13 +34,60 @@ namespace win_image
 		(
 			s->uiWidth,
 			s->uiHeight,
-			bHasAlpha ? GUID_WICPixelFormat32bppPRGBA : GUID_WICPixelFormat32bppRGBA,
+			bHasAlpha ? GUID_WICPixelFormat32bppRGBA : GUID_WICPixelFormat32bppRGB,
 			s->iStride,
 			static_cast<UINT>(s->pixels.size()),
 			s->pixels.data(),
 			&pWicBitmap
 		);
 		if (FAILED(hr))return false;
+
+		if (frameMetaData == EFrameMetadata::Gif)
+		{
+			CComPtr<IWICMetadataQueryWriter> pWicMetadataQueryWriter;
+			hr = pWicBitmapFrameEncode->GetMetadataQueryWriter(&pWicMetadataQueryWriter);
+			if (FAILED(hr))return false;
+
+			const auto SetDelayMetadata = [&pWicMetadataQueryWriter]()
+				-> bool
+				{
+					PROPVARIANT sPropVariant{};
+					sPropVariant.vt = VT_UI2;
+					sPropVariant.uiVal = 8;
+					HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/Delay", &sPropVariant);
+					return SUCCEEDED(hr);
+				};
+
+			const auto SetDisposalMetaData = [&pWicMetadataQueryWriter]()
+				-> bool
+				{
+					PROPVARIANT sPropVariant{};
+					sPropVariant.vt = VT_UI1;
+					sPropVariant.bVal = 2;
+					HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/Disposal", &sPropVariant);
+					return SUCCEEDED(hr);
+				};
+			const auto SetTransparencyFlag = [&pWicMetadataQueryWriter]()
+				-> bool
+				{
+					PROPVARIANT sPropVariant{};
+					sPropVariant.vt = VT_BOOL;
+					sPropVariant.boolVal = 1;
+					HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/TransparencyFlag", &sPropVariant);
+					return SUCCEEDED(hr);
+				};
+			const auto SetTransparentColorIndex = [&pWicMetadataQueryWriter]()
+				-> bool
+				{
+					PROPVARIANT sPropVariant{};
+					sPropVariant.vt = VT_UI1;
+					sPropVariant.bVal = 255;
+					HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/TransparentColorIndex", &sPropVariant);
+					return SUCCEEDED(hr);
+				};
+
+			SetDisposalMetaData() && SetTransparencyFlag() && SetDelayMetadata() && SetTransparentColorIndex();
+		}
 
 		hr = pWicBitmapFrameEncode->WriteSource(pWicBitmap, nullptr);
 		if (FAILED(hr))return false;
@@ -126,7 +179,7 @@ bool win_image::SaveImageAsPng(const wchar_t* wpzFilePath, SImageFrame* pImageFr
 	hr = pWicBitmapEncoder->Initialize(pWicStream, WICBitmapEncoderCacheOption::WICBitmapEncoderNoCache);
 	if (FAILED(hr))return false;
 
-	bool bRet = CommitImageFrame(pWicImageFactory, pWicBitmapEncoder, pImageFrame, true);
+	bool bRet = CommitImageFrame(pWicImageFactory, pWicBitmapEncoder, pImageFrame);
 	if (!bRet)return false;
 
 	hr = pWicBitmapEncoder->Commit();
@@ -163,40 +216,31 @@ bool win_image::SaveImagesAsGif(const wchar_t* wpzFilePath, const std::vector<SI
 	const auto SetApplicationMetadata = [&pWicMetadataQueryWriter]()
 		-> bool
 		{
-			PROPVARIANT sPvarApplication{};
-			sPvarApplication.vt = VT_UI1 | VT_VECTOR;
+			PROPVARIANT sPropVariant{};
+			sPropVariant.vt = VT_UI1 | VT_VECTOR;
 			char szName[] = "NETSCAPE2.0";
-			sPvarApplication.cac.cElems = sizeof(szName) - 1;
-			sPvarApplication.cac.pElems = szName;
-			HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/appext/application", &sPvarApplication);
+			sPropVariant.cac.cElems = sizeof(szName) - 1;
+			sPropVariant.cac.pElems = szName;
+			HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/appext/application", &sPropVariant);
 			return SUCCEEDED(hr);
 		};
 	const auto SetDataMetadata = [&pWicMetadataQueryWriter]()
 		-> bool
 		{
-			PROPVARIANT sPvarData{};
-			sPvarData.vt = VT_UI1 | VT_VECTOR;
+			PROPVARIANT sPropVariant{};
+			sPropVariant.vt = VT_UI1 | VT_VECTOR;
 			char szLoopCount[] = {0x03, 0x01, 0x00, 0x00, 0x00};
-			sPvarData.cac.cElems = sizeof(szLoopCount);
-			sPvarData.cac.pElems = szLoopCount;
-			HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/appext/data", &sPvarData);
+			sPropVariant.cac.cElems = sizeof(szLoopCount);
+			sPropVariant.cac.pElems = szLoopCount;
+			HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/appext/data", &sPropVariant);
 			return SUCCEEDED(hr);
 		};
-	const auto SetDelayMetadata = [&pWicMetadataQueryWriter]()
-		-> bool
-		{
-			PROPVARIANT sPvarData{};
-			sPvarData.vt = VT_UI2;
-			sPvarData.uiVal = 1;
-			HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/Delay", &sPvarData);
-			return SUCCEEDED(hr);
-		};
-	bool bRet = SetApplicationMetadata() && SetDataMetadata() && SetDelayMetadata();
+	bool bRet = SetApplicationMetadata() && SetDataMetadata();
 	if (!bRet)return false;
 
 	for (const auto& imageFrame : imageFrames)
 	{
-		bool bRet = CommitImageFrame(pWicImageFactory, pWicBitmapEncoder, const_cast<SImageFrame*>(&imageFrame), false);
+		bRet = CommitImageFrame(pWicImageFactory, pWicBitmapEncoder, const_cast<SImageFrame*>(&imageFrame), true, EFrameMetadata::Gif);
 		if (!bRet)break;
 	}
 
