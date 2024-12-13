@@ -83,7 +83,7 @@ private:
 	void MenuOnSaveAsPng();
 
 	void ChangeWindowTitle(const wchar_t* pwzTitle);
-	std::wstring GerWindowTitle();
+	std::wstring GetWindowTitle();
 	void SwitchWindowMode();
 
 	bool SetupResources(const wchar_t* pwzFolderPath);

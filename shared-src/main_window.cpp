@@ -240,7 +240,6 @@ LRESULT CMainWindow::OnSize()
 /*WM_KEYUP*/
 LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
 {
-    static std::vector<SImageFrame> imageFrames;
     switch (wParam)
     {
     case VK_ESCAPE:
@@ -650,7 +649,7 @@ void CMainWindow::MenuOnSaveAsPng()
 {
     if (!m_bPlayReady)return;
 
-    std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GerWindowTitle());
+    std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
     float fTrackTime = 0.f;
     wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
     wstrFilePath += L"_" + std::to_wstring(fTrackTime);
@@ -671,14 +670,14 @@ void CMainWindow::MenuOnEndRecording(bool bAsGif)
     m_bUnderRecording = false;
     if (bAsGif)
     {
-        std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GerWindowTitle());
+        std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
         wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
         wstrFilePath += L".gif";
         win_image::SaveImagesAsGif(wstrFilePath.c_str(), m_imageFrames);
     }
     else
     {
-        std::wstring wstrFolderPath = win_filesystem::CreateWorkFolder(GerWindowTitle());
+        std::wstring wstrFolderPath = win_filesystem::CreateWorkFolder(GetWindowTitle());
         for (size_t i = 0; i < m_imageFrames.size() && i < m_imageFrameNames.size(); ++i)
         {
             std::wstring wstrFilePath = wstrFolderPath;
@@ -722,7 +721,7 @@ void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
     ::SetWindowTextW(m_hWnd, wstr.empty() ? m_wstrWindowName.c_str() : wstr.c_str());
 }
 /*標題取得*/
-std::wstring CMainWindow::GerWindowTitle()
+std::wstring CMainWindow::GetWindowTitle()
 {
     for (int iSize = 256; iSize <= 1024; iSize *= 2)
     {
