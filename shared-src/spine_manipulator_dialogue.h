@@ -41,7 +41,7 @@ private:
 	HWND m_hSkinListView = nullptr;
 	HWND m_hAnimationListView = nullptr;
 
-	HWND n_hApplyButton = nullptr;
+	HWND m_hApplyButton = nullptr;
 
 	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
 

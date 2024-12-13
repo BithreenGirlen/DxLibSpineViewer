@@ -100,7 +100,7 @@ LRESULT CSpineManipulatorDialogue::OnInit(HWND hWnd)
 	CreateListView(&m_hSkinListView, m_skinColumnNames);
 	CreateListView(&m_hAnimationListView, m_animationColumnNames);
 
-	n_hApplyButton = ::CreateWindowExW(0, WC_BUTTONW, L"Apply", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON, 0, 0, 0, 0, m_hWnd, reinterpret_cast<HMENU>(Controls::kApplyButton), ::GetModuleHandle(NULL), nullptr);
+	m_hApplyButton = ::CreateWindowExW(0, WC_BUTTONW, L"Apply", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON, 0, 0, 0, 0, m_hWnd, reinterpret_cast<HMENU>(Controls::kApplyButton), ::GetModuleHandle(NULL), nullptr);
 
 	ResizeControls();
 
@@ -260,9 +260,9 @@ LRESULT CSpineManipulatorDialogue::ResizeControls()
 	y += h + y_space;
 	h = clientHeight / 16;
 	w = clientWidth / 4;
-	if (n_hApplyButton != nullptr)
+	if (m_hApplyButton != nullptr)
 	{
-		::MoveWindow(n_hApplyButton, x, y, w, h, TRUE);
+		::MoveWindow(m_hApplyButton, x, y, w, h, TRUE);
 	}
 
 	return 0;
@@ -291,15 +291,13 @@ void CSpineManipulatorDialogue::AdjustListViewWidth(HWND hListView, int iColumnC
 {
 	if (hListView != nullptr)
 	{
-		int iScrollWidth = static_cast<int>(::GetSystemMetrics(SM_CXVSCROLL) * ::GetDpiForSystem() / 96.f);
-
 		RECT rect;
 		::GetClientRect(hListView, &rect);
 		int iWindowWidth = rect.right - rect.left;
 
 		LVCOLUMNW lvColumn{};
 		lvColumn.mask = LVCF_WIDTH;
-		lvColumn.cx = iWindowWidth / iColumnCount - iScrollWidth;
+		lvColumn.cx = iWindowWidth / iColumnCount;
 		for (int i = 0; i < iColumnCount; ++i)
 		{
 			ListView_SetColumn(hListView, i, &lvColumn);
@@ -373,8 +371,7 @@ std::wstring CSpineManipulatorDialogue::GetListViewItemText(HWND hListView, int 
 
 		for (int iSize = 256; iSize < 1025; iSize *= 2)
 		{
-			std::vector<wchar_t> vBuffer;
-			vBuffer.resize(iSize);
+			std::vector<wchar_t> vBuffer(iSize, L'\0');
 
 			lvItem.cchTextMax = iSize;
 			lvItem.pszText = vBuffer.data();
