@@ -137,12 +137,14 @@
     <ClInclude Include="..\..\DxLibSpineC\dxlib_spine_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\dxlib_spine_player_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\spine_loader_c.h" />
+    <ClInclude Include="..\..\shared-src\cpu.h" />
     <ClInclude Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Json.h" />
     <ClInclude Include="..\..\shared-src\deps\spine-c-3.6\src\spine\kvec.h" />
     <ClInclude Include="..\..\shared-src\dxlib_image_encoder.h" />
     <ClInclude Include="..\..\shared-src\dxlib_init.h" />
     <ClInclude Include="..\..\shared-src\framework.h" />
     <ClInclude Include="..\..\shared-src\main_window.h" />
+    <ClInclude Include="..\..\shared-src\mf_video_encoder.h" />
     <ClInclude Include="..\..\shared-src\spine_manipulator_dialogue.h" />
     <ClInclude Include="..\..\shared-src\spine_player_shared.h" />
     <ClInclude Include="..\..\shared-src\spine_setting_dialogue.h" />
@@ -155,6 +157,7 @@
     <ClCompile Include="..\..\DxLibSpineC\dxlib_spine_c.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\dxlib_spine_player_c.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\spine_loader_c.cpp" />
+    <ClCompile Include="..\..\shared-src\cpu.cpp" />
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Animation.c" />
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AnimationState.c" />
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AnimationStateData.c" />
@@ -198,6 +201,7 @@
     <ClCompile Include="..\..\shared-src\dxlib_init.cpp" />
     <ClCompile Include="..\..\shared-src\main.cpp" />
     <ClCompile Include="..\..\shared-src\main_window.cpp" />
+    <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp" />
     <ClCompile Include="..\..\shared-src\spine_manipulator_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\spine_setting_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\win_dialogue.cpp" />

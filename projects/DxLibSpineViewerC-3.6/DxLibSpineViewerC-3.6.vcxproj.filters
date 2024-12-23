@@ -80,6 +80,12 @@
     <ClInclude Include="..\..\shared-src\deps\spine-c-3.6\src\spine\kvec.h">
       <Filter>ソース ファイル\deps\spine-c-3.6</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\mf_video_encoder.h">
+      <Filter>ヘッダー ファイル\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\cpu.h">
+      <Filter>ヘッダー ファイル\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -237,6 +243,12 @@
     </ClCompile>
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\VertexEffect.c">
       <Filter>ソース ファイル\deps\spine-c-3.6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp">
+      <Filter>ソース ファイル\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\cpu.cpp">
+      <Filter>ソース ファイル\shared</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,9 +1,9 @@
 ﻿
 
+#include "dxlib_image_encoder.h"
+
 #define DX_NON_USING_NAMESPACE_DXLIB
 #include <DxLib.h>
-
-#include "dxlib_image_encoder.h"
 
 
 CDxLibImageEncoder::CDxLibImageEncoder()
@@ -15,18 +15,28 @@ CDxLibImageEncoder::~CDxLibImageEncoder()
 {
 
 }
-/*描画対象をPNGとして保存*/
-bool CDxLibImageEncoder::SaveScreenAsPng(const std::wstring &wstrFilePath, void* pWindowHandle)
+/*描画対象をJPGとして保存*/
+bool CDxLibImageEncoder::SaveScreenAsJpg(const wchar_t* wszFilePath, void* pWindowHandle)
 {
 	int iGraphWidth = 0;
 	int iGraphHeight = 0;
 	GetScreenSize(&iGraphWidth, &iGraphHeight, pWindowHandle);
 
-	int iRet = DxLib::SaveDrawScreenToPNG(0, 0, iGraphWidth, iGraphHeight, wstrFilePath.c_str());
+	int iRet = DxLib::SaveDrawScreenToJPEG(0, 0, iGraphWidth, iGraphHeight, wszFilePath);
+	return iRet != -1;
+}
+/*描画対象をPNGとして保存*/
+bool CDxLibImageEncoder::SaveScreenAsPng(const wchar_t *wszFilePath, void* pWindowHandle)
+{
+	int iGraphWidth = 0;
+	int iGraphHeight = 0;
+	GetScreenSize(&iGraphWidth, &iGraphHeight, pWindowHandle);
+
+	int iRet = DxLib::SaveDrawScreenToPNG(0, 0, iGraphWidth, iGraphHeight, wszFilePath);
 	return iRet != -1;
 }
 /*描画対象の画素配列取得。*/
-bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, void* pWindowHandle)
+bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, void* pWindowHandle, bool bToCovertToRgba)
 {
 	int iGraphWidth = 0;
 	int iGraphHeight = 0;
@@ -62,12 +72,19 @@ bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride
 	size_t nSize = static_cast<size_t>(*iStride * iGraphHeight);
 	pixels.resize(nSize);
 	/*BGRA => RGBA*/
-	for (size_t i = 0; i < nSize - 3; i += 4)
+	if (bToCovertToRgba)
 	{
-		pixels[i] = *(pPixels + i + 2);
-		pixels[i + 1] = *(pPixels + i + 1);
-		pixels[i + 2] = *(pPixels + i);
-		pixels[i + 3] = *(pPixels + i + 3);
+		for (size_t i = 0; i < nSize - 3; i += 4)
+		{
+			pixels[i] = *(pPixels + i + 2);
+			pixels[i + 1] = *(pPixels + i + 1);
+			pixels[i + 2] = *(pPixels + i);
+			pixels[i + 3] = *(pPixels + i + 3);
+		}
+	}
+	else
+	{
+		memcpy(&pixels[0], pPixels, nSize);
 	}
 
 	DxLib::DeleteSoftImage(iImageHandle);

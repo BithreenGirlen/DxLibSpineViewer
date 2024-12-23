@@ -9,6 +9,7 @@
 #include "win_dialogue.h"
 #include "win_text.h"
 #include "dxlib_image_encoder.h"
+#include "cpu.h"
 
 CMainWindow::CMainWindow()
 {
@@ -183,42 +184,13 @@ LRESULT CMainWindow::OnPaint()
     PAINTSTRUCT ps;
     HDC hdc = ::BeginPaint(m_hWnd, &ps);
 
-    if (m_bPlayReady)
+    if (m_bPlayReady && m_recoderState != RecorderState::InitialisingVideoStream)
     {
         DxLib::ClearDrawScreen();
 
         m_DxLibSpinePlayer.Redraw(m_fDelta);
 
-        if (m_bUnderRecording)
-        {
-            static int iCount = 0;
-            ++iCount;
-            constexpr int iRecordingInterval = 8;
-            //int iInterval = static_cast<int>(::ceilf(1 / m_fDelta / 60.f));
-            if (iCount > iRecordingInterval)
-            {
-                int iWidth = 0;
-                int iHeight = 0;
-                int iStride = 0;
-                std::vector<unsigned char> pixels;
-                bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels, m_hWnd);
-                if (bRet)
-                {
-                    SImageFrame s;
-                    s.uiWidth = iWidth;
-                    s.uiHeight = iHeight;
-                    s.iStride = iStride;
-                    s.pixels = std::move(pixels);
-                    m_imageFrames.push_back(std::move(s));
-                    float fTrackTime = 0.f;
-                    std::wstring wstrFrameName = win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
-                    wstrFrameName += L"_" + std::to_wstring(fTrackTime);
-                    m_imageFrameNames.push_back(std::move(wstrFrameName));
-                }
-
-                iCount = 0;
-            }
-        }
+        StepOnRecording();
 
         DxLib::ScreenFlip();
 
@@ -296,14 +268,23 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         case Menu::kSnapAsPNG:
             MenuOnSaveAsPng();
             break;
-        case Menu::kStartRecording:
-            MenuOnStartRecording();
+        case Menu::kSnapAsJPG:
+            MenuOnSaveAsJpg();
+            break;
+        case Menu::kStartStoringImages:
+            MenuOnStartRecording(false);
+            break;
+        case Menu::kStartVideoRecording:
+            MenuOnStartRecording(true);
             break;
         case Menu::kSaveAsGIF:
             MenuOnEndRecording();
             break;
         case Menu::kSaveAsPNGs:
             MenuOnEndRecording(false);
+            break;
+        case Menu::kEndVideoRecording:
+            MenuOnEndRecording();
             break;
         }
     }
@@ -333,7 +314,12 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     }
     else
     {
-        m_DxLibSpinePlayer.RescaleSkeleton(iScroll > 0, !(usKey & MK_CONTROL));
+        bool bWindowToBeResized = !(usKey & MK_CONTROL);
+        if (m_recoderState == RecorderState::RecordingVideo)
+        {
+            bWindowToBeResized = false;
+        }
+        m_DxLibSpinePlayer.RescaleSkeleton(iScroll > 0, bWindowToBeResized);
     }
 
     return 0;
@@ -411,18 +397,32 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
                 if (hPopupMenu == nullptr)return false;
 
                 *hMenu = hPopupMenu;
-                if (!m_bUnderRecording)
+                if (m_recoderState == RecorderState::Idle)
                 {
                     int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSnapAsPNG, L"Snap as PNG");
                     if (iRet == 0)return false;
-                    iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kStartRecording, L"Start recording");
+                    iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSnapAsJPG, L"Snap as JPG");
                     if (iRet == 0)return false;
+                    iRet = ::AppendMenu(hPopupMenu, MF_SEPARATOR, 0, nullptr);
+                    if (iRet == 0)return false;
+                    iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kStartStoringImages, L"Start image recording");
+                    if (iRet == 0)return false;
+                    if (cpu::IsIntel())
+                    {
+                        iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kStartVideoRecording, L"Start video recording");
+                        if (iRet == 0)return false;
+                    }
                 }
-                else
+                else if (m_recoderState == RecorderState::StoringImages)
                 {
                     int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSaveAsGIF, L"Save as GIF");
                     if (iRet == 0)return false;
                     iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSaveAsPNGs, L"Save as PNGs");
+                    if (iRet == 0)return false;
+                }
+                else if (m_recoderState == RecorderState::RecordingVideo)
+                {
+                    int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kEndVideoRecording, L"End recording");
                     if (iRet == 0)return false;
                 }
 
@@ -526,7 +526,7 @@ failed:
 /*フォルダ選択*/
 void CMainWindow::MenuOnOpenFolder()
 {
-    if (m_bUnderRecording)return;
+    if (m_recoderState != RecorderState::Idle)return;
 
     std::wstring wstrPickedFolder = win_dialogue::SelectWorkFolder(m_hWnd);
     if (!wstrPickedFolder.empty())
@@ -644,51 +644,6 @@ void CMainWindow::MenuOnSkeletonSetting()
         ::SetFocus(m_SpineManipulatorDialogue.GetHwnd());
     }
 }
-/*PNGとして保存*/
-void CMainWindow::MenuOnSaveAsPng()
-{
-    if (!m_bPlayReady)return;
-
-    std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
-    float fTrackTime = 0.f;
-    wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
-    wstrFilePath += L"_" + std::to_wstring(fTrackTime);
-    wstrFilePath += L".png";
-
-    CDxLibImageEncoder::SaveScreenAsPng(wstrFilePath, m_hWnd);
-}
-/*記録開始*/
-void CMainWindow::MenuOnStartRecording()
-{
-    if (!m_bPlayReady)return;
-
-    m_bUnderRecording = true;
-}
-/*記録終了*/
-void CMainWindow::MenuOnEndRecording(bool bAsGif)
-{
-    m_bUnderRecording = false;
-    if (bAsGif)
-    {
-        std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
-        wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
-        wstrFilePath += L".gif";
-        win_image::SaveImagesAsGif(wstrFilePath.c_str(), m_imageFrames);
-    }
-    else
-    {
-        std::wstring wstrFolderPath = win_filesystem::CreateWorkFolder(GetWindowTitle());
-        for (size_t i = 0; i < m_imageFrames.size() && i < m_imageFrameNames.size(); ++i)
-        {
-            std::wstring wstrFilePath = wstrFolderPath;
-            wstrFilePath += m_imageFrameNames.at(i);
-            wstrFilePath += L".png";
-            win_image::SaveImageAsPng(wstrFilePath.c_str(), &m_imageFrames.at(i));
-        }
-    }
-    m_imageFrames.clear();
-    m_imageFrameNames.clear();
-}
 /*次のフォルダに移動*/
 void CMainWindow::KeyUpOnNextFolder()
 {
@@ -701,11 +656,106 @@ void CMainWindow::KeyUpOnNextFolder()
 /*前のフォルダに移動*/
 void CMainWindow::KeyUpOnForeFolder()
 {
-    if (m_folders.empty() || m_bUnderRecording)return;
+    if (m_folders.empty() || m_recoderState != RecorderState::Idle)return;
 
     --m_nFolderIndex;
     if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = m_folders.size() - 1;
     SetupResources(m_folders.at(m_nFolderIndex).c_str());
+}
+/*JPGとして保存*/
+void CMainWindow::MenuOnSaveAsJpg()
+{
+    if (!m_bPlayReady)return;
+
+    std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
+    float fTrackTime = 0.f;
+    wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
+    wstrFilePath += L"_" + std::to_wstring(fTrackTime);
+    wstrFilePath += L".jpg";
+
+    CDxLibImageEncoder::SaveScreenAsJpg(wstrFilePath.c_str(), m_hWnd);
+}
+/*PNGとして保存*/
+void CMainWindow::MenuOnSaveAsPng()
+{
+    if (!m_bPlayReady)return;
+
+    std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
+    float fTrackTime = 0.f;
+    wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
+    wstrFilePath += L"_" + std::to_wstring(fTrackTime);
+    wstrFilePath += L".png";
+
+    CDxLibImageEncoder::SaveScreenAsPng(wstrFilePath.c_str(), m_hWnd);
+}
+/*記録開始*/
+void CMainWindow::MenuOnStartRecording(bool bAsVideo)
+{
+    if (!m_bPlayReady)return;
+
+    if (bAsVideo)
+    {
+        int iWidth = 0;
+        int iHeight = 0;
+        std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
+        wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
+        wstrFilePath += L".mp4";
+        CDxLibImageEncoder::GetScreenSize(&iWidth, &iHeight, m_hWnd);
+        /* Initialising input media types takes time. In the meantime, pause rendering. */
+        m_recoderState = RecorderState::InitialisingVideoStream;
+        bool bRet = m_MfVideoEncoder.Start(wstrFilePath.c_str(), iWidth, iHeight, 60);
+        if (bRet)
+        {
+            m_recoderState = RecorderState::RecordingVideo;
+        }
+        else
+        {
+            m_recoderState = RecorderState::Idle;
+        }
+        /* Resume rendering. */
+        if (m_hWnd != nullptr)
+        {
+            ::InvalidateRect(m_hWnd, nullptr, FALSE);
+        }
+    }
+    else
+    {
+        m_recoderState = RecorderState::StoringImages;
+    }
+}
+/*記録終了*/
+void CMainWindow::MenuOnEndRecording(bool bAsGif)
+{
+    if (m_recoderState == RecorderState::RecordingVideo)
+    {
+        m_MfVideoEncoder.End();
+    }
+    else
+    {
+        if (bAsGif)
+        {
+            std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
+            wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
+            wstrFilePath += L".gif";
+            win_image::SaveImagesAsGif(wstrFilePath.c_str(), m_imageFrames);
+        }
+        else
+        {
+            std::wstring wstrFolderPath = win_filesystem::CreateWorkFolder(GetWindowTitle());
+            for (size_t i = 0; i < m_imageFrames.size() && i < m_imageFrameNames.size(); ++i)
+            {
+                std::wstring wstrFilePath = wstrFolderPath;
+                wstrFilePath += m_imageFrameNames.at(i);
+                wstrFilePath += L".png";
+                win_image::SaveImageAsPng(wstrFilePath.c_str(), &m_imageFrames.at(i));
+            }
+        }
+        m_imageFrames.clear();
+        m_imageFrameNames.clear();
+    }
+
+    m_recoderState = RecorderState::Idle;
+    m_iFrameCount = 0;
 }
 /*標題変更*/
 void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
@@ -857,4 +907,63 @@ void CMainWindow::UpdateDrawingInterval()
     DEVMODE sDevMode{};
     ::EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &sDevMode);
     m_fDelta = 1 / static_cast<float>(sDevMode.dmDisplayFrequency);
+}
+/*記録逓進*/
+void CMainWindow::StepOnRecording()
+{
+    if (m_recoderState == RecorderState::Idle)return;
+
+    /*
+    * WM_PAINT comes at intervals of display refresh rate.
+    * For example, if refresh rate is 120Hz, iInterval will be 2.
+    * The condition "m_iFrameCount >= iInterval" results in 60fps for video, and 15fps for images.
+    * Slower refresh rate such as 40Hz is not taken into consideration here.
+    */
+    int iInterval = static_cast<int>(::ceilf(1 / m_fDelta / 60.f));
+    if (m_recoderState == RecorderState::StoringImages)
+    {
+        ++m_iFrameCount;
+        iInterval *= 4;
+        if (m_iFrameCount >= iInterval)
+        {
+            int iWidth = 0;
+            int iHeight = 0;
+            int iStride = 0;
+            std::vector<unsigned char> pixels;
+            bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels, m_hWnd);
+            if (bRet)
+            {
+                SImageFrame s;
+                s.uiWidth = iWidth;
+                s.uiHeight = iHeight;
+                s.iStride = iStride;
+                s.pixels = std::move(pixels);
+                m_imageFrames.push_back(std::move(s));
+                float fTrackTime = 0.f;
+                std::wstring wstrFrameName = win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
+                wstrFrameName += L"_" + std::to_wstring(fTrackTime);
+                m_imageFrameNames.push_back(std::move(wstrFrameName));
+            }
+
+            m_iFrameCount = 0;
+        }
+    }
+    else if (m_recoderState == RecorderState::RecordingVideo)
+    {
+        ++m_iFrameCount;
+        if (m_iFrameCount >= iInterval)
+        {
+            int iWidth = 0;
+            int iHeight = 0;
+            int iStride = 0;
+            std::vector<unsigned char> pixels;
+            bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels, m_hWnd, false);
+            if (bRet)
+            {
+                m_MfVideoEncoder.AddCpuFrame(pixels.data(), static_cast<unsigned long>(pixels.size()), false);
+            }
+
+            m_iFrameCount = 0;
+        }
+    }
 }

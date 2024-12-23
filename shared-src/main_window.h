@@ -10,6 +10,7 @@
 #include "spine_setting_dialogue.h"
 #include "spine_manipulator_dialogue.h"
 #include "win_image.h"
+#include "mf_video_encoder.h"
 
 class CMainWindow
 {
@@ -44,7 +45,10 @@ private:
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
 		kSeeThroughImage, kSkeletonSetting,
-		kSnapAsPNG, kStartRecording, kSaveAsGIF, kSaveAsPNGs
+		kSnapAsPNG, kSnapAsJPG,
+		kStartStoringImages, kStartVideoRecording,
+		kSaveAsGIF, kSaveAsPNGs,
+		kEndVideoRecording
 	};
 	enum MenuBar{kFile, kImage};
 
@@ -57,13 +61,22 @@ private:
 	bool m_bBarHidden = false;
 	bool m_bTransparent = false;
 	bool m_bPlayReady = false;
-	bool m_bUnderRecording = false;
+
+	enum class RecorderState
+	{
+		Idle,
+		StoringImages,
+		InitialisingVideoStream,
+		RecordingVideo
+	};
+	RecorderState m_recoderState = RecorderState::Idle;
 
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
 
 	std::vector<SImageFrame> m_imageFrames;
 	std::vector<std::wstring> m_imageFrameNames;
+	int m_iFrameCount = 0;
 
 	float m_fDelta = 1 / 60.f;
 
@@ -75,12 +88,15 @@ private:
 
 	void MenuOnSeeThroughImage();
 	void MenuOnSkeletonSetting();
-	void MenuOnStartRecording();
-	void MenuOnEndRecording(bool bAsGif = true);
 
 	void KeyUpOnNextFolder();
 	void KeyUpOnForeFolder();
+
+	void MenuOnSaveAsJpg();
 	void MenuOnSaveAsPng();
+
+	void MenuOnStartRecording(bool bAsVideo);
+	void MenuOnEndRecording(bool bAsGif = true);
 
 	void ChangeWindowTitle(const wchar_t* pwzTitle);
 	std::wstring GetWindowTitle();
@@ -90,10 +106,12 @@ private:
 	void ClearFolderInfo();
 
 	void UpdateDrawingInterval();
+	void StepOnRecording();
 
 	CDxLibSpinePlayer m_DxLibSpinePlayer;
 	CSpineSettingDialogue m_SpineSettingDialogue;
 	CSpineManipulatorDialogue m_SpineManipulatorDialogue;
+	CMfVideoEncoder m_MfVideoEncoder;
 };
 
 #endif //MAIN_WINDOW_H_
