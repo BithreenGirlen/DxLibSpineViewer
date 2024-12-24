@@ -18,7 +18,7 @@ Besides, there is a runtime for spine `2.1.27` under `projects/DxLibSpineViewerC
 
 ## Viewer for Windows
 
-The viewer helps to see how it is like when rendered using DxLib.  
+The viewer helps to see how it is like when rendered using DxLib.   
 The following sections explain how to use the viewer.
 
 ## Menu functions
@@ -30,7 +30,8 @@ File| Open folder | Open folder-select-dialogue.
  -| Select files | Pick up atlas and skeleton files one by one regardless of their extension.
 Image| Through-seen | Switch window's transparancy.
  -| Manipulation | Open a dialogue to specify slots to be excluded, skins or animations to be mixed.
-
+ -| Pan smoothly | Switch view-point behaviour; pan while dragging or when dragged button is released.
+ 
 ### Load spine(s) via `Open folder` 
 1. In the `Setting` dialogue, specify atlas and skeleton extensions.
 2. Uncheck `Binary` if skeketon is json format.
@@ -46,16 +47,25 @@ Image| Through-seen | Switch window's transparancy.
 | Item | Action |
 |---- |---- 
 | Snap as PNG | Save the current screen as PNG.
-| Start recording | Start storing screen frames at intervals.
+| Snap as JPG | Save the current screen as JPG.
+| Start image recording | Start storing screen frames at intervals.
 | Save as GIF | Save stored frames into a single GIF file.
 | Save as PNGs | Save stored frames as separate PNG files.
 
 - The context-menu appears only when spine is loaded, and the items of which varies depending on whether it is under recording or not.
 - The files are saved in the subdirectory of the execution file.
   -  The folder is named after folder-name when loaded via `Open folder`, and the first atlas filename when via `Select files`.
-- The PNG file will be named like `home_4.475018.png` where `home` is animation name, and `4.475018` is animation frame when saved.
-- The GIF file will be named like `wait.gif` where `wait` is animation name.
+- PNG and JPG file will be named like `home_4.475018.png` where `home` is animation name, and `4.475018` is animation frame when saved.
+- GIF file will be named like `wait.gif` where `wait` is animation name.
 - Mind that `width * height * 4` byte of memory will be consumed every recording frame.
+
+The additional items below appear only for Intel CPU. 
+| Item | Action |
+|---- |---- 
+| Start video recording | Start recording screen as H264.
+| End recording | End video recording.
+
+- H264 file will be named like `fp.mp4` where `fp` is animation name.
 
 ## Mouse functions
 
