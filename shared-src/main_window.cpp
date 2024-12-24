@@ -134,6 +134,8 @@ LRESULT CMainWindow::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
         return OnKeyUp(wParam, lParam);
     case WM_COMMAND:
         return OnCommand(wParam, lParam);
+    case WM_MOUSEMOVE:
+        return OnMouseMove(wParam, lParam);
     case WM_MOUSEWHEEL:
         return OnMouseWheel(wParam, lParam);
     case WM_LBUTTONDOWN:
@@ -265,6 +267,9 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         case Menu::kSkeletonSetting:
             MenuOnSkeletonSetting();
             break;
+        case Menu::kPanSmoothly:
+            MenuOnPanSmoothly();
+            break;
         case Menu::kSnapAsPNG:
             MenuOnSaveAsPng();
             break;
@@ -295,6 +300,27 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 
     return 0;
 }
+/*WM_MOUSEMOVE */
+LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
+{
+    WORD usKey = LOWORD(wParam);
+    if (usKey == MK_LBUTTON)
+    {
+        if (!m_bToPanWhileDragging)return 0;
+
+        POINT pt{};
+        ::GetCursorPos(&pt);
+        int iX = m_cursorPos.x - pt.x;
+        int iY = m_cursorPos.y - pt.y;
+
+        m_DxLibSpinePlayer.MoveViewPoint(iX, iY);
+
+        m_cursorPos = pt;
+        m_bLeftCombinated = true;
+    }
+
+    return 0;
+}
 /*WM_MOUSEWHEEL*/
 LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 {
@@ -304,7 +330,7 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     if (usKey == MK_LBUTTON)
     {
         m_DxLibSpinePlayer.RescaleTime(iScroll > 0);
-        m_bSpeedHavingChanged = true;
+        m_bLeftCombinated = true;
     }
     else if (usKey == MK_RBUTTON)
     {
@@ -327,7 +353,7 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 /*WM_LBUTTONDOWN*/
 LRESULT CMainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 {
-    ::GetCursorPos(&m_CursorPos);
+    ::GetCursorPos(&m_cursorPos);
 
     m_bLeftDowned = true;
 
@@ -336,9 +362,9 @@ LRESULT CMainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 /*WM_LBUTTONUP*/
 LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
-    if (m_bSpeedHavingChanged)
+    if (m_bLeftCombinated)
     {
-        m_bSpeedHavingChanged = false;
+        m_bLeftCombinated = false;
         return 0;
     }
 
@@ -359,8 +385,8 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
     {
         POINT pt{};
         ::GetCursorPos(&pt);
-        int iX = m_CursorPos.x - pt.x;
-        int iY = m_CursorPos.y - pt.y;
+        int iX = m_cursorPos.x - pt.x;
+        int iY = m_cursorPos.y - pt.y;
 
         if (iX == 0 && iY == 0)
         {
@@ -368,6 +394,8 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
         }
         else
         {
+            if (m_bToPanWhileDragging)return 0;
+
             m_DxLibSpinePlayer.MoveViewPoint(iX, iY);
         }
     }
@@ -490,6 +518,8 @@ void CMainWindow::InitialiseMenuBar()
     iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kSeeThroughImage, "Through-seen");
     if (iRet == 0)goto failed;
     iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kSkeletonSetting, "Manipulation");
+    if (iRet == 0)goto failed;
+    iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kPanSmoothly, "Pan smoothly");
     if (iRet == 0)goto failed;
 
     hMenuBar = ::CreateMenu();
@@ -642,6 +672,21 @@ void CMainWindow::MenuOnSkeletonSetting()
     else
     {
         ::SetFocus(m_SpineManipulatorDialogue.GetHwnd());
+    }
+}
+/*視点移動法切り替え*/
+void CMainWindow::MenuOnPanSmoothly()
+{
+    HMENU hMenuBar = ::GetMenu(m_hWnd);
+    if (hMenuBar != nullptr)
+    {
+        HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kImage);
+        if (hMenu != nullptr)
+        {
+            m_bToPanWhileDragging ^= true;
+
+            ::CheckMenuItem(hMenu, Menu::kPanSmoothly , m_bToPanWhileDragging ? MF_CHECKED : MF_UNCHECKED);
+        }
     }
 }
 /*次のフォルダに移動*/

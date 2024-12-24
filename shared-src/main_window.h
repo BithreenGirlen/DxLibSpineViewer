@@ -35,6 +35,7 @@ private:
 	LRESULT OnSize();
 	LRESULT OnKeyUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnCommand(WPARAM wParam, LPARAM lParam);
+	LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMouseWheel(WPARAM wParam, LPARAM lParam);
 	LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
 	LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
@@ -44,7 +45,7 @@ private:
 	enum Menu
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
-		kSeeThroughImage, kSkeletonSetting,
+		kSeeThroughImage, kSkeletonSetting, kPanSmoothly,
 		kSnapAsPNG, kSnapAsJPG,
 		kStartStoringImages, kStartVideoRecording,
 		kSaveAsGIF, kSaveAsPNGs,
@@ -52,14 +53,15 @@ private:
 	};
 	enum MenuBar{kFile, kImage};
 
-	POINT m_CursorPos{};
-	bool m_bSpeedHavingChanged = false;
+	POINT m_cursorPos{};
+	bool m_bLeftCombinated = false;
 	bool m_bLeftDowned = false;
 	bool m_bRightCombinated = false;
 
 	HMENU m_hMenuBar = nullptr;
 	bool m_bBarHidden = false;
 	bool m_bTransparent = false;
+	bool m_bToPanWhileDragging = false;
 	bool m_bPlayReady = false;
 
 	enum class RecorderState
@@ -88,6 +90,7 @@ private:
 
 	void MenuOnSeeThroughImage();
 	void MenuOnSkeletonSetting();
+	void MenuOnPanSmoothly();
 
 	void KeyUpOnNextFolder();
 	void KeyUpOnForeFolder();
