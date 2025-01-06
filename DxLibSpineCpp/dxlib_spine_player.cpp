@@ -236,7 +236,7 @@ std::string CDxLibSpinePlayer::GetCurrentAnimationNameWithTrackTime(float* fTrac
 	return std::string();
 }
 /*槽溝名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayer::GetSlotList()
+std::vector<std::string> CDxLibSpinePlayer::GetSlotNames()
 {
 	std::vector<std::string> slotNames;
 	for (size_t i = 0; i < m_skeletonData.size(); ++i)
@@ -252,14 +252,35 @@ std::vector<std::string> CDxLibSpinePlayer::GetSlotList()
 	return slotNames;
 }
 /*装い名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayer::GetSkinList() const
+std::vector<std::string> CDxLibSpinePlayer::GetSkinNames() const
 {
 	return m_skinNames;
 }
 /*動作名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayer::GetAnimationList() const
+std::vector<std::string> CDxLibSpinePlayer::GetAnimationNames() const
 {
 	return m_animationNames;
+}
+/*嵌合名称引き渡し*/
+std::vector<std::string> CDxLibSpinePlayer::GetAttachmentNames()
+{
+	std::vector<std::string> attachmentNames;
+
+	/* Default skin, if exists, contains all the attachments including those not attached to any slots. */
+	for (const auto& skeletonDatum : m_skeletonData)
+	{
+		spine::Skin::AttachmentMap::Entries attachmentMapEntries = skeletonDatum->getDefaultSkin()->getAttachments();
+		for (; attachmentMapEntries.hasNext();)
+		{
+			spine::Skin::AttachmentMap::Entry attachmentMapEntry = attachmentMapEntries.next();
+
+			const char* szName = attachmentMapEntry._name.buffer();
+			const auto& iter = std::find(attachmentNames.begin(), attachmentNames.end(), szName);
+			if (iter == attachmentNames.cend())attachmentNames.push_back(szName);
+		}
+	}
+
+	return attachmentNames;
 }
 /*描画除外リスト設定*/
 void CDxLibSpinePlayer::SetSlotsToExclude(const std::vector<std::string>& slotNames)
@@ -328,6 +349,59 @@ void CDxLibSpinePlayer::MixAnimations(const std::vector<std::string>& animationN
 			}
 		}
 	}
+}
+/*篏合挿げ替え*/
+bool CDxLibSpinePlayer::ReplaceAttachment(const char* szSlotName, const char* szAttachmentName)
+{
+	if (szSlotName == nullptr || szAttachmentName == nullptr)return false;
+
+	const auto FindSlot = [this, &szSlotName]()
+		->spine::Slot*
+		{
+			for (const auto& pDrawable : m_drawables)
+			{
+				for (size_t i = 0; pDrawable->skeleton->getSlots().size();++i)
+				{
+					const spine::String& slotName = pDrawable->skeleton->getDrawOrder()[i]->getData().getName();
+					if (!slotName.isEmpty() && slotName == szSlotName)
+					{
+						return pDrawable->skeleton->getDrawOrder()[i];
+					}
+				}
+			}
+
+			return nullptr;
+		};
+
+	spine::Slot* pSlot = FindSlot();
+	if (pSlot == nullptr)return false;
+
+	const auto FindAttachment = [this, &szAttachmentName]()
+		-> spine::Attachment*
+		{
+			for (const auto& skeletonDatum : m_skeletonData)
+			{
+				spine::Skin::AttachmentMap::Entries attachmentMapEntries = skeletonDatum->getDefaultSkin()->getAttachments();
+				for (; attachmentMapEntries.hasNext();)
+				{
+					spine::Skin::AttachmentMap::Entry attachmentMapEntry = attachmentMapEntries.next();
+					
+					if (attachmentMapEntry._name == szAttachmentName)
+					{
+						return attachmentMapEntry._attachment;
+					}
+				}
+			}
+			return nullptr;
+		};
+
+	spine::Attachment* pAttachment = FindAttachment();
+	if (pAttachment == nullptr)return false;
+
+	/* spine::Skeleton::setAttachment() cannot be adaptable with attachment not concerned with any slots. */
+	pSlot->setAttachment(pAttachment);
+
+	return true;
 }
 /*消去*/
 void CDxLibSpinePlayer::ClearDrawables()

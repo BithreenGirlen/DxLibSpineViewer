@@ -267,7 +267,7 @@ std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime(float* fTra
 	return std::string();
 }
 /*槽溝名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayerC::GetSlotList()
+std::vector<std::string> CDxLibSpinePlayerC::GetSlotNames()
 {
 	std::vector<std::string> slotNames;
 	for (const auto& skeletonData: m_skeletonData)
@@ -282,14 +282,38 @@ std::vector<std::string> CDxLibSpinePlayerC::GetSlotList()
 	return slotNames;
 }
 /*装い名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayerC::GetSkinList() const
+std::vector<std::string> CDxLibSpinePlayerC::GetSkinNames() const
 {
 	return m_skinNames;
 }
 /*動作名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayerC::GetAnimationList() const
+std::vector<std::string> CDxLibSpinePlayerC::GetAnimationNames() const
 {
 	return m_animationNames;
+}
+/*嵌合名称引き渡し*/
+std::vector<std::string> CDxLibSpinePlayerC::GetAttachmentNames()
+{
+	std::vector<std::string> attachmentNames;
+	for (const auto& pSkeletonDatum : m_skeletonData)
+	{
+		spSkin* pSkin = pSkeletonDatum->defaultSkin;
+		if (pSkin == nullptr)continue;
+
+		for (int iSlotIndex = 0; iSlotIndex < pSkeletonDatum->slotsCount; ++iSlotIndex)
+		{
+			for (int iAttachmentIndex = 0;; ++iAttachmentIndex)
+			{
+				const char* attachmentName = spSkin_getAttachmentName(pSkeletonDatum->defaultSkin, iSlotIndex, iAttachmentIndex);
+				if (attachmentName == nullptr)break;
+
+				const auto& iter = std::find(attachmentNames.begin(), attachmentNames.end(), attachmentName);
+				if (iter == attachmentNames.cend())attachmentNames.push_back(attachmentName);
+			}
+		}
+	}
+
+	return attachmentNames;
 }
 /*描画除外リスト設定*/
 void CDxLibSpinePlayerC::SetSlotsToExclude(const std::vector<std::string>& slotNames)
@@ -365,6 +389,66 @@ void CDxLibSpinePlayerC::MixAnimations(const std::vector<std::string>& animation
 			}
 		}
 	}
+}
+/*篏合挿げ替え*/
+bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* szAttachmentName)
+{
+	if (szSlotName == nullptr || szAttachmentName == nullptr)return false;
+
+	const auto FindSlot = [this, &szSlotName]()
+		->spSlot*
+		{
+			for (const auto& pDrawable : m_drawables)
+			{
+				for (size_t i = 0; pDrawable->skeleton->slotsCount; ++i)
+				{
+					const char* slotName = pDrawable->skeleton->drawOrder[i]->data->name;
+					if (slotName != nullptr && strcmp(slotName, szSlotName) == 0)
+					{
+						return pDrawable->skeleton->drawOrder[i];
+					}
+				}
+			}
+
+			return nullptr;
+		};
+
+	spSlot* pSlot = FindSlot();
+	if (pSlot == nullptr)return false;
+
+	const auto FindAttachment = [this, &szAttachmentName]()
+		-> spAttachment*
+		{
+			for (const auto& pSkeletonDatum : m_skeletonData)
+			{
+				spSkin* pSkin = pSkeletonDatum->defaultSkin;
+				if (pSkin == nullptr)continue;
+
+				for (int iSlotIndex = 0; iSlotIndex < pSkeletonDatum->slotsCount; ++iSlotIndex)
+				{
+					for (int iAttachmentIndex = 0;; ++iAttachmentIndex)
+					{
+						const char* attachmentName = spSkin_getAttachmentName(pSkeletonDatum->defaultSkin, iSlotIndex, iAttachmentIndex);
+						if (attachmentName == nullptr)continue;
+
+						spAttachment* pAttachment = spSkin_getAttachment(pSkeletonDatum->defaultSkin, iSlotIndex, attachmentName);
+						if (pAttachment != nullptr)
+						{
+							return pAttachment;
+						}
+					}
+				}
+			}
+
+			return nullptr;
+		};
+
+	spAttachment* pAttachment = FindAttachment();
+	if (pAttachment == nullptr)return false;
+
+	spSlot_setAttachment(pSlot, pAttachment);
+
+	return true;
 }
 /*消去*/
 void CDxLibSpinePlayerC::ClearDrawables()
