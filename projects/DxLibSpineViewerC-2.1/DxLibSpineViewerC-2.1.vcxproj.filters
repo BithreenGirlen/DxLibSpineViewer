@@ -83,6 +83,15 @@
     <ClInclude Include="..\..\shared-src\cpu.h">
       <Filter>ヘッダー ファイル\shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\dialogue_template.h">
+      <Filter>ヘッダー ファイル\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\spine_atlas_dialogue.h">
+      <Filter>ヘッダー ファイル\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\dialogue_controls.h">
+      <Filter>ヘッダー ファイル\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -212,6 +221,15 @@
       <Filter>ソース ファイル\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\cpu.cpp">
+      <Filter>ソース ファイル\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\dialogue_template.cpp">
+      <Filter>ソース ファイル\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\spine_atlas_dialogue.cpp">
+      <Filter>ソース ファイル\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\dialogue_controls.cpp">
       <Filter>ソース ファイル\shared</Filter>
     </ClCompile>
   </ItemGroup>
