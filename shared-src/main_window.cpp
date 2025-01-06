@@ -261,11 +261,14 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         case Menu::kSelectFiles:
             MenuOnSelectFiles();
             break;
-        case Menu::kSeeThroughImage:
-            MenuOnSeeThroughImage();
-            break;
         case Menu::kSkeletonSetting:
             MenuOnSkeletonSetting();
+            break;
+        case Menu::kAtlasSetting:
+            MenuOnAtlasSetting();
+            break;
+        case Menu::kSeeThroughImage:
+            MenuOnSeeThroughImage();
             break;
         case Menu::kPanSmoothly:
             MenuOnPanSmoothly();
@@ -497,6 +500,7 @@ void CMainWindow::InitialiseMenuBar()
 {
     HMENU hMenuFile = nullptr;
     HMENU hMenuImage = nullptr;
+    HMENU hMenuWindow = nullptr;
     HMENU hMenuBar = nullptr;
     BOOL iRet = FALSE;
 
@@ -515,11 +519,17 @@ void CMainWindow::InitialiseMenuBar()
     hMenuImage = ::CreateMenu();
     if (hMenuImage == nullptr)goto failed;
 
-    iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kSeeThroughImage, "Through-seen");
-    if (iRet == 0)goto failed;
     iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kSkeletonSetting, "Manipulation");
     if (iRet == 0)goto failed;
-    iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kPanSmoothly, "Pan smoothly");
+    iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kAtlasSetting, "Re-attachment");
+    if (iRet == 0)goto failed;
+
+    hMenuWindow = ::CreateMenu();
+    if (hMenuWindow == nullptr)goto failed;
+
+    iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kSeeThroughImage, "Through-seen");
+    if (iRet == 0)goto failed;
+    iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kPanSmoothly, "Pan smoothly");
     if (iRet == 0)goto failed;
 
     hMenuBar = ::CreateMenu();
@@ -528,6 +538,8 @@ void CMainWindow::InitialiseMenuBar()
     iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuFile), "File");
     if (iRet == 0)goto failed;
     iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuImage), "Image");
+    if (iRet == 0)goto failed;
+    iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuWindow), "Window");
     if (iRet == 0)goto failed;
 
     iRet = ::SetMenu(m_hWnd, hMenuBar);
@@ -547,6 +559,10 @@ failed:
     if (hMenuImage != nullptr)
     {
         ::DestroyMenu(hMenuImage);
+    }
+    if (hMenuWindow != nullptr)
+    {
+        ::DestroyMenu(hMenuWindow);
     }
     if (hMenuBar != nullptr)
     {
@@ -628,6 +644,34 @@ void CMainWindow::MenuOnSelectFiles()
         }
     }
 }
+/*骨組み操作画面呼び出し*/
+void CMainWindow::MenuOnSkeletonSetting()
+{
+    if (m_SpineManipulatorDialogue.GetHwnd() == nullptr)
+    {
+        HWND hWnd = m_SpineManipulatorDialogue.Create(m_hInstance, m_hWnd, L"Spine manipulation", &m_DxLibSpinePlayer);
+
+        ::ShowWindow(hWnd, SW_SHOWNORMAL);
+    }
+    else
+    {
+        ::SetFocus(m_SpineManipulatorDialogue.GetHwnd());
+    }
+}
+/*装着変更画面呼び出し*/
+void CMainWindow::MenuOnAtlasSetting()
+{
+    if (m_SpineAtlasDialogue.GetHwnd() == nullptr)
+    {
+        HWND hWnd = m_SpineAtlasDialogue.Create(m_hInstance, m_hWnd, L"Spine re-attachment", &m_DxLibSpinePlayer);
+
+        ::ShowWindow(hWnd, SW_SHOWNORMAL);
+    }
+    else
+    {
+        ::SetFocus(m_SpineManipulatorDialogue.GetHwnd());
+    }
+}
 /*透過*/
 void CMainWindow::MenuOnSeeThroughImage()
 {
@@ -636,7 +680,7 @@ void CMainWindow::MenuOnSeeThroughImage()
     HMENU hMenuBar = ::GetMenu(m_hWnd);
     if (hMenuBar != nullptr)
     {
-        HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kImage);
+        HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
         if (hMenu != nullptr)
         {
             m_bTransparent ^= true;
@@ -660,27 +704,13 @@ void CMainWindow::MenuOnSeeThroughImage()
         }
     }
 }
-/*骨組み操作画面呼び出し*/
-void CMainWindow::MenuOnSkeletonSetting()
-{
-    if (m_SpineManipulatorDialogue.GetHwnd() == nullptr)
-    {
-        HWND hWnd = m_SpineManipulatorDialogue.Create(m_hInstance, m_hWnd, L"Spine manipulation", &m_DxLibSpinePlayer);
-
-        ::ShowWindow(hWnd, SW_SHOWNORMAL);
-    }
-    else
-    {
-        ::SetFocus(m_SpineManipulatorDialogue.GetHwnd());
-    }
-}
 /*視点移動法切り替え*/
 void CMainWindow::MenuOnPanSmoothly()
 {
     HMENU hMenuBar = ::GetMenu(m_hWnd);
     if (hMenuBar != nullptr)
     {
-        HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kImage);
+        HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
         if (hMenu != nullptr)
         {
             m_bToPanWhileDragging ^= true;

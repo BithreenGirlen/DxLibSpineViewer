@@ -9,6 +9,8 @@
 #include "spine_player_shared.h"
 #include "spine_setting_dialogue.h"
 #include "spine_manipulator_dialogue.h"
+#include "spine_atlas_dialogue.h"
+
 #include "win_image.h"
 #include "mf_video_encoder.h"
 
@@ -45,13 +47,17 @@ private:
 	enum Menu
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
-		kSeeThroughImage, kSkeletonSetting, kPanSmoothly,
+		kSkeletonSetting, kAtlasSetting,
+		kSeeThroughImage, kPanSmoothly,
 		kSnapAsPNG, kSnapAsJPG,
 		kStartStoringImages, kStartVideoRecording,
 		kSaveAsGIF, kSaveAsPNGs,
 		kEndVideoRecording
 	};
-	enum MenuBar{kFile, kImage};
+	enum MenuBar
+	{
+		kFile, kImage, kWindow
+	};
 
 	POINT m_cursorPos{};
 	bool m_bLeftCombinated = false;
@@ -88,8 +94,10 @@ private:
 	void MenuOnFileSetting();
 	void MenuOnSelectFiles();
 
-	void MenuOnSeeThroughImage();
 	void MenuOnSkeletonSetting();
+	void MenuOnAtlasSetting();
+
+	void MenuOnSeeThroughImage();
 	void MenuOnPanSmoothly();
 
 	void KeyUpOnNextFolder();
@@ -114,6 +122,7 @@ private:
 	CDxLibSpinePlayer m_DxLibSpinePlayer;
 	CSpineSettingDialogue m_SpineSettingDialogue;
 	CSpineManipulatorDialogue m_SpineManipulatorDialogue;
+	CSpineAtlasDialogue m_SpineAtlasDialogue;
 	CMfVideoEncoder m_MfVideoEncoder;
 };
 
