@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "spine_player_shared.h"
+#include "dialogue_controls.h"
 
 class CSpineManipulatorDialogue
 {
@@ -32,16 +33,11 @@ private:
 		kApplyButton = 1, 
 	};
 
-	std::wstring m_wstrWindowName = L"Dialogue";
-	const std::vector<std::wstring> m_slotColumnNames = { L"Slots to exclude"};
-	const std::vector<std::wstring> m_skinColumnNames = { L"Skins to mix"};
-	const std::vector<std::wstring> m_animationColumnNames = { L"Animations to mix" };
-
 	HFONT m_hFont = nullptr;
 
-	HWND m_hSlotListView = nullptr;
-	HWND m_hSkinListView = nullptr;
-	HWND m_hAnimationListView = nullptr;
+	CListView m_slotListView;
+	CListView m_skinListView;
+	CListView m_animationListView;
 
 	HWND m_hApplyButton = nullptr;
 
@@ -50,14 +46,6 @@ private:
 	void OnApplyButton();
 
 	LRESULT ResizeControls();
-
-	void CreateListView(HWND* pListViewHandle, const std::vector<std::wstring>& columnNames);
-	void AdjustListViewWidth(HWND hListView, int iColumnCount);
-	int GetListViewItemCount(HWND hListView);
-	bool AddItemToListView(HWND hListView, const std::vector<std::wstring>& columns, bool bToEnd);
-	void ClearListView(HWND hListView);
-	void CreateSingleList(HWND hListView, const std::vector<std::wstring>& names);
-	std::wstring GetListViewItemText(HWND hListView, int iRow, int iColumn);
 
 	CDxLibSpinePlayer* m_pDxLibSpinePlayer = nullptr;
 };

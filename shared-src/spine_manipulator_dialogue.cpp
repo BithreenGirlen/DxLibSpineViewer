@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "spine_manipulator_dialogue.h"
+#include "dialogue_template.h"
 #include "win_text.h"
 
 
@@ -25,38 +26,14 @@ CSpineManipulatorDialogue::~CSpineManipulatorDialogue()
 
 HWND CSpineManipulatorDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer)
 {
-	/*
-	* Dialogue template with no controls.
-	* https://learn.microsoft.com/en-us/windows/win32/dlgbox/dlgtemplateex
-	*/
-	const unsigned char dialogueTemplate[76] =
-	{
-		0x01, 0x00, // dlgVer
-		0xff, 0xff, // signature
-		0x00, 0x00, 0x00, 0x00, // helpID
-		0x00, 0x00, 0x00, 0x00, // exStyle
-		0x48, 0x00, 0xcc, 0x80, // style; here DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-		0x00, 0x00, // cDlgItems
-		0x00, 0x00, // x
-		0x00, 0x00, // y
-		0x80, 0x00, // cx
-		0xf0, 0x00, // cy
-		0x00, 0x00, // menu
-		0x00, 0x00, // windowClass
-		0x44, 0x00, 0x69, 0x00, 0x61, 0x00, 0x6c, 0x00, // title[7]; here "Dialog"
-		0x6f, 0x00, 0x67, 0x00, 0x00, 0x00,
-		0x08, 0x00, // pointsize
-		0x90, 0x01, // weight
-		0x00, 0x01, // italic
-		0x4d, 0x00, // characterset
-		0x53, 0x00, 0x20, 0x00, 0x53, 0x00, 0x68, 0x00, // typeface[13]; here "MS Shell Dlg"
-		0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x20, 0x00,
-		0x44, 0x00, 0x6c, 0x00, 0x67, 0x00, 0x00, 0x00,
-	};
+	CDialogueTemplate sWinDialogueTemplate;
+	sWinDialogueTemplate.SetWindowSize(0x80, 0xf0);
+	sWinDialogueTemplate.MakeWindowResizable(true);
+	std::vector<unsigned char> dialogueTemplate = sWinDialogueTemplate.Generate(pwzWindowName);
 
-	if (pwzWindowName != nullptr)m_wstrWindowName = pwzWindowName;
-	if (pPlayer != nullptr)m_pDxLibSpinePlayer = pPlayer;
-	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate, hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
+	m_pDxLibSpinePlayer = pPlayer;
+
+	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.data(), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
 /*C CALLBACK*/
 LRESULT CSpineManipulatorDialogue::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -98,11 +75,13 @@ LRESULT CSpineManipulatorDialogue::OnInit(HWND hWnd)
 {
 	m_hWnd = hWnd;
 
-	::SetWindowText(m_hWnd, m_wstrWindowName.c_str());
+	const std::vector<std::wstring> slotColumnNames = { L"Slots to exclude" };
+	const std::vector<std::wstring> skinColumnNames = { L"Skins to mix" };
+	const std::vector<std::wstring> animationColumnNames = { L"Animations to mix" };
 
-	CreateListView(&m_hSlotListView, m_slotColumnNames);
-	CreateListView(&m_hSkinListView, m_skinColumnNames);
-	CreateListView(&m_hAnimationListView, m_animationColumnNames);
+	m_slotListView.Create(m_hWnd, slotColumnNames, true);
+	m_skinListView.Create(m_hWnd, skinColumnNames, true);
+	m_animationListView.Create(m_hWnd, animationColumnNames, true);
 
 	m_hApplyButton = ::CreateWindowExW(0, WC_BUTTONW, L"Apply", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON, 0, 0, 0, 0, m_hWnd, reinterpret_cast<HMENU>(Controls::kApplyButton), ::GetModuleHandle(NULL), nullptr);
 
@@ -128,14 +107,14 @@ LRESULT CSpineManipulatorDialogue::OnInit(HWND hWnd)
 				std::sort(wstrTemps.begin(), wstrTemps.end());
 			};
 
-		ConvertAndSort(m_pDxLibSpinePlayer->GetSlotList());
-		CreateSingleList(m_hSlotListView, wstrTemps);
+		ConvertAndSort(m_pDxLibSpinePlayer->GetSlotNames());
+		m_slotListView.CreateSingleList(wstrTemps);
 
-		ConvertAndSort(m_pDxLibSpinePlayer->GetSkinList());
-		CreateSingleList(m_hSkinListView, wstrTemps);
+		ConvertAndSort(m_pDxLibSpinePlayer->GetSkinNames());
+		m_skinListView.CreateSingleList(wstrTemps);
 
-		ConvertAndSort(m_pDxLibSpinePlayer->GetAnimationList());
-		CreateSingleList(m_hAnimationListView, wstrTemps);
+		ConvertAndSort(m_pDxLibSpinePlayer->GetAnimationNames());
+		m_animationListView.CreateSingleList(wstrTemps);
 	}
 
 	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
@@ -149,6 +128,7 @@ LRESULT CSpineManipulatorDialogue::OnClose()
 	m_hWnd = nullptr;
 	return 0;
 }
+/*WM_SIZE*/
 LRESULT CSpineManipulatorDialogue::OnSize()
 {
 	ResizeControls();
@@ -202,49 +182,34 @@ BOOL CSpineManipulatorDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 /*適用ボタン押下*/
 void CSpineManipulatorDialogue::OnApplyButton()
 {
-	std::vector<std::string> checkedItems;
-
-	const auto PickupCheckedItems =
-		[this, &checkedItems](HWND hListView)
-		-> void
-		{
-			int iCount = GetListViewItemCount(hListView);
-			if (iCount == -1 || iCount == 0)
-			{
-				checkedItems.clear();
-				return;
-			}
-
-			if (checkedItems.empty())checkedItems.reserve(iCount);
-			else checkedItems.clear();
-
-			for (int i = 0; i < iCount; ++i)
-			{
-				UINT uiRet = ListView_GetCheckState(hListView, i);
-				if (uiRet == 1)
-				{
-					std::wstring wstr = GetListViewItemText(hListView, i, 0);
-					if (!wstr.empty())
-					{
-						checkedItems.push_back(win_text::NarrowUtf8(wstr));
-					}
-				}
-			}
-		};
-
 	if (m_pDxLibSpinePlayer != nullptr)
 	{
-		PickupCheckedItems(m_hSlotListView);
-		m_pDxLibSpinePlayer->SetSlotsToExclude(checkedItems);
+		std::vector<std::string> strCheckedItems;
+		std::vector<std::wstring> wstrCheckedItems;
+		const auto ConvertCheckedItems = [&strCheckedItems, &wstrCheckedItems]()
+			-> void
+			{
+				strCheckedItems.clear();
+				for (const auto& wstrCheckedItem : wstrCheckedItems)
+				{
+					strCheckedItems.push_back(win_text::NarrowUtf8(wstrCheckedItem));
+				}
+			};
 
-		PickupCheckedItems(m_hSkinListView);
-		if (!checkedItems.empty())
+		wstrCheckedItems = m_slotListView.PickupCheckedItems();
+		ConvertCheckedItems();
+		m_pDxLibSpinePlayer->SetSlotsToExclude(strCheckedItems);
+
+		wstrCheckedItems = m_skinListView.PickupCheckedItems();
+		ConvertCheckedItems();
+		if (!strCheckedItems.empty())
 		{
-			m_pDxLibSpinePlayer->MixSkins(checkedItems);
+			m_pDxLibSpinePlayer->MixSkins(strCheckedItems);
 		}
 
-		PickupCheckedItems(m_hAnimationListView);
-		m_pDxLibSpinePlayer->MixAnimations(checkedItems);
+		wstrCheckedItems = m_animationListView.PickupCheckedItems();
+		ConvertCheckedItems();
+		m_pDxLibSpinePlayer->MixAnimations(strCheckedItems);
 	}
 }
 /*寸法・位置調整*/
@@ -264,24 +229,29 @@ LRESULT CSpineManipulatorDialogue::ResizeControls()
 	long w = clientWidth - x_space * 2;
 	long h = clientHeight * 3 / 10;
 
-	if (m_hSlotListView != nullptr)
+	HWND hWnd = m_slotListView.GetHwnd();
+	if (hWnd != nullptr)
 	{
-		::MoveWindow(m_hSlotListView, x, y, w, h, TRUE);
-		AdjustListViewWidth(m_hSlotListView, static_cast<int>(m_slotColumnNames.size()));
+		::MoveWindow(hWnd, x, y, w, h, TRUE);
+		m_slotListView.AdjustWidth();
 	}
 	y += h + y_space;
 	h = clientHeight * 1 / 5;
-	if (m_hSkinListView != nullptr)
+
+	hWnd = m_skinListView.GetHwnd();
+	if (hWnd != nullptr)
 	{
-		::MoveWindow(m_hSkinListView, x, y, w, h, TRUE);
-		AdjustListViewWidth(m_hSkinListView, static_cast<int>(m_skinColumnNames.size()));
+		::MoveWindow(hWnd, x, y, w, h, TRUE);
+		m_skinListView.AdjustWidth();
 	}
 	y += h + y_space;
 	h = clientHeight * 3 / 10;
-	if (m_hAnimationListView != nullptr)
+
+	hWnd = m_animationListView.GetHwnd();
+	if (hWnd != nullptr)
 	{
-		::MoveWindow(m_hAnimationListView, x, y, w, h, TRUE);
-		AdjustListViewWidth(m_hAnimationListView, static_cast<int>(m_skinColumnNames.size()));
+		::MoveWindow(hWnd, x, y, w, h, TRUE);
+		m_animationListView.AdjustWidth();
 	}
 	y += h + y_space;
 	h = clientHeight / 16;
@@ -292,122 +262,4 @@ LRESULT CSpineManipulatorDialogue::ResizeControls()
 	}
 
 	return 0;
-}
-/*ListView作成*/
-void CSpineManipulatorDialogue::CreateListView(HWND* pListViewHandle, const std::vector<std::wstring>& columnNames)
-{
-	*pListViewHandle = ::CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"", WS_VISIBLE | WS_CHILD | LVS_REPORT | LVS_ALIGNLEFT | WS_TABSTOP | LVS_SINGLESEL, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(nullptr), nullptr);
-	if (*pListViewHandle != nullptr)
-	{
-		ListView_SetExtendedListViewStyle(*pListViewHandle, LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_CHECKBOXES | LVS_EX_HEADERDRAGDROP);
-
-		LVCOLUMNW lvColumn{};
-		lvColumn.mask = LVCF_TEXT | LVCF_SUBITEM | LVCF_FMT | LVCF_WIDTH;
-		lvColumn.fmt = LVCFMT_LEFT;
-		for (size_t i = 0; i < columnNames.size(); ++i)
-		{
-			lvColumn.iSubItem = static_cast<int>(i);
-			lvColumn.pszText = const_cast<LPWSTR>(columnNames.at(i).data());
-			ListView_InsertColumn(*pListViewHandle, i, &lvColumn);
-		}
-	}
-}
-/*ListView幅調整*/
-void CSpineManipulatorDialogue::AdjustListViewWidth(HWND hListView, int iColumnCount)
-{
-	if (hListView != nullptr)
-	{
-		RECT rect;
-		::GetClientRect(hListView, &rect);
-		int iWindowWidth = rect.right - rect.left;
-
-		LVCOLUMNW lvColumn{};
-		lvColumn.mask = LVCF_WIDTH;
-		lvColumn.cx = iWindowWidth / iColumnCount;
-		for (int i = 0; i < iColumnCount; ++i)
-		{
-			ListView_SetColumn(hListView, i, &lvColumn);
-		}
-	}
-}
-/*項目数取得*/
-int CSpineManipulatorDialogue::GetListViewItemCount(HWND hListView)
-{
-	LRESULT lResult = ::SendMessage(hListView, LVM_GETITEMCOUNT, 0, 0);
-	return static_cast<int>(lResult);
-}
-/*項目追加*/
-bool CSpineManipulatorDialogue::AddItemToListView(HWND hListView, const std::vector<std::wstring>& columns, bool bToEnd)
-{
-	int iItem = GetListViewItemCount(hListView);
-	if (iItem == -1)return false;
-
-	LRESULT lResult = -1;
-	for (size_t i = 0; i < columns.size(); ++i)
-	{
-		LVITEM lvItem{};
-		lvItem.mask = LVIF_TEXT | LVIF_PARAM;
-
-		lvItem.iItem = bToEnd ? iItem : 0;
-		lvItem.iSubItem = static_cast<int>(i);
-		lvItem.pszText = const_cast<wchar_t*>(columns.at(i).c_str());
-
-		if (i == 0)
-		{
-			lResult = ::SendMessage(hListView, LVM_INSERTITEM, 0, reinterpret_cast<LPARAM>(&lvItem));
-			if (lResult == -1)return false;
-			iItem = static_cast<int>(lResult);
-		}
-		else
-		{
-			lResult = ::SendMessage(hListView, LVM_SETITEMTEXT, iItem, reinterpret_cast<LPARAM>(&lvItem));
-			if (lResult == -1)return false;
-		}
-	}
-
-	return true;
-}
-/*リスト項目消去*/
-void CSpineManipulatorDialogue::ClearListView(HWND hListView)
-{
-	ListView_DeleteAllItems(hListView);
-}
-/*単要素リスト構築*/
-void CSpineManipulatorDialogue::CreateSingleList(HWND hListView, const std::vector<std::wstring> &names)
-{
-	if (hListView != nullptr)
-	{
-		ClearListView(hListView);
-		for (const auto& name : names)
-		{
-			std::vector<std::wstring> columns;
-			columns.push_back(name);
-			AddItemToListView(hListView, columns, true);
-		}
-	}
-}
-/*指定項目の文字列取得*/
-std::wstring CSpineManipulatorDialogue::GetListViewItemText(HWND hListView, int iRow, int iColumn)
-{
-	std::wstring wstrResult;
-	if (hListView != nullptr)
-	{
-		LV_ITEM lvItem{};
-		lvItem.iSubItem = iColumn;
-
-		for (int iSize = 256; iSize < 1025; iSize *= 2)
-		{
-			std::vector<wchar_t> vBuffer(iSize, L'\0');
-
-			lvItem.cchTextMax = iSize;
-			lvItem.pszText = vBuffer.data();
-			int iLen = static_cast<int>(::SendMessage(hListView, LVM_GETITEMTEXT, iRow, reinterpret_cast<LPARAM>(&lvItem)));
-			if (iLen < iSize - 1)
-			{
-				wstrResult = vBuffer.data();
-				break;
-			}
-		}
-	}
-	return wstrResult;
 }
