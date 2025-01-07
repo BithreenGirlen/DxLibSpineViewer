@@ -410,7 +410,40 @@ bool CDxLibSpinePlayer::ReplaceAttachment(const char* szSlotName, const char* sz
 	spine::Attachment* pAttachment = FindAttachment();
 	if (pAttachment == nullptr)return false;
 
+	/* copy the attachment name currently used. */
+	const spine::String foreName = pSlot->getAttachment()->getName().buffer();
+
 	pSlot->setAttachment(pAttachment);
+	pSlot->getData().setAttachmentName(szAttachmentName);
+
+	/* overwrite attachment name in spine::AttachmentTimeline if exists. */
+	for (const auto& skeletonDatum : m_skeletonData)
+	{
+		const auto& animationName = m_animationNames[m_nAnimationIndex];
+		spine::Animation* pAnimation = skeletonDatum->findAnimation(animationName.c_str());
+		if (pAnimation == nullptr)continue;
+
+		spine::Vector<spine::Timeline*>& timelines = pAnimation->getTimelines();
+		for (size_t i = 0; i < timelines.size(); ++i)
+		{
+			if (timelines[i]->getRTTI().isExactly(spine::AttachmentTimeline::rtti))
+			{
+				const auto& attachmentTimeline = static_cast<spine::AttachmentTimeline*>(timelines[i]);
+
+				spine::Vector<spine::String>& attachmentNames = attachmentTimeline->getAttachmentNames();
+				for (size_t ii = 0; ii < attachmentNames.size(); ++ii)
+				{
+					const char* szName = attachmentNames[ii].buffer();
+					if (szName == nullptr)continue;
+
+					if (strcmp(szName, foreName.buffer()) == 0)
+					{
+						attachmentNames[ii] = szAttachmentName;
+					}
+				}
+			}
+		}
+	}
 
 	return true;
 }
