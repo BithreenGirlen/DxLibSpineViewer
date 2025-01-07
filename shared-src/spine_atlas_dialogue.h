@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "spine_player_shared.h"
 #include "dialogue_controls.h"
@@ -47,6 +48,9 @@ private:
 	void OnReattachButton();
 
 	void ResizeControls();
+	void OnSlotSelect();
+
+	std::unordered_map<std::string, std::vector<std::string>> m_slotAttachmentMap;
 
 	CDxLibSpinePlayer* m_pDxLibSpinePlayer = nullptr;
 };

@@ -1,7 +1,5 @@
 
 
-#include <unordered_map>
-
 #include "spine_atlas_dialogue.h"
 
 #include "dialogue_template.h"
@@ -25,7 +23,7 @@ CSpineAtlasDialogue::~CSpineAtlasDialogue()
 HWND CSpineAtlasDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer)
 {
 	CDialogueTemplate sWinDialogueTemplate;
-	sWinDialogueTemplate.SetWindowSize(256, 120);
+	sWinDialogueTemplate.SetWindowSize(120, 80);
 	std::vector<unsigned char> dialogueTemplate = sWinDialogueTemplate.Generate(pwzWindowName);
 
 	m_pDxLibSpinePlayer = pPlayer;
@@ -70,8 +68,8 @@ LRESULT CSpineAtlasDialogue::OnInit(HWND hWnd)
 {
 	m_hWnd = hWnd;
 
-	m_hSlotStatic = ::CreateWindowEx(0, WC_STATIC, L"Slots", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
-	m_hAttachmentStatic = ::CreateWindowEx(0, WC_STATIC, L"Attachments", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+	m_hSlotStatic = ::CreateWindowEx(0, WC_STATIC, L"Slot", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+	m_hAttachmentStatic = ::CreateWindowEx(0, WC_STATIC, L"Attachment", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
 
 	m_slotComboBox.Create(m_hWnd);
 	m_attachmentComboBox.Create(m_hWnd);
@@ -80,29 +78,16 @@ LRESULT CSpineAtlasDialogue::OnInit(HWND hWnd)
 
 	if (m_pDxLibSpinePlayer != nullptr)
 	{
-		auto slotAttachmentMap = m_pDxLibSpinePlayer->GetSlotNamesWithTheirAttachments();
+		m_slotAttachmentMap = m_pDxLibSpinePlayer->GetSlotNamesWithTheirAttachments();
 
 		std::vector<std::wstring> wstrSlotNames;
-		wstrSlotNames.reserve(slotAttachmentMap.size());
-		for (const auto& slot : slotAttachmentMap)
+		wstrSlotNames.reserve(m_slotAttachmentMap.size());
+		for (const auto& slot : m_slotAttachmentMap)
 		{
 			wstrSlotNames.push_back(win_text::WidenUtf8(slot.first));
 		}
 		m_slotComboBox.Setup(wstrSlotNames);
-
-		std::vector<std::wstring> wstrAttachmentNames;
-		wstrAttachmentNames.reserve(slotAttachmentMap.size() * 2);
-		for (const auto& slot : slotAttachmentMap)
-		{
-			const auto &attachments = slot.second;
-			for (const auto& attachment : attachments)
-			{
-				std::wstring wstr = win_text::WidenUtf8(attachment);
-				const auto& iter = std::find(wstrAttachmentNames.begin(), wstrAttachmentNames.end(), wstr);
-				if (iter == wstrAttachmentNames.cend())wstrAttachmentNames.push_back(wstr);
-			}
-		}
-		m_attachmentComboBox.Setup(wstrAttachmentNames);
+		OnSlotSelect();
 	}
 
 	ResizeControls();
@@ -114,6 +99,8 @@ LRESULT CSpineAtlasDialogue::OnInit(HWND hWnd)
 /*WM_CLOSE*/
 LRESULT CSpineAtlasDialogue::OnClose()
 {
+	m_slotAttachmentMap.clear();
+
 	::DestroyWindow(m_hWnd);
 	m_hWnd = nullptr;
 	return 0;
@@ -137,11 +124,26 @@ LRESULT CSpineAtlasDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 	else
 	{
 		/*Controls*/
-		switch (wmId)
+
+		WORD usCode = HIWORD(wParam);
+		if (usCode == CBN_SELCHANGE)
 		{
-		case Controls::kReattachButton:
-			OnReattachButton();
-			break;
+			/*Notification code*/
+			if (reinterpret_cast<HWND>(lParam) == m_slotComboBox.GetHwnd())
+			{
+				OnSlotSelect();
+			}
+		}
+		else
+		{
+			switch (wmId)
+			{
+			case Controls::kReattachButton:
+				OnReattachButton();
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
@@ -179,12 +181,12 @@ void CSpineAtlasDialogue::ResizeControls()
 	long clientWidth = clientRect.right - clientRect.left;
 	long clientHeight = clientRect.bottom - clientRect.top;
 
-	long spaceX = clientWidth / 96;
+	long spaceX = clientWidth / 24;
 	long spaceY = clientHeight / 96;
 
 	long x = spaceX;
-	long y = spaceY;
-	long w = clientWidth / 2 - spaceX * 2;
+	long y = spaceY * 2;
+	long w = clientWidth - spaceX * 2;
 	long h = clientHeight * 8 / 10;
 
 	int iFontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
@@ -201,8 +203,7 @@ void CSpineAtlasDialogue::ResizeControls()
 		::MoveWindow(hSlotComboBox, x, y, w, h, TRUE);
 	}
 
-	x += clientWidth / 2;
-	y = spaceY;
+	y += iFontHeight * 2 + spaceY;
 	if (m_hAttachmentStatic != nullptr)
 	{
 		::MoveWindow(m_hAttachmentStatic, x, y, w, h, TRUE);
@@ -215,12 +216,33 @@ void CSpineAtlasDialogue::ResizeControls()
 		::MoveWindow(hAttachmentComboBox, x, y, w, h, TRUE);
 	}
 
-	w = clientWidth / 4;
-	h = iFontHeight * 2;
+	w = clientWidth / 2;
+	h = static_cast<int>(iFontHeight * 1.5);
 	x = spaceX;
-	y = clientHeight - h -spaceY;
+	y = clientHeight - h -spaceY * 2;
 	if (m_hReattachButton != nullptr)
 	{
 		::MoveWindow(m_hReattachButton, x, y, w, h, TRUE);
+	}
+}
+/*ëIëçÄñ⁄ïœçX*/
+void CSpineAtlasDialogue::OnSlotSelect()
+{
+	std::string strSlotName = win_text::NarrowUtf8(m_slotComboBox.GetSelectedItemText());
+	if (strSlotName.empty())return;
+
+	const auto& iter = m_slotAttachmentMap.find(strSlotName);
+	if (iter != m_slotAttachmentMap.cend())
+	{
+		std::vector<std::string> &attachmentNames = iter->second;
+
+		std::vector<std::wstring> wstrAttachmentNames;
+		wstrAttachmentNames.reserve(attachmentNames.size());
+		for (const auto& attachmentName : attachmentNames)
+		{
+			wstrAttachmentNames.push_back(win_text::WidenUtf8(attachmentName));
+		}
+		m_attachmentComboBox.Setup(wstrAttachmentNames);
+		::InvalidateRect(m_hWnd, nullptr, FALSE);
 	}
 }
