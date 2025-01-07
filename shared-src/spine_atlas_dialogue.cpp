@@ -1,6 +1,6 @@
 
 
-#include <algorithm>
+#include <unordered_map>
 
 #include "spine_atlas_dialogue.h"
 
@@ -80,29 +80,29 @@ LRESULT CSpineAtlasDialogue::OnInit(HWND hWnd)
 
 	if (m_pDxLibSpinePlayer != nullptr)
 	{
-		std::vector<std::wstring> wstrTemps;
+		auto slotAttachmentMap = m_pDxLibSpinePlayer->GetSlotNamesWithTheirAttachments();
 
-		const auto ConvertAndSort =
-			[&wstrTemps](const std::vector<std::string>& strTemps)
-			-> void
+		std::vector<std::wstring> wstrSlotNames;
+		wstrSlotNames.reserve(slotAttachmentMap.size());
+		for (const auto& slot : slotAttachmentMap)
+		{
+			wstrSlotNames.push_back(win_text::WidenUtf8(slot.first));
+		}
+		m_slotComboBox.Setup(wstrSlotNames);
+
+		std::vector<std::wstring> wstrAttachmentNames;
+		wstrAttachmentNames.reserve(slotAttachmentMap.size() * 2);
+		for (const auto& slot : slotAttachmentMap)
+		{
+			const auto &attachments = slot.second;
+			for (const auto& attachment : attachments)
 			{
-				if (wstrTemps.empty()) wstrTemps.reserve(strTemps.size());
-				else wstrTemps.clear();
-
-				for (const auto& temp : strTemps)
-				{
-					wstrTemps.push_back(win_text::WidenUtf8(temp));
-				}
-				std::sort(wstrTemps.begin(), wstrTemps.end());
-			};
-
-		const auto attachmentNames = m_pDxLibSpinePlayer->GetSlotNames();
-		ConvertAndSort(attachmentNames);
-		m_slotComboBox.Setup(wstrTemps);
-
-		const auto atlasRegionNames = m_pDxLibSpinePlayer->GetAttachmentNames();
-		ConvertAndSort(atlasRegionNames);
-		m_attachmentComboBox.Setup(wstrTemps);
+				std::wstring wstr = win_text::WidenUtf8(attachment);
+				const auto& iter = std::find(wstrAttachmentNames.begin(), wstrAttachmentNames.end(), wstr);
+				if (iter == wstrAttachmentNames.cend())wstrAttachmentNames.push_back(wstr);
+			}
+		}
+		m_attachmentComboBox.Setup(wstrAttachmentNames);
 	}
 
 	ResizeControls();

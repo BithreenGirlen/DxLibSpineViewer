@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include "dxlib_spine.h"
 
@@ -42,12 +43,12 @@ public:
 	std::vector<std::string> GetSlotNames();
 	std::vector<std::string> GetSkinNames() const;
 	std::vector<std::string> GetAnimationNames() const;
-	std::vector<std::string> GetAttachmentNames();
 
 	void SetSlotsToExclude(const std::vector<std::string>& slotNames);
 	void MixSkins(const std::vector<std::string>& skinNames);
 	void MixAnimations(const std::vector<std::string>& animationNames);
 
+	std::unordered_map<std::string, std::vector<std::string>> GetSlotNamesWithTheirAttachments();
 	bool ReplaceAttachment(const char* szSlotName, const char* szAttachmentName);
 private:
 	HWND m_hRenderWnd = nullptr;

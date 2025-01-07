@@ -30,7 +30,7 @@ private:
 	enum Constants { kFontSize = 16 };
 	enum Controls
 	{
-		kReattachButton = 1,
+		kReattachButton = 1
 	};
 
 	HFONT m_hFont = nullptr;

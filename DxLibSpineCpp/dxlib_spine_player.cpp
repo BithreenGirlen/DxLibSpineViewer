@@ -261,27 +261,6 @@ std::vector<std::string> CDxLibSpinePlayer::GetAnimationNames() const
 {
 	return m_animationNames;
 }
-/*嵌合名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayer::GetAttachmentNames()
-{
-	std::vector<std::string> attachmentNames;
-
-	/* Default skin, if exists, contains all the attachments including those not attached to any slots. */
-	for (const auto& skeletonDatum : m_skeletonData)
-	{
-		spine::Skin::AttachmentMap::Entries attachmentMapEntries = skeletonDatum->getDefaultSkin()->getAttachments();
-		for (; attachmentMapEntries.hasNext();)
-		{
-			spine::Skin::AttachmentMap::Entry attachmentMapEntry = attachmentMapEntries.next();
-
-			const char* szName = attachmentMapEntry._name.buffer();
-			const auto& iter = std::find(attachmentNames.begin(), attachmentNames.end(), szName);
-			if (iter == attachmentNames.cend())attachmentNames.push_back(szName);
-		}
-	}
-
-	return attachmentNames;
-}
 /*描画除外リスト設定*/
 void CDxLibSpinePlayer::SetSlotsToExclude(const std::vector<std::string>& slotNames)
 {
@@ -350,6 +329,39 @@ void CDxLibSpinePlayer::MixAnimations(const std::vector<std::string>& animationN
 		}
 	}
 }
+/*挿げ替え可能な嵌合名称引き渡し*/
+std::unordered_map<std::string, std::vector<std::string>> CDxLibSpinePlayer::GetSlotNamesWithTheirAttachments()
+{
+	std::unordered_map<std::string, std::vector<std::string>> slotAttachmentMap;
+
+	/* Default skin, if exists, contains all the attachments including those not attached to any slots. */
+	for (const auto& skeletonDatum : m_skeletonData)
+	{
+		spine::Skin* pSkin = skeletonDatum->getDefaultSkin();
+
+		auto& slots = skeletonDatum->getSlots();
+		for (size_t i = 0; i < slots.size(); ++i)
+		{
+			spine::Vector<spine::Attachment*> pAttachments;
+			pSkin->findAttachmentsForSlot(i, pAttachments);
+			if (pAttachments.size() > 1)
+			{
+				std::vector<std::string> attachmentNames;
+
+				for (size_t ii = 0; ii < pAttachments.size(); ++ii)
+				{
+					const char* szName = pAttachments[ii]->getName().buffer();
+					const auto& iter = std::find(attachmentNames.begin(), attachmentNames.end(), szName);
+					if (iter == attachmentNames.cend())attachmentNames.push_back(szName);
+				}
+
+				slotAttachmentMap.insert({ slots[i]->getName().buffer(), attachmentNames });
+			}
+		}
+	}
+
+	return slotAttachmentMap;
+}
 /*篏合挿げ替え*/
 bool CDxLibSpinePlayer::ReplaceAttachment(const char* szSlotName, const char* szAttachmentName)
 {
@@ -398,7 +410,6 @@ bool CDxLibSpinePlayer::ReplaceAttachment(const char* szSlotName, const char* sz
 	spine::Attachment* pAttachment = FindAttachment();
 	if (pAttachment == nullptr)return false;
 
-	/* spine::Skeleton::setAttachment() cannot be adaptable with attachment not concerned with any slots. */
 	pSlot->setAttachment(pAttachment);
 
 	return true;

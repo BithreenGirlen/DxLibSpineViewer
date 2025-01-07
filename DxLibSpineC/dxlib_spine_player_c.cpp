@@ -270,12 +270,12 @@ std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime(float* fTra
 std::vector<std::string> CDxLibSpinePlayerC::GetSlotNames()
 {
 	std::vector<std::string> slotNames;
-	for (const auto& skeletonData: m_skeletonData)
+	for (const auto& skeletonDatum : m_skeletonData)
 	{
-		for (size_t i = 0; i < skeletonData->slotsCount; ++i)
+		for (size_t i = 0; i < skeletonDatum->slotsCount; ++i)
 		{
-			const auto iter = std::find(slotNames.begin(), slotNames.end(), skeletonData->slots[i]->name);
-			if (iter == slotNames.cend())slotNames.push_back(skeletonData->slots[i]->name);
+			const auto iter = std::find(slotNames.begin(), slotNames.end(), skeletonDatum->slots[i]->name);
+			if (iter == slotNames.cend())slotNames.push_back(skeletonDatum->slots[i]->name);
 		}
 	}
 
@@ -290,30 +290,6 @@ std::vector<std::string> CDxLibSpinePlayerC::GetSkinNames() const
 std::vector<std::string> CDxLibSpinePlayerC::GetAnimationNames() const
 {
 	return m_animationNames;
-}
-/*嵌合名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayerC::GetAttachmentNames()
-{
-	std::vector<std::string> attachmentNames;
-	for (const auto& pSkeletonDatum : m_skeletonData)
-	{
-		spSkin* pSkin = pSkeletonDatum->defaultSkin;
-		if (pSkin == nullptr)continue;
-
-		for (int iSlotIndex = 0; iSlotIndex < pSkeletonDatum->slotsCount; ++iSlotIndex)
-		{
-			for (int iAttachmentIndex = 0;; ++iAttachmentIndex)
-			{
-				const char* attachmentName = spSkin_getAttachmentName(pSkeletonDatum->defaultSkin, iSlotIndex, iAttachmentIndex);
-				if (attachmentName == nullptr)break;
-
-				const auto& iter = std::find(attachmentNames.begin(), attachmentNames.end(), attachmentName);
-				if (iter == attachmentNames.cend())attachmentNames.push_back(attachmentName);
-			}
-		}
-	}
-
-	return attachmentNames;
 }
 /*描画除外リスト設定*/
 void CDxLibSpinePlayerC::SetSlotsToExclude(const std::vector<std::string>& slotNames)
@@ -389,6 +365,39 @@ void CDxLibSpinePlayerC::MixAnimations(const std::vector<std::string>& animation
 			}
 		}
 	}
+}
+/*挿げ替え可能な嵌合名称引き渡し*/
+std::unordered_map<std::string, std::vector<std::string>> CDxLibSpinePlayerC::GetSlotNamesWithTheirAttachments()
+{
+	std::unordered_map<std::string, std::vector<std::string>> slotAttachmentMap;
+
+	for (const auto& pSkeletonDatum : m_skeletonData)
+	{
+		spSkin* pSkin = pSkeletonDatum->defaultSkin;
+		if (pSkin == nullptr)continue;
+
+		for (int iSlotIndex = 0; iSlotIndex < pSkeletonDatum->slotsCount; ++iSlotIndex)
+		{
+			std::vector<std::string> attachmentNames;
+
+			for (int iAttachmentIndex = 0;; ++iAttachmentIndex)
+			{
+				const char* attachmentName = spSkin_getAttachmentName(pSkeletonDatum->defaultSkin, iSlotIndex, iAttachmentIndex);
+				if (attachmentName == nullptr)break;
+
+				const char* szName = pSkeletonDatum->slots[iSlotIndex]->name;
+				const auto& iter = std::find(attachmentNames.begin(), attachmentNames.end(), szName);
+				if (iter == attachmentNames.cend())attachmentNames.push_back(szName);
+			}
+			
+			if (attachmentNames.size() > 1)
+			{
+				slotAttachmentMap.insert({ pSkeletonDatum->slots[iSlotIndex]->name, attachmentNames });
+			}
+		}
+	}
+
+	return slotAttachmentMap;
 }
 /*篏合挿げ替え*/
 bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* szAttachmentName)
