@@ -25,8 +25,6 @@ public:
 private:
 	HWND m_hWnd = nullptr;
 
-	void Destroy();
-
 	int GetColumnCount();
 	int GetItemCount();
 	std::wstring GetItemText(int iRow, int iColumn);
@@ -47,8 +45,6 @@ public:
 private:
 	HWND m_hWnd = nullptr;
 
-	void Destroy();
-
 	long long GetSelectedItemIndex();
 };
 
@@ -66,8 +62,6 @@ public:
 	std::wstring GetSelectedItemText();
 private:
 	HWND m_hWnd = nullptr;
-
-	void Destroy();
 
 	void Clear();
 	bool SetSelectedItem(int iIndex);

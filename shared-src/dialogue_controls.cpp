@@ -12,13 +12,11 @@ CListView::CListView()
 
 CListView::~CListView()
 {
-	Destroy();
+
 }
 /*ListView作成*/
 bool CListView::Create(HWND hParentWnd, const std::vector<std::wstring>& columnNames, bool bHasCheckBox)
 {
-	Destroy();
-
 	m_hWnd = ::CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"", WS_VISIBLE | WS_CHILD | LVS_REPORT | LVS_ALIGNLEFT | WS_TABSTOP | LVS_SINGLESEL, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(nullptr), nullptr);
 	if (m_hWnd != nullptr)
 	{
@@ -34,7 +32,7 @@ bool CListView::Create(HWND hParentWnd, const std::vector<std::wstring>& columnN
 			ListView_InsertColumn(m_hWnd, i, &lvColumn);
 		}
 	}
-	return false;
+	return m_hWnd != nullptr;
 }
 /*ListView幅調整*/
 void CListView::AdjustWidth()
@@ -139,15 +137,6 @@ std::vector<std::wstring> CListView::PickupCheckedItems()
 	}
 	return checkedItems;
 }
-/*破棄*/
-void CListView::Destroy()
-{
-	if (m_hWnd != nullptr)
-	{
-		::DestroyWindow(m_hWnd);
-		m_hWnd = nullptr;
-	}
-}
 /*名称総数取得*/
 int CListView::GetColumnCount()
 {
@@ -214,13 +203,11 @@ CListBox::CListBox()
 
 CListBox::~CListBox()
 {
-	Destroy();
+
 }
 /*ListBox作成*/
 bool CListBox::Create(HWND hParentWnd)
 {
-	Destroy();
-
 	m_hWnd = ::CreateWindowExW(0, WC_LISTBOX, L"ListBox", WS_VISIBLE | WS_CHILD | WS_BORDER | LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(nullptr), nullptr);
 	return m_hWnd != nullptr;
 }
@@ -269,15 +256,6 @@ std::wstring CListBox::GetSelectedItemName()
 	}
 	return std::wstring();
 }
-/*破棄*/
-void CListBox::Destroy()
-{
-	if (m_hWnd != nullptr)
-	{
-		::DestroyWindow(m_hWnd);
-		m_hWnd = nullptr;
-	}
-}
 /*選択項目番号取得*/
 long long CListBox::GetSelectedItemIndex()
 {
@@ -299,15 +277,13 @@ CComboBox::CComboBox()
 
 CComboBox::~CComboBox()
 {
-	Destroy();
+
 }
 /*作成*/
 bool CComboBox::Create(HWND hParentWnd)
 {
-	Destroy();
-
 	m_hWnd = ::CreateWindowEx(0, WC_COMBOBOXW, L"", WS_VISIBLE | WS_CHILD | WS_OVERLAPPED | WS_VSCROLL | WS_TABSTOP | CBS_DROPDOWNLIST | CBS_SORT, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
-	return false;
+	return m_hWnd != nullptr;
 }
 /*項目構築*/
 void CComboBox::Setup(const std::vector<std::wstring>& itemTexts)
@@ -344,15 +320,6 @@ std::wstring CComboBox::GetSelectedItemText()
 		}
 	}
 	return std::wstring();
-}
-/*破棄*/
-void CComboBox::Destroy()
-{
-	if (m_hWnd != nullptr)
-	{
-		::DestroyWindow(m_hWnd);
-		m_hWnd = nullptr;
-	}
 }
 /*消去*/
 void CComboBox::Clear()
