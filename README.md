@@ -14,33 +14,49 @@ https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/0ab643de-73fb-
   - `dxlib_spine_c.cpp` and `dxlib_spine_c.h` are to be used with `spine-c`. (`3.5` to `4.1`)
     - Class is used because DxLib is C++ library, but STL is avoided.
 
-Besides, there is a runtime for spine `2.1.27` under `projects/DxLibSpineViewerC-2.1`. 
+Besides, there is a runtime for spine `2.1.27` under `projects/DxLibSpineViewerC-2.1`. But note that transformation method is totally [different](https://ja.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
 
 ## Viewer for Windows
 
-The viewer helps to see how it is like when rendered using DxLib.   
+The viewer is built with Spine generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`, `4.0`, and `4.1`. 
+### Feature
+- Multiple Spines rendering
+  - Animation names should be shared among all the skeleton files.
+  - Rendering order is either in filename ascending or descending order.
+- Runtime manipulation
+  - Able to exclude slots, mix skins, mix animations, and change attachment.
+    - Mixing skins is available for versions later than `3.8`.
+    - Changing attachment is possible only when there are slots associated with multiple attachments.
+      - Even if it is possible to change attachment, it depends on timelines whether it is appropriate or not.
+    - Mixing skins and changing attachment will overwrite the animation state.
+      - It may be required to reload files in order to back to default state.
+- Export to media file.
+  - As `PNG`, `GIF`, `JPG`, and `H264`.
+    - `H264` encoding is available only for Intel CPU.
+
 The following sections explain how to use the viewer.
 
 ## Menu functions
 
 | Entry | Item | Action |
 ----|---- |---- 
-File| Open folder | Open folder-select-dialogue.
+File | Open folder | Open folder-select-dialogue.
  -| Setting | Open a dialogue to set atlas/skelton extensions to pick up when opening folder.
  -| Select files | Pick up atlas and skeleton files one by one regardless of their extension.
-Image| Through-seen | Switch window's transparancy.
- -| Manipulation | Open a dialogue to specify slots to be excluded, skins or animations to be mixed.
+Image | Manipulation | Open a dialogue to specify slots to be excluded, skins or animations to be mixed.
+ -| Re-attachment | Open a dialogue to change attachment.
+ Window | Through-seen | Switch window's transparancy.
  -| Pan smoothly | Switch view-point behaviour; pan while dragging or when dragged button is released.
  
 ### Load spine(s) via `Open folder` 
 1. In the `Setting` dialogue, specify atlas and skeleton extensions.
-2. Uncheck `Binary` if skeketon is json format.
+2. Uncheck `Binary` if skeketon file is json format.
 3. From `Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
 ### Load spine(s) via `Select files`
-1. If skeleton is json format, uncheck `Binary` in the `Setting` dialogue.
+1. Uncheck `Binary` in the `Setting` dialogue if skeleton file is json format.
 2. From `Select files`, first select atlas file(s) to load. 
-3. In the secoend dialigue, select skel file(s) which is/are pair(s) of atlas.
+3. In the secoend dialogue, select skel file(s) which is/are pair(s) of atlas.
 
 ## Context-menu function
 
@@ -115,15 +131,15 @@ https://github.com/user-attachments/assets/f4b5e1fa-faf7-4711-918f-2d0fbd2bb859
 - [DXライブラリ](https://dxlib.xsrv.jp/dxdload.html)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
-## Build viewer
-1. Run `shared-src/deps/CMakeLists.txt` to set up external libraries.
+## Build
+1. Run `shared-src/deps/CMakeLists.txt`.
 2. Open `DxLibSpineViewer.sln` with Visual Studio.
 
 The `CMakeLists.txt` modifies some of the external sources as well as obtains them.
 - For spine-c `3.5`, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `3.6` and later.
 - For spine-c `2.1`, supplies binary skeleton reader which is lacking in official `2.1.25` runtime, and overwrites some of the files with those from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
 
-The `deps` directory should be as follows:
+The `deps` directory will be as follows:
 <pre>
 ...
 ├ DxLibSpineC
@@ -148,7 +164,6 @@ The `deps` directory should be as follows:
 │  │  │  └ src
 │  │  │     └ ...
 │  │  └ ...
-│  ├ dpiAwareness.manifest
 │  └ ...
 ├ DxLibSpineViewer.sln
 └ ...
