@@ -282,7 +282,7 @@ CComboBox::~CComboBox()
 /*作成*/
 bool CComboBox::Create(HWND hParentWnd)
 {
-	m_hWnd = ::CreateWindowEx(0, WC_COMBOBOXW, L"", WS_VISIBLE | WS_CHILD | WS_OVERLAPPED | WS_VSCROLL | WS_TABSTOP | CBS_DROPDOWNLIST | CBS_SORT, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+	m_hWnd = ::CreateWindowEx(0, WC_COMBOBOXW, L"", WS_VISIBLE | WS_CHILD | WS_VSCROLL | CBS_DROPDOWNLIST | CBS_SORT, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
 	return m_hWnd != nullptr;
 }
 /*項目構築*/
