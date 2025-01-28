@@ -16,31 +16,31 @@ CDxLibImageEncoder::~CDxLibImageEncoder()
 
 }
 /*描画対象をJPGとして保存*/
-bool CDxLibImageEncoder::SaveScreenAsJpg(const wchar_t* wszFilePath, void* pWindowHandle)
+bool CDxLibImageEncoder::SaveScreenAsJpg(const wchar_t* wszFilePath)
 {
 	int iGraphWidth = 0;
 	int iGraphHeight = 0;
-	GetScreenSize(&iGraphWidth, &iGraphHeight, pWindowHandle);
+	GetScreenSize(&iGraphWidth, &iGraphHeight);
 
 	int iRet = DxLib::SaveDrawScreenToJPEG(0, 0, iGraphWidth, iGraphHeight, wszFilePath);
 	return iRet != -1;
 }
 /*描画対象をPNGとして保存*/
-bool CDxLibImageEncoder::SaveScreenAsPng(const wchar_t *wszFilePath, void* pWindowHandle)
+bool CDxLibImageEncoder::SaveScreenAsPng(const wchar_t *wszFilePath)
 {
 	int iGraphWidth = 0;
 	int iGraphHeight = 0;
-	GetScreenSize(&iGraphWidth, &iGraphHeight, pWindowHandle);
+	GetScreenSize(&iGraphWidth, &iGraphHeight);
 
 	int iRet = DxLib::SaveDrawScreenToPNG(0, 0, iGraphWidth, iGraphHeight, wszFilePath);
 	return iRet != -1;
 }
 /*描画対象の画素配列取得。*/
-bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, void* pWindowHandle, bool bToCovertToRgba)
+bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, bool bToCovertToRgba)
 {
 	int iGraphWidth = 0;
 	int iGraphHeight = 0;
-	GetScreenSize(&iGraphWidth, &iGraphHeight, pWindowHandle);
+	GetScreenSize(&iGraphWidth, &iGraphHeight);
 
 	/*SIHandleを毎度作成しても、寸法変更が生じた際にだけ作り直しても実行速度は大差なし*/
 	int iImageHandle = DxLib::MakeARGB8ColorSoftImage(iGraphWidth, iGraphHeight);
@@ -69,8 +69,10 @@ bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride
 	*iStride = iPitch;
 	*iWidth = iGraphWidth;
 	*iHeight = iGraphHeight;
-	size_t nSize = static_cast<size_t>(*iStride * iGraphHeight);
+
+	size_t nSize = static_cast<size_t>(iPitch * iGraphHeight);
 	pixels.resize(nSize);
+
 	/*BGRA => RGBA*/
 	if (bToCovertToRgba)
 	{
@@ -91,25 +93,20 @@ bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride
 
 	return true;
 }
+
 /*描画対象寸法取得*/
-void CDxLibImageEncoder::GetScreenSize(int* iWidth, int* iHeight, void* pWindowHandle)
+void CDxLibImageEncoder::GetScreenSize(int* iWidth, int* iHeight)
 {
 	RECT rect;
-	HWND hWnd = static_cast<HWND>(pWindowHandle);
-	if (hWnd == nullptr)
-	{
-		DxLib::GetWindowSize(iWidth, iHeight);
-	}
-	else
-	{
-		::GetClientRect(hWnd, &rect);
-		int iClientWidth = rect.right - rect.left;
-		int iClientHeight = rect.bottom - rect.top;
+	HWND hWnd = DxLib::GetMainWindowHandle();
 
-		int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
-		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+	::GetClientRect(hWnd, &rect);
+	int iClientWidth = rect.right - rect.left;
+	int iClientHeight = rect.bottom - rect.top;
 
-		*iWidth = iClientWidth > iDesktopWidth ? iDesktopWidth : iClientWidth;
-		*iHeight = iClientHeight > iDesktopHeight ? iDesktopHeight : iClientHeight;
-	}
+	int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
+	int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+
+	*iWidth = iClientWidth > iDesktopWidth ? iDesktopWidth : iClientWidth;
+	*iHeight = iClientHeight > iDesktopHeight ? iDesktopHeight : iClientHeight;
 }

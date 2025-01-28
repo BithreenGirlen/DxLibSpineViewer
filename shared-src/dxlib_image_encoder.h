@@ -9,10 +9,12 @@ public:
 	CDxLibImageEncoder();
 	~CDxLibImageEncoder();
 
-	static bool SaveScreenAsJpg(const wchar_t* wszFilePath, void* pWindowHandle = nullptr);
-	static bool SaveScreenAsPng(const wchar_t* wszFilePath, void* pWindowHandle = nullptr);
-	static bool GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, void* pWindowHandle = nullptr, bool bToCovertToRgba = true);
-	static void GetScreenSize(int* iWidth, int* iHeight, void* pWindowHandle = nullptr);
+	static bool SaveScreenAsJpg(const wchar_t* wszFilePath);
+	static bool SaveScreenAsPng(const wchar_t* wszFilePath);
+
+	static bool GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, bool bToCovertToRgba = true);
+
+	static void GetScreenSize(int* iWidth, int* iHeight);
 private:
 
 };

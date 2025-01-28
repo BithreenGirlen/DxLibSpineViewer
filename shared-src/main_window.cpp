@@ -748,7 +748,7 @@ void CMainWindow::MenuOnSaveAsJpg()
     wstrFilePath += L"_" + std::to_wstring(fTrackTime);
     wstrFilePath += L".jpg";
 
-    CDxLibImageEncoder::SaveScreenAsJpg(wstrFilePath.c_str(), m_hWnd);
+    CDxLibImageEncoder::SaveScreenAsJpg(wstrFilePath.c_str());
 }
 /*PNGとして保存*/
 void CMainWindow::MenuOnSaveAsPng()
@@ -761,7 +761,7 @@ void CMainWindow::MenuOnSaveAsPng()
     wstrFilePath += L"_" + std::to_wstring(fTrackTime);
     wstrFilePath += L".png";
 
-    CDxLibImageEncoder::SaveScreenAsPng(wstrFilePath.c_str(), m_hWnd);
+    CDxLibImageEncoder::SaveScreenAsPng(wstrFilePath.c_str());
 }
 /*記録開始*/
 void CMainWindow::MenuOnStartRecording(bool bAsVideo)
@@ -775,7 +775,7 @@ void CMainWindow::MenuOnStartRecording(bool bAsVideo)
         std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
         wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
         wstrFilePath += L".mp4";
-        CDxLibImageEncoder::GetScreenSize(&iWidth, &iHeight, m_hWnd);
+        CDxLibImageEncoder::GetScreenSize(&iWidth, &iHeight);
         /* Initialising input media types takes time. In the meantime, pause rendering. */
         m_recoderState = RecorderState::InitialisingVideoStream;
         bool bRet = m_MfVideoEncoder.Start(wstrFilePath.c_str(), iWidth, iHeight, 60);
@@ -1005,7 +1005,7 @@ void CMainWindow::StepOnRecording()
             int iHeight = 0;
             int iStride = 0;
             std::vector<unsigned char> pixels;
-            bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels, m_hWnd);
+            bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels);
             if (bRet)
             {
                 SImageFrame s;
@@ -1032,7 +1032,7 @@ void CMainWindow::StepOnRecording()
             int iHeight = 0;
             int iStride = 0;
             std::vector<unsigned char> pixels;
-            bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels, m_hWnd, false);
+            bool bRet = CDxLibImageEncoder::GetScreenPixels(&iWidth, &iHeight, &iStride, pixels, false);
             if (bRet)
             {
                 m_MfVideoEncoder.AddCpuFrame(pixels.data(), static_cast<unsigned long>(pixels.size()), false);
