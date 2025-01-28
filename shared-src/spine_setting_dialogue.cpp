@@ -3,6 +3,8 @@
 #include <Windows.h>
 #include <CommCtrl.h>
 
+#include <vector>
+
 #include "spine_setting_dialogue.h"
 
 CSpineSettingDialogue::CSpineSettingDialogue()
@@ -282,10 +284,9 @@ std::wstring CSpineSettingDialogue::GetEditBoxText(HWND hWnd)
     int iLen = ::GetWindowTextLengthA(hWnd); // 終端を含まない
     if (iLen > 0)
     {
-        std::wstring wstr;
-        wstr.resize(iLen + 1LL);
-        LRESULT lResult = ::SendMessage(hWnd, WM_GETTEXT, iLen + 1LL, reinterpret_cast<LPARAM>(wstr.data()));
-        return wstr;
+        std::vector<wchar_t> vBuffer(iLen + 1LL, L'\0');
+        LRESULT lResult = ::SendMessage(hWnd, WM_GETTEXT, static_cast<WPARAM>(vBuffer.size()), reinterpret_cast<LPARAM>(vBuffer.data()));
+        return vBuffer.data();
     }
 
     return std::wstring();

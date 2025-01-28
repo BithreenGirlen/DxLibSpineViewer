@@ -669,7 +669,7 @@ void CMainWindow::MenuOnAtlasSetting()
     }
     else
     {
-        ::SetFocus(m_SpineManipulatorDialogue.GetHwnd());
+        ::SetFocus(m_SpineAtlasDialogue.GetHwnd());
     }
 }
 /*透過*/
@@ -889,86 +889,51 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 {
     if (pwzFolderPath == nullptr)return false;
 
+    std::vector<std::string> atlasPaths;
+    std::vector<std::string> skelPaths;
+
     const std::wstring& wstrAtlasExt = m_SpineSettingDialogue.GetAtlasExtension();
     const std::wstring& wstrSkelExt = m_SpineSettingDialogue.GetSkelExtension();
     bool bIsBinary = m_SpineSettingDialogue.IsSkelBinary();
 
-    enum EExtensionRelation{ kExclusive = 0, kAltasInclusive, kSkelInclusive };
-    const auto GeExtensionRelation = [&wstrAtlasExt, wstrSkelExt]()
-        -> int
-        {
-            if (wstrAtlasExt.find(wstrSkelExt) != std::wstring::npos)
-            {
-                return kAltasInclusive;
-            }
-            else if (wstrSkelExt.find(wstrAtlasExt) != std::wstring::npos)
-            {
-                return kSkelInclusive;
-            }
-            return kExclusive;
-        };
+    bool bAtlasLonger = wstrAtlasExt.size() > wstrSkelExt.size();
 
-    bool bRet = false;
-    std::vector<std::string> atlases;
-    std::vector<std::string> skels;
+    const std::wstring& wstrLongerExtesion = bAtlasLonger ? wstrAtlasExt : wstrSkelExt;
+    const std::wstring& wstrShorterExtension = bAtlasLonger ? wstrSkelExt : wstrAtlasExt;
 
-    std::vector<std::wstring> temps;
-    int iExtensionRelation = GeExtensionRelation();
-    if (iExtensionRelation != kExclusive)
+    std::vector<std::string>& strLongerPaths = bAtlasLonger ? atlasPaths : skelPaths;
+    std::vector<std::string>& strShorterPaths = bAtlasLonger ? skelPaths : atlasPaths;
+
+    std::vector<std::wstring> wstrFilePaths;
+    win_filesystem::CreateFilePathList(pwzFolderPath, L"*", wstrFilePaths);
+
+    for (const auto& filePath : wstrFilePaths)
     {
-        const std::wstring& wstrInclusive = iExtensionRelation == kAltasInclusive ? wstrAtlasExt : wstrSkelExt;
-        const std::wstring& wstrContained = iExtensionRelation == kAltasInclusive ? wstrSkelExt : wstrAtlasExt;
-        bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrContained.c_str(), temps);
-        if (bRet)
-        {
-            const std::wstring wstrDif = wstrInclusive.substr(0, wstrInclusive.size() - wstrContained.size());
-            auto& inclusive = iExtensionRelation == kAltasInclusive ? atlases : skels;
-            auto& contained = iExtensionRelation == kAltasInclusive ? skels : atlases;
-
-            for (const auto& temp : temps)
+        const auto EndsWith = [&filePath](const std::wstring& str)
+            -> bool
             {
-                if (temp.find(wstrDif) != std::wstring::npos)
-                {
-                    inclusive.push_back(win_text::NarrowUtf8(temp));
-                }
-                else
-                {
-                    contained.push_back(win_text::NarrowUtf8(temp));
-                }
-            }
+                if (filePath.size() < str.size()) return false;
+                return std::equal(str.rbegin(), str.rend(), filePath.rbegin());
+            };
+
+        if (EndsWith(wstrLongerExtesion))
+        {
+            strLongerPaths.push_back(win_text::NarrowUtf8(filePath));
+        }
+        else if (EndsWith(wstrShorterExtension))
+        {
+            strShorterPaths.push_back(win_text::NarrowUtf8(filePath));
         }
     }
-    else
-    {
-        bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrAtlasExt.c_str(), temps);
-        if (bRet)
-        {
-            for (const std::wstring& temp : temps)
-            {
-                atlases.push_back(win_text::NarrowUtf8(temp));
-            }
-            temps.clear();
-            bRet = win_filesystem::CreateFilePathList(pwzFolderPath, wstrSkelExt.c_str(), temps);
-            if (bRet)
-            {
-                for (const std::wstring& temp : temps)
-                {
-                    skels.push_back(win_text::NarrowUtf8(temp));
-                }
-            }
-        }
-    }
-    if (bRet)
-    {
-        bRet = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, bIsBinary);
-        ChangeWindowTitle(bRet ? pwzFolderPath : nullptr);
-        m_bPlayReady = bRet;
-    }
-    if (!bRet)
+
+    m_bPlayReady = m_DxLibSpinePlayer.SetSpineFromFile(atlasPaths, skelPaths, bIsBinary);
+    ChangeWindowTitle(m_bPlayReady ? pwzFolderPath : nullptr);
+    if (!m_bPlayReady)
     {
         ::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
     }
-    return bRet;
+
+    return m_bPlayReady;
 }
 /*階層構成情報消去*/
 void CMainWindow::ClearFolderInfo()
