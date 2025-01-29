@@ -14,16 +14,16 @@ CDxLibSpineDrawer::CDxLibSpineDrawer(spine::SkeletonData* pSkeletonData, spine::
 {
 	spine::Bone::setYDown(true);
 
-	m_dxLibVertices.ensureCapacity(pSkeletonData->getBones().size() * sizeof(DxLib::VERTEX2D) / sizeof(float));
+	m_dxLibVertices.ensureCapacity(128);
 
-	skeleton = new(__FILE__, __LINE__) spine::Skeleton(pSkeletonData);
+	skeleton = new spine::Skeleton(pSkeletonData);
 
 	if (pAnimationStateData == nullptr)
 	{
-		pAnimationStateData = new(__FILE__, __LINE__) spine::AnimationStateData(pSkeletonData);
+		pAnimationStateData = new spine::AnimationStateData(pSkeletonData);
 		m_bHasOwnAnimationStateData = true;
 	}
-	animationState = new(__FILE__, __LINE__) spine::AnimationState(pAnimationStateData);
+	animationState = new spine::AnimationState(pAnimationStateData);
 
 	m_quadIndices.add(0);
 	m_quadIndices.add(1);
