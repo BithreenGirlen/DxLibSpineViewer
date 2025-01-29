@@ -593,6 +593,8 @@ void CMainWindow::MenuOnFileSetting()
 /*ファイル選択*/
 void CMainWindow::MenuOnSelectFiles()
 {
+    if (m_recoderState != RecorderState::Idle)return;
+
     std::vector<std::wstring> wstrAtlasFiles = win_dialogue::SelectOpenFiles(L"atlas files", L"", L"Select atlas files", m_hWnd);
     if (!wstrAtlasFiles.empty())
     {
