@@ -372,7 +372,7 @@ bool CDxLibSpinePlayer::ReplaceAttachment(const char* szSlotName, const char* sz
 		{
 			for (const auto& pDrawable : m_drawables)
 			{
-				for (size_t i = 0; pDrawable->skeleton->getSlots().size();++i)
+				for (size_t i = 0; i < pDrawable->skeleton->getSlots().size();++i)
 				{
 					const spine::String& slotName = pDrawable->skeleton->getDrawOrder()[i]->getData().getName();
 					if (!slotName.isEmpty() && slotName == szSlotName)
@@ -414,7 +414,6 @@ bool CDxLibSpinePlayer::ReplaceAttachment(const char* szSlotName, const char* sz
 	const spine::String foreName = pSlot->getAttachment()->getName().buffer();
 
 	pSlot->setAttachment(pAttachment);
-	pSlot->getData().setAttachmentName(szAttachmentName);
 
 	/* overwrite attachment name in spine::AttachmentTimeline if exists. */
 	for (const auto& skeletonDatum : m_skeletonData)

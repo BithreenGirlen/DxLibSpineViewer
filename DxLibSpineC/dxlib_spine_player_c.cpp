@@ -410,7 +410,7 @@ bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* s
 		{
 			for (const auto& pDrawable : m_drawables)
 			{
-				for (size_t i = 0; pDrawable->skeleton->slotsCount; ++i)
+				for (size_t i = 0; i < pDrawable->skeleton->slotsCount; ++i)
 				{
 					const char* slotName = pDrawable->skeleton->drawOrder[i]->data->name;
 					if (slotName != nullptr && strcmp(slotName, szSlotName) == 0)
