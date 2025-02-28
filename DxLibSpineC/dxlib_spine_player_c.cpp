@@ -27,8 +27,8 @@ bool CDxLibSpinePlayerC::SetSpineFromFile(const std::vector<std::string>& atlasP
 
 	for (size_t i = 0; i < atlasPaths.size(); ++i)
 	{
-		const std::string& strAtlasPath = atlasPaths.at(i);
-		const std::string& strSkeletonPath = skelPaths.at(i);
+		const std::string& strAtlasPath = atlasPaths[i];
+		const std::string& strSkeletonPath = skelPaths[i];
 
 		std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromFile(strAtlasPath.c_str(), nullptr);
 		if (atlas.get() == nullptr)continue;
@@ -38,8 +38,8 @@ bool CDxLibSpinePlayerC::SetSpineFromFile(const std::vector<std::string>& atlasP
 			spine_loader_c::ReadTextSkeletonFromFile(strSkeletonPath.c_str(), atlas.get());
 		if (skeletonData.get() == nullptr)continue;
 
-		m_atlases.push_back(atlas);
-		m_skeletonData.push_back(skeletonData);
+		m_atlases.push_back(std::move(atlas));
+		m_skeletonData.push_back(std::move(skeletonData));
 	}
 
 	WorkOutDefaultSize();
@@ -55,9 +55,9 @@ bool CDxLibSpinePlayerC::SetSpineFromMemory(const std::vector<std::string>& atla
 
 	for (size_t i = 0; i < atlasData.size(); ++i)
 	{
-		const std::string& strAtlasDatum = atlasData.at(i);
-		const std::string& strAtlasPath = atlasPaths.at(i);
-		const std::string& strSkeletonData = skelData.at(i);
+		const std::string& strAtlasDatum = atlasData[i];
+		const std::string& strAtlasPath = atlasPaths[i];
+		const std::string& strSkeletonData = skelData[i];
 
 		std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromMemory(strAtlasDatum.c_str(), static_cast<int>(strAtlasDatum.size()), strAtlasPath.c_str(), nullptr);
 		if (atlas.get() == nullptr)continue;
@@ -67,8 +67,8 @@ bool CDxLibSpinePlayerC::SetSpineFromMemory(const std::vector<std::string>& atla
 			spine_loader_c::ReadTextSkeletonFromMemory(strSkeletonData.c_str(), atlas.get());
 		if (skeletonData.get() == nullptr)continue;
 
-		m_atlases.push_back(atlas);
-		m_skeletonData.push_back(skeletonData);
+		m_atlases.push_back(std::move(atlas));
+		m_skeletonData.push_back(std::move(skeletonData));
 	}
 
 	if (m_skeletonData.empty())return false;
@@ -87,15 +87,15 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
 			{
-				m_drawables.at(i).get()->Update(fDelta);
+				m_drawables[i]->Update(fDelta);
 #ifdef SPINE_3_7_OR_LATER
-				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
+				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
 #else 
 				/*
 				* Implementation of scaling by multiplying factor and vertice.
 				* A method suggested on official forum thread 4918.
 				*/
-				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
+				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
 #endif
 			}
 		}
@@ -103,11 +103,11 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 		{
 			for (long long i = m_drawables.size() - 1; i >= 0; --i)
 			{
-				m_drawables.at(i).get()->Update(fDelta);
+				m_drawables[i]->Update(fDelta);
 #ifdef SPINE_3_7_OR_LATER
-				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
+				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
 #else 
-				m_drawables.at(i).get()->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
+				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
 #endif
 			}
 		}
@@ -195,14 +195,15 @@ void CDxLibSpinePlayerC::ShiftSkin()
 	++m_nSkinIndex;
 	if (m_nSkinIndex >= m_skinNames.size())m_nSkinIndex = 0;
 
-	for (size_t i = 0; i < m_drawables.size(); ++i)
+	const char* szSkinName = m_skinNames[m_nSkinIndex].c_str();
+
+	for (const auto& pDrawable : m_drawables)
 	{
-		const std::string& skinName = m_skinNames.at(m_nSkinIndex);
-		spSkin* pSkin = spSkeletonData_findSkin(m_skeletonData.at(i).get(), skinName.c_str());
+		spSkin* pSkin = spSkeletonData_findSkin(pDrawable->skeleton->data, szSkinName);
 		if (pSkin != nullptr)
 		{
-			spSkeleton_setSkin(m_drawables.at(i)->skeleton, pSkin);
-			spSkeleton_setToSetupPose(m_drawables.at(i)->skeleton);
+			spSkeleton_setSkin(pDrawable->skeleton, pSkin);
+			spSkeleton_setToSetupPose(pDrawable->skeleton);
 		}
 	}
 }
@@ -255,9 +256,9 @@ std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime(float* fTra
 					if (fTrackTime != nullptr)
 					{
 #ifdef SPINE_2_1
-						* fTrackTime = pTrackEntry->time;
+						*fTrackTime = pTrackEntry->time;
 #else
-						* fTrackTime = pTrackEntry->trackTime;
+						*fTrackTime = pTrackEntry->trackTime;
 #endif
 					}
 					return pAnimation->name;
@@ -268,7 +269,7 @@ std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime(float* fTra
 
 	return std::string();
 }
-/*槽溝名称引き渡し*/
+/*槽溝名称取得*/
 std::vector<std::string> CDxLibSpinePlayerC::GetSlotNames()
 {
 	std::vector<std::string> slotNames;
@@ -284,12 +285,12 @@ std::vector<std::string> CDxLibSpinePlayerC::GetSlotNames()
 	return slotNames;
 }
 /*装い名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayerC::GetSkinNames() const
+const std::vector<std::string>& CDxLibSpinePlayerC::GetSkinNames() const
 {
 	return m_skinNames;
 }
 /*動作名称引き渡し*/
-std::vector<std::string> CDxLibSpinePlayerC::GetAnimationNames() const
+const std::vector<std::string>& CDxLibSpinePlayerC::GetAnimationNames() const
 {
 	return m_animationNames;
 }
@@ -313,27 +314,26 @@ void CDxLibSpinePlayerC::MixSkins(const std::vector<std::string>& skinNames)
 	/*spine-c 3.6 does not have spSkin_addSkin(). It was added since spine-c 3.8*/
 #ifdef SPINE_3_8_OR_LATER
 	if (m_nSkinIndex >= m_skinNames.size())return;
-	const auto& currentSkinName = m_skinNames.at(m_nSkinIndex);
+	const auto& currentSkinName = m_skinNames[m_nSkinIndex];
 
-	for (size_t i = 0; i < m_drawables.size(); ++i)
+	for (const auto& pDrawble : m_drawables)
 	{
-		spSkin *skinToSet = spSkeletonData_findSkin(m_skeletonData.at(i).get(), currentSkinName.c_str());
-		if (skinToSet != nullptr)
+		spSkin* skinToSet = spSkeletonData_findSkin(pDrawble->skeleton->data, currentSkinName.c_str());
+		if (skinToSet == nullptr)continue;
+
+		for (const auto& skinName : skinNames)
 		{
-			for (const auto& skinName : skinNames)
+			if (currentSkinName != skinName)
 			{
-				if (currentSkinName != skinName)
+				spSkin* skinToAdd = spSkeletonData_findSkin(pDrawble->skeleton->data, skinName.c_str());
+				if (skinToAdd != nullptr)
 				{
-					spSkin* skinToAdd = spSkeletonData_findSkin(m_skeletonData.at(i).get(), skinName.c_str());
-					if (skinToAdd != nullptr)
-					{
-						spSkin_addSkin(skinToSet, skinToAdd);
-					}
+					spSkin_addSkin(skinToSet, skinToAdd);
 				}
 			}
-			spSkeleton_setSkin(m_drawables.at(i)->skeleton, skinToSet);
-			spSkeleton_setToSetupPose(m_drawables.at(i)->skeleton);
 		}
+		spSkeleton_setSkin(pDrawble->skeleton, skinToSet);
+		spSkeleton_setToSetupPose(pDrawble->skeleton);
 	}
 #endif
 }
@@ -343,32 +343,29 @@ void CDxLibSpinePlayerC::MixAnimations(const std::vector<std::string>& animation
 	ClearAnimationTracks();
 
 	if (m_nAnimationIndex >= m_animationNames.size())return;
-	const auto& currentAnimationName = m_animationNames.at(m_nAnimationIndex);
+	const auto& currentAnimationName = m_animationNames[m_nAnimationIndex];
 
-	for (size_t i = 0; i < m_drawables.size(); ++i)
+	for (const auto& pDrawble : m_drawables)
 	{
-		spAnimation* pCurrentAnimation = spSkeletonData_findAnimation(m_skeletonData.at(i).get(), currentAnimationName.c_str());
-		if (pCurrentAnimation == nullptr)
-		{
-			continue;
-		}
+		spAnimation* pCurrentAnimation = spSkeletonData_findAnimation(pDrawble->skeleton->data, currentAnimationName.c_str());
+		if (pCurrentAnimation == nullptr)continue;
 
 		int iTrack = 1;
 		for (const auto& animationName : animationNames)
 		{
 			if (animationName != currentAnimationName)
 			{
-				spAnimation *pAnimationToAdd = spSkeletonData_findAnimation(m_skeletonData.at(i).get(), animationName.c_str());
+				spAnimation* pAnimationToAdd = spSkeletonData_findAnimation(pDrawble->skeleton->data, animationName.c_str());
 				if (pAnimationToAdd != nullptr)
 				{
-					spAnimationState_addAnimation(m_drawables.at(i)->animationState, iTrack, pAnimationToAdd, false, 0.f);
+					spAnimationState_addAnimation(pDrawble->animationState, iTrack, pAnimationToAdd, false, 0.f);
 					++iTrack;
 				}
 			}
 		}
 	}
 }
-/*挿げ替え可能な嵌合名称引き渡し*/
+/*差し替え可能な槽溝名称取得*/
 std::unordered_map<std::string, std::vector<std::string>> CDxLibSpinePlayerC::GetSlotNamesWithTheirAttachments()
 {
 	std::unordered_map<std::string, std::vector<std::string>> slotAttachmentMap;
@@ -400,7 +397,7 @@ std::unordered_map<std::string, std::vector<std::string>> CDxLibSpinePlayerC::Ge
 
 	return slotAttachmentMap;
 }
-/*篏合挿げ替え*/
+/*差し替え*/
 bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* szAttachmentName)
 {
 	if (szSlotName == nullptr || szAttachmentName == nullptr)return false;
@@ -459,12 +456,7 @@ bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* s
 	spAttachment* pAttachment = FindAttachment();
 	if (pAttachment == nullptr)return false;
 
-	/* copy the attachment name currently used. */
-	const std::string foreName = pSlot->attachment->name;
-
-	spSlot_setAttachment(pSlot, pAttachment);
-
-	/* overwrite attachment name in spAttachmentTimeline if exists. */
+	/* Replace attachment name in spAttachmentTimeline if exists. */
 	for (const auto& skeletonDatum : m_skeletonData)
 	{
 		const auto& animationName = m_animationNames[m_nAnimationIndex];
@@ -482,7 +474,7 @@ bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* s
 					const char* szName = pAttachmentTimeline->attachmentNames[ii];
 					if (szName == nullptr)continue;
 
-					if (strcmp(szName, foreName.c_str()) == 0)
+					if (strcmp(szName, pSlot->attachment->name) == 0)
 					{
 						FREE(pAttachmentTimeline->attachmentNames[ii]);
 						MALLOC_STR(pAttachmentTimeline->attachmentNames[ii], szAttachmentName);
@@ -501,7 +493,7 @@ bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* s
 					const char* szName = pAttachmentTimeline->attachmentNames[ii];
 					if (szName == nullptr)continue;
 
-					if (strcmp(szName, foreName.c_str()) == 0)
+					if (strcmp(szName, pSlot->attachment->name) == 0)
 					{
 						FREE(pAttachmentTimeline->attachmentNames[ii]);
 						MALLOC_STR(pAttachmentTimeline->attachmentNames[ii], szAttachmentName);
@@ -511,6 +503,9 @@ bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* s
 		}
 #endif
 	}
+
+	spSlot_setAttachment(pSlot, pAttachment);
+
 	return true;
 }
 /*消去*/
@@ -529,9 +524,9 @@ void CDxLibSpinePlayerC::ClearDrawables()
 /*描画器設定*/
 bool CDxLibSpinePlayerC::SetupDrawer()
 {
-	for (const auto& pSkeletonData : m_skeletonData)
+	for (const auto& pSkeletonDatum : m_skeletonData)
 	{
-		const auto pDrawable = std::make_shared<CDxLibSpineDrawerC>(pSkeletonData.get());
+		auto pDrawable = std::make_shared<CDxLibSpineDrawerC>(pSkeletonDatum.get());
 		if (pDrawable.get() == nullptr)continue;
 
 		pDrawable->timeScale = 1.0f;
@@ -540,20 +535,24 @@ bool CDxLibSpinePlayerC::SetupDrawer()
 		spSkeleton_setToSetupPose(pDrawable->skeleton);
 		spSkeleton_updateWorldTransform(pDrawable->skeleton);
 
-		m_drawables.push_back(pDrawable);
+		m_drawables.push_back(std::move(pDrawable));
 
-		for (size_t i = 0; i < pSkeletonData->animationsCount; ++i)
+		for (size_t i = 0; i < pSkeletonDatum->animationsCount; ++i)
 		{
-			const std::string &strAnimationName = pSkeletonData->animations[i]->name;
-			auto iter = std::find(m_animationNames.begin(), m_animationNames.end(), strAnimationName);
-			if (iter == m_animationNames.cend())m_animationNames.push_back(strAnimationName);
+			const char* szAnimationName = pSkeletonDatum->animations[i]->name;
+			if (szAnimationName == nullptr)continue;
+
+			const auto &iter = std::find(m_animationNames.begin(), m_animationNames.end(), szAnimationName);
+			if (iter == m_animationNames.cend())m_animationNames.push_back(szAnimationName);
 		}
 
-		for (size_t i = 0; i < pSkeletonData->skinsCount; ++i)
+		for (size_t i = 0; i < pSkeletonDatum->skinsCount; ++i)
 		{
-			const std::string& strSkinName = pSkeletonData->skins[i]->name;
-			auto iter = std::find(m_skinNames.begin(), m_skinNames.end(), strSkinName);
-			if (iter == m_skinNames.cend())m_skinNames.push_back(strSkinName);
+			const char* szSkinName = pSkeletonDatum->skins[i]->name;
+			if (szSkinName == nullptr)continue;
+			
+			const auto &iter = std::find(m_skinNames.begin(), m_skinNames.end(), szSkinName);
+			if (iter == m_skinNames.cend())m_skinNames.push_back(szSkinName);
 		}
 	}
 
@@ -713,14 +712,14 @@ void CDxLibSpinePlayerC::UpdateTimeScale()
 void CDxLibSpinePlayerC::UpdateAnimation()
 {
 	if (m_nAnimationIndex >= m_animationNames.size())return;
+	const char* szAnimationName = m_animationNames[m_nAnimationIndex].c_str();
 
-	for (size_t i = 0; i < m_drawables.size(); ++i)
+	for (const auto& pDrawable : m_drawables)
 	{
-		const std::string& animationName = m_animationNames.at(m_nAnimationIndex);
-		spAnimation* pAnimation = spSkeletonData_findAnimation(m_skeletonData.at(i).get(), animationName.c_str());
+		spAnimation* pAnimation = spSkeletonData_findAnimation(pDrawable->skeleton->data, szAnimationName);
 		if (pAnimation != nullptr)
 		{
-			spAnimationState_setAnimationByName(m_drawables.at(i)->animationState, 0, pAnimation->name, 1);
+			spAnimationState_setAnimationByName(pDrawable->animationState, 0, pAnimation->name, 1);
 		}
 	}
 }

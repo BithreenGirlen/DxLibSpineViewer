@@ -46,8 +46,8 @@ public:
 	std::string GetCurrentAnimationNameWithTrackTime(float *fTrackTime = nullptr);
 
 	std::vector<std::string> GetSlotNames();
-	std::vector<std::string> GetSkinNames() const;
-	std::vector<std::string> GetAnimationNames() const;
+	const std::vector<std::string>& GetSkinNames() const;
+	const std::vector<std::string>& GetAnimationNames() const;
 
 	void SetSlotsToExclude(const std::vector<std::string>& slotNames);
 	void MixSkins(const std::vector<std::string>& skinNames);
