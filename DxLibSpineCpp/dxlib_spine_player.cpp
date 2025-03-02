@@ -705,29 +705,5 @@ void CDxLibSpinePlayer::ResizeWindow()
 			};
 		::AdjustWindowRect(&rect, lStyle, HasWindowMenu() ? FALSE : TRUE);
 		::SetWindowPos(m_hRenderWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
-
-		ResizeBuffer();
-	}
-}
-/*緩衝容量再設定*/
-void CDxLibSpinePlayer::ResizeBuffer()
-{
-	if (m_hRenderWnd != nullptr)
-	{
-		RECT rc;
-		::GetClientRect(m_hRenderWnd, &rc);
-
-		int iClientWidth = rc.right - rc.left;
-		int iClientHeight = rc.bottom - rc.top;
-
-		int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
-		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
-
-		DxLib::SetGraphMode
-		(
-			iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth,
-			iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight,
-			32
-		);
 	}
 }

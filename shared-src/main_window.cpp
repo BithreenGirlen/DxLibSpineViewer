@@ -124,6 +124,8 @@ LRESULT CMainWindow::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
         return OnCreate(hWnd);
     case WM_DESTROY:
         return OnDestroy();
+    case WM_SIZE:
+        return OnSize(wParam, lParam);
     case WM_CLOSE:
         return OnClose();
     case WM_PAINT:
@@ -207,8 +209,21 @@ LRESULT CMainWindow::OnPaint()
     return 0;
 }
 /*WM_SIZE*/
-LRESULT CMainWindow::OnSize()
+LRESULT CMainWindow::OnSize(WPARAM wParam, LPARAM lParam)
 {
+    int iClientWidth = LOWORD(lParam);
+    int iClientHeight = HIWORD(lParam);
+
+    int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
+    int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+
+    DxLib::SetGraphMode
+    (
+        iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth,
+        iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight,
+        32
+    );
+
     return 0;
 }
 /*WM_KEYUP*/

@@ -98,6 +98,5 @@ private:
 	void ClearAnimationTracks();
 
 	void ResizeWindow();
-	void ResizeBuffer();
 };
 #endif // !DXLIB_SPINE_PLAYER_C_H_

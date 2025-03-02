@@ -34,7 +34,7 @@ private:
 	LRESULT OnDestroy();
 	LRESULT OnClose();
 	LRESULT OnPaint();
-	LRESULT OnSize();
+	LRESULT OnSize(WPARAM wParam, LPARAM lParam);
 	LRESULT OnKeyUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnCommand(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
