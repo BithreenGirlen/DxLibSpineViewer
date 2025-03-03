@@ -1,8 +1,6 @@
 ﻿#ifndef DXLIB_SPINE_PLAYER_H_
 #define DXLIB_SPINE_PLAYER_H_
 
-#include <Windows.h>
-
 #include <string>
 #include <vector>
 #include <memory>
@@ -16,20 +14,18 @@ public:
 	CDxLibSpinePlayer();
 	~CDxLibSpinePlayer();
 
-	void SetRenderWindow(HWND hRenderWnd);
-
 	bool SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
 	bool SetSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
 
 	void Redraw(float fDelta);
 
-	void OnStyleChanged();
-
-	void RescaleSkeleton(bool bUpscale, bool bWindowToBeResized = true);
+	void RescaleSkeleton(bool bUpscale);
 	void RescaleTime(bool bHasten);
 	void ResetScale();
 
 	void MoveViewPoint(int iX, int iY);
+	void AdjustViewOffset();
+
 	void ShiftAnimation();
 	void ShiftSkin();
 
@@ -50,9 +46,10 @@ public:
 
 	std::unordered_map<std::string, std::vector<std::string>> GetSlotNamesWithTheirAttachments();
 	bool ReplaceAttachment(const char* szSlotName, const char* szAttachmentName);
-private:
-	HWND m_hRenderWnd = nullptr;
 
+	void GetSkeletonSize(float* fWidth, float* fHeight) const;
+	float GetSkeletonScale() const;
+private:
 	enum Constants { kBaseWidth = 1280, kBaseHeight = 720, kMinAtlas = 1024, };
 
 	CDxLibTextureLoader m_textureLoader;
@@ -81,8 +78,8 @@ private:
 
 	void ClearDrawables();
 	bool SetupDrawer();
+
 	void WorkOutDefaultScale();
-	void AdjustViewOffset();
 
 	void UpdatePosition();
 	void UpdateScaletonScale();
@@ -90,7 +87,5 @@ private:
 	void UpdateAnimation();
 
 	void ClearAnimationTracks();
-
-	void ResizeWindow();
 };
 #endif // !DXLIB_SPINE_PLAYER_H_

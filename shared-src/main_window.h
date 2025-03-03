@@ -24,7 +24,8 @@ public:
 	HWND GetHwnd()const { return m_hWnd;}
 private:
 	const wchar_t* m_swzClassName = L"Dxlib-spine window";
-	std::wstring m_wstrWindowName = L"DxLib spine";
+	const wchar_t* m_swzDefaultWindowName = L"DxLib spine";
+
 	HINSTANCE m_hInstance = nullptr;
 	HWND m_hWnd = nullptr;
 
@@ -124,6 +125,8 @@ private:
 	CSpineManipulatorDialogue m_SpineManipulatorDialogue;
 	CSpineAtlasDialogue m_SpineAtlasDialogue;
 	CMfVideoEncoder m_MfVideoEncoder;
+
+	void ResizeWindow();
 };
 
 #endif //MAIN_WINDOW_H_

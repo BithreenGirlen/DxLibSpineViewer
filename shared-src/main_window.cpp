@@ -42,13 +42,13 @@ bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
     if (::RegisterClassExW(&wcex))
     {
         m_hInstance = hInstance;
-        if (pwzWindowName != nullptr)m_wstrWindowName = pwzWindowName;
+        const wchar_t* windowName = pwzWindowName == nullptr ? m_swzDefaultWindowName : pwzWindowName;
 
         UINT uiDpi = ::GetDpiForSystem();
         int iWindowWidth = ::MulDiv(200, uiDpi, USER_DEFAULT_SCREEN_DPI);
         int iWindowHeight = ::MulDiv(200, uiDpi, USER_DEFAULT_SCREEN_DPI);
 
-        m_hWnd = ::CreateWindowW(m_swzClassName, pwzWindowName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
+        m_hWnd = ::CreateWindowW(m_swzClassName, windowName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
             CW_USEDEFAULT, CW_USEDEFAULT, iWindowWidth, iWindowHeight, nullptr, nullptr, hInstance, this);
         if (m_hWnd != nullptr)
         {
@@ -161,8 +161,6 @@ LRESULT CMainWindow::OnCreate(HWND hWnd)
 
     InitialiseMenuBar();
 
-    m_DxLibSpinePlayer.SetRenderWindow(m_hWnd);
-
     UpdateDrawingInterval();
 
     return 0;
@@ -217,6 +215,10 @@ LRESULT CMainWindow::OnSize(WPARAM wParam, LPARAM lParam)
     int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
     int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
 
+    /* 
+    * WM_SIZE seems to be called twice just after window style has been changed.
+    * If SetGraphMode() were not so effective, store the previous size and compare here.
+    */
     DxLib::SetGraphMode
     (
         iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth,
@@ -358,12 +360,17 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     }
     else
     {
-        bool bWindowToBeResized = !(usKey & MK_CONTROL);
-        if (m_recoderState == RecorderState::RecordingVideo)
+        if (m_bPlayReady)
         {
-            bWindowToBeResized = false;
+            m_DxLibSpinePlayer.RescaleSkeleton(iScroll > 0);
+
+            bool bWindowToBeResized = !(usKey & MK_CONTROL) && m_recoderState != RecorderState::RecordingVideo;
+            if (bWindowToBeResized)
+            {
+                ResizeWindow();
+                m_DxLibSpinePlayer.AdjustViewOffset();
+            }
         }
-        m_DxLibSpinePlayer.RescaleSkeleton(iScroll > 0, bWindowToBeResized);
     }
 
     return 0;
@@ -499,6 +506,9 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
     if (usKey == 0)
     {
         m_DxLibSpinePlayer.ResetScale();
+        
+        ResizeWindow();
+        m_DxLibSpinePlayer.AdjustViewOffset();
     }
 
     if (usKey == MK_RBUTTON)
@@ -640,7 +650,11 @@ void CMainWindow::MenuOnSelectFiles()
             }
 
             m_bPlayReady = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary());
-            if (!m_bPlayReady)
+            if (m_bPlayReady)
+            {
+                ResizeWindow();
+            }
+            else
             {
                 ::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
             }
@@ -739,7 +753,7 @@ void CMainWindow::MenuOnPanSmoothly()
 /*次のフォルダに移動*/
 void CMainWindow::KeyUpOnNextFolder()
 {
-    if (m_folders.empty())return;
+    if (m_folders.empty() || m_recoderState != RecorderState::Idle)return;
 
     ++m_nFolderIndex;
     if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = 0;
@@ -860,7 +874,7 @@ void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
         wstr = nPos == std::wstring::npos ? wstrTitle : wstrTitle.substr(nPos + 1);
     }
 
-    ::SetWindowTextW(m_hWnd, wstr.empty() ? m_wstrWindowName.c_str() : wstr.c_str());
+    ::SetWindowTextW(m_hWnd, wstr.empty() ? m_swzDefaultWindowName : wstr.c_str());
 }
 /*標題取得*/
 std::wstring CMainWindow::GetWindowTitle()
@@ -899,7 +913,7 @@ void CMainWindow::SwitchWindowMode()
         ::SetMenu(m_hWnd, m_hMenuBar);
     }
 
-    m_DxLibSpinePlayer.OnStyleChanged();
+    ResizeWindow();
 }
 /*描画素材設定*/
 bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
@@ -945,7 +959,11 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 
     m_bPlayReady = m_DxLibSpinePlayer.SetSpineFromFile(atlasPaths, skelPaths, bIsBinary);
     ChangeWindowTitle(m_bPlayReady ? pwzFolderPath : nullptr);
-    if (!m_bPlayReady)
+    if (m_bPlayReady)
+    {
+        ResizeWindow();
+    }
+    else
     {
         ::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
     }
@@ -1023,4 +1041,30 @@ void CMainWindow::StepOnRecording()
             m_iFrameCount = 0;
         }
     }
+}
+/*窓寸法変更*/
+void CMainWindow::ResizeWindow()
+{
+    float fWidth = 0.f;
+    float fHeight = 0.f;
+    m_DxLibSpinePlayer.GetSkeletonSize(&fWidth, &fHeight);
+    float fScale = m_DxLibSpinePlayer.GetSkeletonScale();
+
+    RECT rect;
+    ::GetWindowRect(m_hWnd, &rect);
+    int iX = static_cast<int>(fWidth * fScale);
+    int iY = static_cast<int>(fHeight * fScale);
+
+    rect.right = iX + rect.left;
+    rect.bottom = iY + rect.top;
+
+    LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
+    const auto HasWindowMenu = [&lStyle]()
+        -> bool
+        {
+            return !((lStyle & WS_CAPTION) && (lStyle & WS_SYSMENU));
+        };
+
+    ::AdjustWindowRect(&rect, lStyle, HasWindowMenu() ? FALSE : TRUE);
+    ::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
 }

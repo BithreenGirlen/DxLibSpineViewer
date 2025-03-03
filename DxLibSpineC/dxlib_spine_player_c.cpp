@@ -15,10 +15,6 @@ CDxLibSpinePlayerC::~CDxLibSpinePlayerC()
 
 }
 
-void CDxLibSpinePlayerC::SetRenderWindow(HWND hRenderWnd)
-{
-	m_hRenderWnd = hRenderWnd;
-}
 /*ファイル取り込み*/
 bool CDxLibSpinePlayerC::SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary)
 {
@@ -113,13 +109,8 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 		}
 	}
 }
-/*表示形式変更通知*/
-void CDxLibSpinePlayerC::OnStyleChanged()
-{
-	ResizeWindow();
-}
 /*拡縮変更*/
-void CDxLibSpinePlayerC::RescaleSkeleton(bool bUpscale, bool bWindowToBeResized)
+void CDxLibSpinePlayerC::RescaleSkeleton(bool bUpscale)
 {
 	constexpr float kfScalePortion = 0.025f;
 	constexpr float kfMinScale = 0.15f;
@@ -134,13 +125,6 @@ void CDxLibSpinePlayerC::RescaleSkeleton(bool bUpscale, bool bWindowToBeResized)
 	}
 
 	UpdateScaletonScale();
-	if (bWindowToBeResized)
-	{
-		ResizeWindow();
-#ifdef SPINE_3_7_OR_LATER
-		AdjustViewOffset();
-#endif
-	}
 }
 /*時間尺度変更*/
 void CDxLibSpinePlayerC::RescaleTime(bool bHasten)
@@ -168,14 +152,25 @@ void CDxLibSpinePlayerC::ResetScale()
 
 	UpdateScaletonScale();
 	UpdateTimeScale();
-	ResizeWindow();
-	AdjustViewOffset();
 }
 /*視点移動*/
 void CDxLibSpinePlayerC::MoveViewPoint(int iX, int iY)
 {
 	m_fOffset.u += iX;
 	m_fOffset.v += iY;
+	UpdatePosition();
+}
+/*視点補正*/
+void CDxLibSpinePlayerC::AdjustViewOffset()
+{
+#ifdef SPINE_3_7_OR_LATER
+	int iClientWidth = 0;
+	int iClientHeight = 0;
+	DxLib::GetScreenState(&iClientWidth, &iClientHeight, nullptr);
+
+	m_fViewOffset.u = (m_fBaseSize.u * m_fDefaultScale - iClientWidth) / 2.f;
+	m_fViewOffset.v = (m_fBaseSize.v * m_fDefaultScale - iClientHeight) / 2.f;
+#endif
 	UpdatePosition();
 }
 /*動作移行*/
@@ -508,6 +503,17 @@ bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* s
 
 	return true;
 }
+/*寸法受け渡し*/
+void CDxLibSpinePlayerC::GetSkeletonSize(float* fWidth, float* fHeight) const
+{
+	if (fWidth != nullptr)*fWidth = m_fBaseSize.u;
+	if (fHeight != nullptr)*fHeight = m_fBaseSize.v;
+}
+/*尺度受け渡し*/
+float CDxLibSpinePlayerC::GetSkeletonScale() const
+{
+	return m_fSkeletonScale;
+}
 /*消去*/
 void CDxLibSpinePlayerC::ClearDrawables()
 {
@@ -625,55 +631,39 @@ void CDxLibSpinePlayerC::WorkOutDefaultScale()
 	int iSkeletonWidth = static_cast<int>(m_fBaseSize.u);
 	int iSkeletonHeight = static_cast<int>(m_fBaseSize.v);
 
-	int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
-	int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+	int iDisplayWidth = 0;
+	int iDisplayHeight = 0;
+#if defined _WIN32
+	DxLib::GetDisplayMaxResolution(&iDisplayWidth, &iDisplayHeight);
+#elif defined __ANDROID__
+	DxLib::GetAndroidDisplayResolution(&iDisplayWidth, &iDisplayHeight);
+#elif defined __APPLE__
+	DxLib::GetDisplayResolution_iOS(&iDisplayWidth, &iDisplayHeight);
+#endif
+	if (iDisplayWidth == 0 || iDisplayHeight == 0)return;
 
-	if (iSkeletonWidth > iDesktopWidth || iSkeletonHeight > iDesktopHeight)
+	if (iSkeletonWidth > iDisplayWidth || iSkeletonHeight > iDisplayHeight)
 	{
-		float fScaleX = static_cast<float>(iDesktopWidth) / iSkeletonWidth;
-		float fScaleY = static_cast<float>(iDesktopHeight) / iSkeletonHeight;
+		float fScaleX = static_cast<float>(iDisplayWidth) / iSkeletonWidth;
+		float fScaleY = static_cast<float>(iDisplayHeight) / iSkeletonHeight;
 
 		if (fScaleX > fScaleY)
 		{
 			m_fDefaultScale = fScaleY;
 #ifdef SPINE_3_7_OR_LATER
-			m_fDefaultOffset.u = iSkeletonWidth > iDesktopWidth ? (iSkeletonWidth * (1 - fScaleY)) / 2.f : 0.f;
-			m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight - iDesktopHeight) / 2.f : 0.f;
+			m_fDefaultOffset.u = iSkeletonWidth > iDisplayWidth ? (iSkeletonWidth * (1 - fScaleY)) / 2.f : 0.f;
+			m_fDefaultOffset.v = iSkeletonHeight > iDisplayHeight ? (iSkeletonHeight - iDisplayHeight) / 2.f : 0.f;
 #endif
 		}
 		else
 		{
 			m_fDefaultScale = fScaleX;
 #ifdef SPINE_3_7_OR_LATER
-			m_fDefaultOffset.u = iSkeletonWidth > iDesktopWidth ? (iSkeletonWidth - iDesktopWidth) / 2.f : 0.f;
-			m_fDefaultOffset.v = iSkeletonHeight > iDesktopHeight ? (iSkeletonHeight * (1 - fScaleX)) / 2.f : 0.f;
+			m_fDefaultOffset.u = iSkeletonWidth > iDisplayWidth ? (iSkeletonWidth - iDisplayWidth) / 2.f : 0.f;
+			m_fDefaultOffset.v = iSkeletonHeight > iDisplayHeight ? (iSkeletonHeight * (1 - fScaleX)) / 2.f : 0.f;
 #endif
 		}
 	}
-}
-/*視点補正*/
-void CDxLibSpinePlayerC::AdjustViewOffset()
-{
-#ifdef SPINE_3_7_OR_LATER
-	if (m_hRenderWnd != nullptr)
-	{
-		RECT rc;
-		::GetClientRect(m_hRenderWnd, &rc);
-
-		int iClientWidth = rc.right - rc.left;
-		int iClientHeight = rc.bottom - rc.top;
-
-		int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
-		int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
-
-		iClientWidth = iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth;
-		iClientHeight = iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight;
-
-		m_fViewOffset.u = (m_fBaseSize.u * m_fDefaultScale - iClientWidth) / 2.f;
-		m_fViewOffset.v = (m_fBaseSize.v * m_fDefaultScale - iClientHeight) / 2.f;
-	}
-#endif
-	UpdatePosition();
 }
 /*位置適用*/
 void CDxLibSpinePlayerC::UpdatePosition()
@@ -737,27 +727,5 @@ void CDxLibSpinePlayerC::ClearAnimationTracks()
 			spAnimationState_setEmptyAnimation(pDdrawble->animationState, iTrack, 0.f);
 		}
 #endif
-	}
-}
-/*窓寸法調整*/
-void CDxLibSpinePlayerC::ResizeWindow()
-{
-	if (m_hRenderWnd != nullptr)
-	{
-		RECT rect;
-		::GetWindowRect(m_hRenderWnd, &rect);
-		int iX = static_cast<int>(m_fBaseSize.u * m_fSkeletonScale);
-		int iY = static_cast<int>(m_fBaseSize.v * m_fSkeletonScale);
-
-		rect.right = iX + rect.left;
-		rect.bottom = iY + rect.top;
-		LONG lStyle = ::GetWindowLong(m_hRenderWnd, GWL_STYLE);
-		const auto HasWindowMenu = [this, &lStyle]()
-			-> bool
-			{
-				return !((lStyle & WS_CAPTION) && (lStyle & WS_SYSMENU));
-			};
-		::AdjustWindowRect(&rect, lStyle, HasWindowMenu() ? FALSE : TRUE);
-		::SetWindowPos(m_hRenderWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
 	}
 }
