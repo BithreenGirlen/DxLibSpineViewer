@@ -281,7 +281,7 @@ void CSpineSettingDialogue::OnCheckButton()
 /*入力欄文字列取得*/
 std::wstring CSpineSettingDialogue::GetEditBoxText(HWND hWnd)
 {
-    int iLen = ::GetWindowTextLengthA(hWnd); // 終端を含まない
+    int iLen = ::GetWindowTextLength(hWnd); // 終端を含まない
     if (iLen > 0)
     {
         std::vector<wchar_t> vBuffer(iLen + 1LL, L'\0');

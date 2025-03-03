@@ -10,10 +10,12 @@ class CSpineSettingDialogue
 public:
 	CSpineSettingDialogue();
 	~CSpineSettingDialogue();
+
 	bool Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* pwzWindowName);
 	HWND GetHwnd()const { return m_hWnd; }
-	std::wstring GetAtlasExtension() const { return m_wstrAtlasExtension; }
-	std::wstring GetSkelExtension() const { return m_wstrSkelExtension; }
+
+	const std::wstring& GetAtlasExtension() const { return m_wstrAtlasExtension; }
+	const std::wstring& GetSkelExtension() const { return m_wstrSkelExtension; }
 	bool IsSkelBinary() const { return m_bBinarySkel; }
 private:
 	const wchar_t* m_swzClassName = L"Spine setting dialogue";
