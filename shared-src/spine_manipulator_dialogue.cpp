@@ -27,7 +27,7 @@ CSpineManipulatorDialogue::~CSpineManipulatorDialogue()
 HWND CSpineManipulatorDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer)
 {
 	CDialogueTemplate sWinDialogueTemplate;
-	sWinDialogueTemplate.SetWindowSize(0x80, 0xf0);
+	sWinDialogueTemplate.SetWindowSize(128, 280);
 	sWinDialogueTemplate.MakeWindowResizable(true);
 	std::vector<unsigned char> dialogueTemplate = sWinDialogueTemplate.Generate(pwzWindowName);
 
@@ -236,7 +236,7 @@ LRESULT CSpineManipulatorDialogue::ResizeControls()
 		m_slotListView.AdjustWidth();
 	}
 	y += h + y_space;
-	h = clientHeight * 1 / 5;
+	h = clientHeight * 3 / 10;
 
 	hWnd = m_skinListView.GetHwnd();
 	if (hWnd != nullptr)
