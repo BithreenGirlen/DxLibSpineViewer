@@ -505,10 +505,13 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 
     if (usKey == 0)
     {
-        m_DxLibSpinePlayer.ResetScale();
-        
-        ResizeWindow();
-        m_DxLibSpinePlayer.AdjustViewOffset();
+        if (m_bPlayReady)
+        {
+            m_DxLibSpinePlayer.ResetScale();
+
+            ResizeWindow();
+            m_DxLibSpinePlayer.AdjustViewOffset();
+        }
     }
 
     if (usKey == MK_RBUTTON)
