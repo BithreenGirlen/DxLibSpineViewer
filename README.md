@@ -26,9 +26,9 @@ The viewer is built with Spine generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`
 - Runtime manipulation
   - Able to exclude slots, mix skins, mix animations, and change attachment.
     - Mixing skins is available for versions later than `3.8`.
-    - Changing attachment is possible only when there are slots associated with multiple attachments.
-      - Even if it is possible to change attachment, it depends on timelines whether it is appropriate or not.
-    - Mixing skins and changing attachment will overwrite the animation state.
+    - Replacing attachment is possible only when there are slots associated with multiple attachments.
+      - Even if it is possible to replace attachment, it depends on timelines whether it is appropriate or not.
+    - Mixing skins and replacing attachment will overwrite the animation state.
       - It may be required to reload files in order to back to default state.
 - Export to media file.
   - As `PNG`, `GIF`, `JPG`, and `H264`.
@@ -39,14 +39,14 @@ The following sections explain how to use the viewer.
 ## Menu functions
 
 | Entry | Item | Action |
-----|---- |---- 
-File | Open folder | Open folder-select-dialogue.
- -| Setting | Open a dialogue to set atlas/skelton extensions to pick up when opening folder.
- -| Select files | Pick up atlas and skeleton files one by one regardless of their extension.
-Image | Manipulation | Open a dialogue to specify slots to be excluded, skins or animations to be mixed.
- -| Re-attachment | Open a dialogue to change attachment.
- Window | Through-seen | Switch window's transparancy.
- -| Pan smoothly | Switch view-point behaviour; pan while dragging or when dragged button is released.
+| ---- | ---- | ---- | 
+| `File` | `Open folder` | Open folder-select-dialogue. |
+| - | `Setting` | Open a dialogue to set atlas/skelton extensions to pick up when opening folder. |
+| - | `Select files` | Pick up atlas and skeleton files one by one regardless of their extension. |
+| `Image` | `Manipulation` | Open a dialogue to specify slots to be excluded, skins or animations to be mixed. |
+| - | `Re-attachment` | Open a dialogue to replace attachment. |
+| `Window` | `Through-seen` | Switch window's transparancy. |
+| - | `Pan smoothly` | Toggle view-point behaviour; pan while dragging or when dragged button is released. |
  
 ### Load spine(s) via `Open folder` 
 1. In the `Setting` dialogue, specify atlas and skeleton extensions.
@@ -61,12 +61,12 @@ Image | Manipulation | Open a dialogue to specify slots to be excluded, skins or
 ## Context-menu function
 
 | Item | Action |
-|---- |---- 
-| Snap as PNG | Save the current screen as PNG.
-| Snap as JPG | Save the current screen as JPG.
-| Start image recording | Start storing screen frames at intervals.
-| Save as GIF | Save stored frames into a single GIF file.
-| Save as PNGs | Save stored frames as separate PNG files.
+| ---- | ---- |
+| `Snap as PNG` | Save the current screen as PNG. |
+| `Snap as JPG` | Save the current screen as JPG. |
+| `Start image recording` | Start storing screen frames at intervals. |
+| `Save as GIF` | Save stored frames into a single GIF file. |
+| `Save as PNGs` | Save stored frames as separate PNG files. |
 
 - The context-menu appears only when spine is loaded, and the items of which varies depending on whether it is under recording or not.
 - The files are saved in the subdirectory of the execution file.
@@ -77,38 +77,38 @@ Image | Manipulation | Open a dialogue to specify slots to be excluded, skins or
 
 The additional items below appear only for Intel CPU. 
 | Item | Action |
-|---- |---- 
-| Start video recording | Start recording screen as H264.
-| End recording | End video recording.
+|---- | ---- |
+| `Start video recording` | Start recording screen as H264. |
+| `End recording` | End video recording. |
 
 - H264 file will be named like `fp.mp4` where `fp` is animation name.
 
 ## Mouse functions
 
-| Command | Action |
-----|---- 
-Mouse wheel| Scale up/down. Combining with `Ctrl` to retain window size.
-Left button + mouse wheel| Speed up/down the animation.
-Left button click| Switch the animation.
-Left button drag| Move view-point.
-Middle button| Reset scale, speed, and view-point to default.
-Right button + middle button| Hide/show window's frame and menu. Having hidden, the window goes to the origin of the primary display.
-Right button + left button| Move window. This works only when the window's frame/menu are hidden.
-Right button + mouse wheel| Switch the skin.
+| Input | Action |
+| ---- | ---- |
+| Wheel | Scale up/down. Combining with `Ctrl` to retain window size. |
+| Left + wheel | Speed up/down the animation. |
+| Left click | Switch the animation. |
+| Left drag | Move view-point. |
+| Middle | Reset scale, speed, and view-point to default. |
+| Right + middle | Hide/show window's frame and menu. Having hidden, the window goes to the origin of the primary display. |
+| Right + left | Move window. This works only when the window's frame/menu are hidden. |
+| Right + wheel | Switch the skin. |
 
 ## Keyboard functions
 
-| Input  | Action  |
+| Input | Action |
 | --- | --- |
-| Esc | Close the application. |
-| Up | Open the previpus folder. |
-| Down | Open the next folder. |
-| A | Enable/disable premultiplied alpha.| 
-| B | Prefer/ignore blned-mode specified by slots.| 
-| R | Switch draw-order between filename asc/descending order.| 
-| Z | Enable/disable depth-buffer.|  
+| <kbd>Esc</kbd> | Close the application. |
+| <kbd>Up</kbd> | Open the previpus folder. |
+| <kbd>Down</kbd> | Open the next folder. |
+| <kbd>A</kbd> | Enable/disable premultiplied alpha.| 
+| <kbd>B</kbd> | Prefer/ignore blned-mode specified by slots.| 
+| <kbd>R</kbd> | Switch draw-order between filename asc/descending order.| 
+| <kbd>Z</kbd> | Enable/disable depth-buffer.|  
 
-- `Up` and `Down` key are valid only when the current spine(s) is/are loaded via `Open folder`.
+- <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when the current spine(s) is/are loaded via `Open folder`.
 
 ## Extra-demo
 - Depth-buffer
@@ -126,6 +126,11 @@ https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/a5ca45df-ad1c-
 
 https://github.com/user-attachments/assets/f4b5e1fa-faf7-4711-918f-2d0fbd2bb859
 
+- Replace attachment
+  - Sometimes there remained attachments which are not used in any animations.
+
+ https://github.com/user-attachments/assets/18748cf5-e7c0-49a3-b254-e84def1b0a4f
+ 
 ## External libraries
 
 - [DXライブラリ](https://dxlib.xsrv.jp/dxdload.html)
@@ -168,4 +173,3 @@ The `deps` directory will be as follows:
 ├ DxLibSpineViewer.sln
 └ ...
 </pre>
-
