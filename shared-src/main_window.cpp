@@ -56,13 +56,13 @@ bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
         }
         else
         {
-            std::wstring wstrMessage = L"CreateWindowExW failed; code: " + std::to_wstring(::GetLastError());
+            std::wstring wstrMessage = L"CreateWindowW failed; code: " + std::to_wstring(::GetLastError());
             ::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
         }
     }
     else
     {
-        std::wstring wstrMessage = L"RegisterClassW failed; code: " + std::to_wstring(::GetLastError());
+        std::wstring wstrMessage = L"RegisterClassExW failed; code: " + std::to_wstring(::GetLastError());
         ::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
     }
 
@@ -368,7 +368,6 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
             if (bWindowToBeResized)
             {
                 ResizeWindow();
-                m_DxLibSpinePlayer.AdjustViewOffset();
             }
         }
     }
@@ -510,7 +509,6 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
             m_DxLibSpinePlayer.ResetScale();
 
             ResizeWindow();
-            m_DxLibSpinePlayer.AdjustViewOffset();
         }
     }
 
@@ -661,16 +659,17 @@ void CMainWindow::MenuOnSelectFiles()
             {
                 ::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
             }
+            UpdateWindowResizableAttribute();
 
             const auto ExtractFileName = [&wstrAtlasFiles]()
                 -> std::wstring
                 {
-                    const std::wstring& wstrFilePath = wstrAtlasFiles.at(0);
+                    const std::wstring& wstrFilePath = wstrAtlasFiles[0];
                     size_t nPos = wstrFilePath.find_last_of(L"\\/");
                     nPos = nPos == std::string::npos ? 0 : nPos + 1;
 
                     size_t nPos2 = wstrFilePath.find(L".", nPos);
-                    if (nPos2 == std::wstring::npos)nPos2 = wstrFilePath.size() - 1;
+                    if (nPos2 == std::wstring::npos)nPos2 = wstrFilePath.size();
 
                     return wstrFilePath.substr(nPos, nPos2 - nPos);
                 };
@@ -760,7 +759,7 @@ void CMainWindow::KeyUpOnNextFolder()
 
     ++m_nFolderIndex;
     if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = 0;
-    SetupResources(m_folders.at(m_nFolderIndex).c_str());
+    SetupResources(m_folders[m_nFolderIndex].c_str());
 }
 /*前のフォルダに移動*/
 void CMainWindow::KeyUpOnForeFolder()
@@ -769,7 +768,7 @@ void CMainWindow::KeyUpOnForeFolder()
 
     --m_nFolderIndex;
     if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = m_folders.size() - 1;
-    SetupResources(m_folders.at(m_nFolderIndex).c_str());
+    SetupResources(m_folders[m_nFolderIndex].c_str());
 }
 /*JPGとして保存*/
 void CMainWindow::MenuOnSaveAsJpg()
@@ -854,9 +853,9 @@ void CMainWindow::MenuOnEndRecording(bool bAsGif)
             for (size_t i = 0; i < m_imageFrames.size() && i < m_imageFrameNames.size(); ++i)
             {
                 std::wstring wstrFilePath = wstrFolderPath;
-                wstrFilePath += m_imageFrameNames.at(i);
+                wstrFilePath += m_imageFrameNames[i];
                 wstrFilePath += L".png";
-                win_image::SaveImageAsPng(wstrFilePath.c_str(), &m_imageFrames.at(i));
+                win_image::SaveImageAsPng(wstrFilePath.c_str(), &m_imageFrames[i]);
             }
         }
         m_imageFrames.clear();
@@ -896,7 +895,7 @@ std::wstring CMainWindow::GetWindowTitle()
 /*表示形式変更*/
 void CMainWindow::SwitchWindowMode()
 {
-    if (!m_bPlayReady)return;
+    if (!m_bPlayReady || m_recoderState == RecorderState::RecordingVideo)return;
 
     RECT rect;
     ::GetWindowRect(m_hWnd, &rect);
@@ -906,13 +905,13 @@ void CMainWindow::SwitchWindowMode()
 
     if (m_bBarHidden)
     {
-        ::SetWindowLong(m_hWnd, GWL_STYLE, lStyle & ~WS_CAPTION & ~WS_SYSMENU);
+        ::SetWindowLong(m_hWnd, GWL_STYLE, lStyle & ~WS_CAPTION & ~WS_SYSMENU & ~WS_THICKFRAME);
         ::SetWindowPos(m_hWnd, nullptr, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER);
         ::SetMenu(m_hWnd, nullptr);
     }
     else
     {
-        ::SetWindowLong(m_hWnd, GWL_STYLE, lStyle | WS_CAPTION | WS_SYSMENU);
+        ::SetWindowLong(m_hWnd, GWL_STYLE, lStyle | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME);
         ::SetMenu(m_hWnd, m_hMenuBar);
     }
 
@@ -970,6 +969,7 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
     {
         ::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
     }
+    UpdateWindowResizableAttribute();
 
     return m_bPlayReady;
 }
@@ -1045,6 +1045,12 @@ void CMainWindow::StepOnRecording()
         }
     }
 }
+/*寸法手動変更可否属性更新*/
+void CMainWindow::UpdateWindowResizableAttribute()
+{
+    LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
+    ::SetWindowLong(m_hWnd, GWL_STYLE, m_bPlayReady ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
+}
 /*窓寸法変更*/
 void CMainWindow::ResizeWindow()
 {
@@ -1062,12 +1068,14 @@ void CMainWindow::ResizeWindow()
     rect.bottom = iY + rect.top;
 
     LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
-    const auto HasWindowMenu = [&lStyle]()
+    const auto IsWidowBarHidden = [&lStyle]()
         -> bool
         {
             return !((lStyle & WS_CAPTION) && (lStyle & WS_SYSMENU));
         };
 
-    ::AdjustWindowRect(&rect, lStyle, HasWindowMenu() ? FALSE : TRUE);
+    ::AdjustWindowRect(&rect, lStyle, IsWidowBarHidden() ? FALSE : TRUE);
     ::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
+
+    m_DxLibSpinePlayer.AdjustViewOffset();
 }

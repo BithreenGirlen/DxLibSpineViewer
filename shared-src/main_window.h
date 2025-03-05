@@ -126,6 +126,7 @@ private:
 	CSpineAtlasDialogue m_SpineAtlasDialogue;
 	CMfVideoEncoder m_MfVideoEncoder;
 
+	void UpdateWindowResizableAttribute();
 	void ResizeWindow();
 };
 
