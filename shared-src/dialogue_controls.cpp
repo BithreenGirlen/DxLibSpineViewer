@@ -349,3 +349,41 @@ int CComboBox::GetSelectedItemIndex()
 	}
 	return CB_ERR;
 }
+
+/* ==================== Button ==================== */
+
+CButton::CButton()
+{
+
+}
+
+CButton::~CButton()
+{
+
+}
+
+bool CButton::Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool bHasCheckBox)
+{
+	m_hWnd = ::CreateWindowEx(0, WC_BUTTON, szText, WS_VISIBLE | WS_CHILD | WS_TABSTOP | (bHasCheckBox ? BS_CHECKBOX : 0), 0, 0, 0, 0, hParentWnd, hMenu, ::GetModuleHandle(NULL), nullptr);
+	return m_hWnd != nullptr;
+}
+
+void CButton::SetCheckBox(bool bToBeChecked)
+{
+	if (m_hWnd != nullptr)
+	{
+		/*BM_SETCHECK always return 0*/
+		::SendMessage(m_hWnd, BM_SETCHECK, bToBeChecked ? BST_CHECKED : BST_UNCHECKED, 0);
+	}
+}
+
+bool CButton::IsChecked()
+{
+	if (m_hWnd != nullptr)
+	{
+		LRESULT lResult = ::SendMessage(m_hWnd, BM_GETCHECK, 0, 0);
+		return lResult == BST_CHECKED;
+	}
+
+	return false;
+}

@@ -160,11 +160,8 @@ LRESULT CSpineSettingDialogue::OnCreate(HWND hWnd)
 	m_hSkelStatic = ::CreateWindowEx(0, WC_STATIC, L"Skeleton", WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, m_hWnd, nullptr, m_hInstance, nullptr);
 	m_hSkelEdit = ::CreateWindowEx(0, WC_EDIT, m_wstrSkelExtension.c_str(), WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
 	
-	m_hSkelBinCheckButton = ::CreateWindowEx(0, WC_BUTTON, L"Binary", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_CHECKBOX, 0, 0, 0, 0, m_hWnd, reinterpret_cast<HMENU>(Controls::kCheckButton), ::GetModuleHandle(NULL), nullptr);
-	if (m_hSkelBinCheckButton != nullptr)
-	{
-		SetCheckBox(m_hSkelBinCheckButton, m_bBinarySkel);
-	}
+	m_BinarySkelCheckButton.Create(L"Binary", m_hWnd, reinterpret_cast<HMENU>(Controls::kCheckButton), true);
+	m_BinarySkelCheckButton.SetCheckBox(m_bBinarySkel);
 
 	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
 
@@ -233,9 +230,9 @@ LRESULT CSpineSettingDialogue::OnSize()
 		::MoveWindow(m_hSkelEdit, x, y, w, h, TRUE);
 	}
 	y += h;
-	if (m_hSkelBinCheckButton != nullptr)
+	if (m_BinarySkelCheckButton.GetHwnd() != nullptr)
 	{
-		::MoveWindow(m_hSkelBinCheckButton, x, y, w, h, TRUE);
+		::MoveWindow(m_BinarySkelCheckButton.GetHwnd(), x, y, w, h, TRUE);
 	}
 
 	return 0;
@@ -280,11 +277,8 @@ BOOL CSpineSettingDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 
 void CSpineSettingDialogue::OnCheckButton()
 {
-	if (m_hSkelBinCheckButton != nullptr)
-	{
-		bool bRet = GetCheckState(m_hSkelBinCheckButton);
-		SetCheckBox(m_hSkelBinCheckButton, !bRet);
-	}
+	bool bRet = m_BinarySkelCheckButton.IsChecked();
+	m_BinarySkelCheckButton.SetCheckBox(!bRet);
 }
 /*入力欄文字列取得*/
 std::wstring CSpineSettingDialogue::GetEditBoxText(HWND hWnd)
@@ -305,18 +299,6 @@ bool CSpineSettingDialogue::SetEditBoxText(HWND hWnd, const std::wstring& wstr)
 	LRESULT lResult = ::SendMessage(hWnd, WM_SETTEXT, wstr.size(), reinterpret_cast<LPARAM>(wstr.data()));
 	return lResult == TRUE;
 }
-/*印状態取得*/
-bool CSpineSettingDialogue::GetCheckState(HWND hWnd)
-{
-	LRESULT lResult = ::SendMessage(hWnd, BM_GETCHECK, 0, 0);
-	return lResult == BST_CHECKED;
-}
-/*印付け変更*/
-void CSpineSettingDialogue::SetCheckBox(HWND hWnd, bool bToBeChecked)
-{
-	/*BM_SETCHECK always return 0*/
-	::SendMessage(hWnd, BM_SETCHECK, bToBeChecked ? BST_CHECKED : BST_UNCHECKED, 0);
-}
 /*入力値取得*/
 void CSpineSettingDialogue::GetInputs()
 {
@@ -332,5 +314,5 @@ void CSpineSettingDialogue::GetInputs()
 	{
 		m_wstrSkelExtension = wstrTemp;
 	}
-	m_bBinarySkel = GetCheckState(m_hSkelBinCheckButton);
+	m_bBinarySkel = m_BinarySkelCheckButton.IsChecked();
 }

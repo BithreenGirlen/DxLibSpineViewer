@@ -66,7 +66,21 @@ private:
 	void Clear();
 	bool SetSelectedItem(int iIndex);
 	int GetSelectedItemIndex();
+};
 
+class CButton
+{
+public:
+	CButton();
+	~CButton();
+
+	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool bHasCheckBox = false);
+	HWND GetHwnd()const { return m_hWnd; }
+
+	void SetCheckBox(bool bToBeChecked);
+	bool IsChecked();
+private:
+	HWND m_hWnd = nullptr;
 };
 
 #endif // !DIALOGUE_CONTROLS_H_

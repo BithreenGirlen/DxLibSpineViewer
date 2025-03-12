@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include "dialogue_controls.h"
+
 class CSpineSettingDialogue
 {
 public:
@@ -40,7 +42,8 @@ private:
 	HWND m_hAtlasEdit = nullptr;
 	HWND m_hSkelStatic = nullptr;
 	HWND m_hSkelEdit = nullptr;
-	HWND m_hSkelBinCheckButton = nullptr;
+
+	CButton m_BinarySkelCheckButton;
 
 	std::wstring m_wstrAtlasExtension = L".atlas";
 	std::wstring m_wstrSkelExtension = L".skel";
@@ -53,8 +56,6 @@ private:
 
 	std::wstring GetEditBoxText(HWND hWnd);
 	bool SetEditBoxText(HWND hWnd, const std::wstring& wstr);
-	bool GetCheckState(HWND hWnd);
-	void SetCheckBox(HWND hWnd, bool bToBeChecked);
 
 	void GetInputs();
 };
