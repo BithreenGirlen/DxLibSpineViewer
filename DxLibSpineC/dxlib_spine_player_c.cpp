@@ -397,35 +397,27 @@ bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* s
 {
 	if (szSlotName == nullptr || szAttachmentName == nullptr)return false;
 
-	const auto FindSlot = [this, &szSlotName]()
-		->spSlot*
+	const auto FindSlot = [&szSlotName](spSkeleton* const pSkeleton)
+		-> spSlot*
 		{
-			for (const auto& pDrawable : m_drawables)
+			for (size_t i = 0; i < pSkeleton->slotsCount; ++i)
 			{
-				for (size_t i = 0; i < pDrawable->skeleton->slotsCount; ++i)
+				const char* slotName = pSkeleton->drawOrder[i]->data->name;
+				if (slotName != nullptr && strcmp(slotName, szSlotName) == 0)
 				{
-					const char* slotName = pDrawable->skeleton->drawOrder[i]->data->name;
-					if (slotName != nullptr && strcmp(slotName, szSlotName) == 0)
-					{
-						return pDrawable->skeleton->drawOrder[i];
-					}
+					return pSkeleton->drawOrder[i];
 				}
 			}
 
 			return nullptr;
 		};
 
-	spSlot* pSlot = FindSlot();
-	if (pSlot == nullptr)return false;
-
-	const auto FindAttachment = [this, &szAttachmentName]()
+	const auto FindAttachment = [&szAttachmentName](spSkeletonData* const pSkeletonDatum)
 		-> spAttachment*
 		{
-			for (const auto& pSkeletonDatum : m_skeletonData)
+			spSkin* pSkin = pSkeletonDatum->defaultSkin;
+			if (pSkin != nullptr)
 			{
-				spSkin* pSkin = pSkeletonDatum->defaultSkin;
-				if (pSkin == nullptr)continue;
-
 				for (int iSlotIndex = 0; iSlotIndex < pSkeletonDatum->slotsCount; ++iSlotIndex)
 				{
 					for (int iAttachmentIndex = 0;; ++iAttachmentIndex)
@@ -448,58 +440,64 @@ bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* s
 			return nullptr;
 		};
 
-	spAttachment* pAttachment = FindAttachment();
-	if (pAttachment == nullptr)return false;
-
-	/* Replace attachment name in spAttachmentTimeline if exists. */
-	for (const auto& skeletonDatum : m_skeletonData)
+	for (const auto& pDrawable : m_drawables)
 	{
-		const auto& animationName = m_animationNames[m_nAnimationIndex];
-		spAnimation* pAnimation = spSkeletonData_findAnimation(skeletonDatum.get(), animationName.c_str());
-		if (pAnimation == nullptr)continue;
+		spSlot* pSlot = FindSlot(pDrawable->skeleton);
+		if (pSlot == nullptr)continue;
+
+		spAttachment* pAttachment = FindAttachment(pDrawable->skeleton->data);
+		if (pAttachment == nullptr)continue;
+
+		/* Replace attachment name in spAttachmentTimeline if exists. */
+		if (pSlot->attachment != nullptr)
+		{
+			const char* animationName = m_animationNames[m_nAnimationIndex].c_str();
+			spAnimation* pAnimation = spSkeletonData_findAnimation(pDrawable->skeleton->data, animationName);
+			if (pAnimation == nullptr)continue;
 
 #ifndef SPINE_4_1_OR_LATER
-		for (size_t i = 0; i < pAnimation->timelinesCount; ++i)
-		{
-			if (pAnimation->timelines[i]->type == SP_TIMELINE_ATTACHMENT)
+			for (size_t i = 0; i < pAnimation->timelinesCount; ++i)
 			{
-				spAttachmentTimeline* pAttachmentTimeline = (spAttachmentTimeline*)pAnimation->timelines[i];
-				for (size_t ii = 0; ii < pAttachmentTimeline->framesCount; ++ii)
+				if (pAnimation->timelines[i]->type == SP_TIMELINE_ATTACHMENT)
 				{
-					const char* szName = pAttachmentTimeline->attachmentNames[ii];
-					if (szName == nullptr)continue;
-
-					if (strcmp(szName, pSlot->attachment->name) == 0)
+					spAttachmentTimeline* pAttachmentTimeline = (spAttachmentTimeline*)pAnimation->timelines[i];
+					for (size_t ii = 0; ii < pAttachmentTimeline->framesCount; ++ii)
 					{
-						FREE(pAttachmentTimeline->attachmentNames[ii]);
-						MALLOC_STR(pAttachmentTimeline->attachmentNames[ii], szAttachmentName);
+						const char* szName = pAttachmentTimeline->attachmentNames[ii];
+						if (szName == nullptr)continue;
+
+						if (strcmp(szName, pSlot->attachment->name) == 0)
+						{
+							FREE(pAttachmentTimeline->attachmentNames[ii]);
+							MALLOC_STR(pAttachmentTimeline->attachmentNames[ii], szAttachmentName);
+						}
 					}
 				}
 			}
-		}
 #else
-		for (size_t i = 0; i < pAnimation->timelines->size; ++i)
-		{
-			if (pAnimation->timelines->items[i]->type == SP_TIMELINE_ATTACHMENT)
+			for (size_t i = 0; i < pAnimation->timelines->size; ++i)
 			{
-				spAttachmentTimeline* pAttachmentTimeline = (spAttachmentTimeline*)pAnimation->timelines->items[i];
-				for (size_t ii = 0; ii < pAnimation->timelines->items[i]->frameCount; ++ii)
+				if (pAnimation->timelines->items[i]->type == SP_TIMELINE_ATTACHMENT)
 				{
-					const char* szName = pAttachmentTimeline->attachmentNames[ii];
-					if (szName == nullptr)continue;
-
-					if (strcmp(szName, pSlot->attachment->name) == 0)
+					spAttachmentTimeline* pAttachmentTimeline = (spAttachmentTimeline*)pAnimation->timelines->items[i];
+					for (size_t ii = 0; ii < pAnimation->timelines->items[i]->frameCount; ++ii)
 					{
-						FREE(pAttachmentTimeline->attachmentNames[ii]);
-						MALLOC_STR(pAttachmentTimeline->attachmentNames[ii], szAttachmentName);
+						const char* szName = pAttachmentTimeline->attachmentNames[ii];
+						if (szName == nullptr)continue;
+
+						if (strcmp(szName, pSlot->attachment->name) == 0)
+						{
+							FREE(pAttachmentTimeline->attachmentNames[ii]);
+							MALLOC_STR(pAttachmentTimeline->attachmentNames[ii], szAttachmentName);
+						}
 					}
 				}
 			}
-		}
 #endif
-	}
+		}
 
-	spSlot_setAttachment(pSlot, pAttachment);
+		spSlot_setAttachment(pSlot, pAttachment);
+	}
 
 	return true;
 }

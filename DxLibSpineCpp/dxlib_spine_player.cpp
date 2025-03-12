@@ -374,79 +374,75 @@ bool CDxLibSpinePlayer::ReplaceAttachment(const char* szSlotName, const char* sz
 {
 	if (szSlotName == nullptr || szAttachmentName == nullptr)return false;
 
-	const auto FindSlot = [this, &szSlotName]()
-		->spine::Slot*
+	const auto FindSlot = [&szSlotName](spine::Skeleton* const skeleton)
+		-> spine::Slot*
 		{
-			for (const auto& pDrawable : m_drawables)
+			for (size_t i = 0; i < skeleton->getSlots().size(); ++i)
 			{
-				for (size_t i = 0; i < pDrawable->skeleton->getSlots().size();++i)
+				const spine::String& slotName = skeleton->getDrawOrder()[i]->getData().getName();
+				if (!slotName.isEmpty() && slotName == szSlotName)
 				{
-					const spine::String& slotName = pDrawable->skeleton->getDrawOrder()[i]->getData().getName();
-					if (!slotName.isEmpty() && slotName == szSlotName)
-					{
-						return pDrawable->skeleton->getDrawOrder()[i];
-					}
-				}
-			}
-
-			return nullptr;
-		};
-
-	spine::Slot* pSlot = FindSlot();
-	if (pSlot == nullptr)return false;
-
-	const auto FindAttachment = [this, &szAttachmentName]()
-		-> spine::Attachment*
-		{
-			for (const auto& skeletonDatum : m_skeletonData)
-			{
-				spine::Skin::AttachmentMap::Entries attachmentMapEntries = skeletonDatum->getDefaultSkin()->getAttachments();
-				for (; attachmentMapEntries.hasNext();)
-				{
-					spine::Skin::AttachmentMap::Entry attachmentMapEntry = attachmentMapEntries.next();
-					
-					if (attachmentMapEntry._name == szAttachmentName)
-					{
-						return attachmentMapEntry._attachment;
-					}
+					return skeleton->getDrawOrder()[i];
 				}
 			}
 			return nullptr;
 		};
 
-	spine::Attachment* pAttachment = FindAttachment();
-	if (pAttachment == nullptr)return false;
+	const auto FindAttachment = [&szAttachmentName](spine::SkeletonData* const skeletonDatum)
+		->spine::Attachment*
+		{
+			spine::Skin::AttachmentMap::Entries attachmentMapEntries = skeletonDatum->getDefaultSkin()->getAttachments();
+			for (; attachmentMapEntries.hasNext();)
+			{
+				spine::Skin::AttachmentMap::Entry attachmentMapEntry = attachmentMapEntries.next();
 
-	/* Replace attachment name in spine::AttachmentTimeline if exists. */
-	for (const auto& skeletonDatum : m_skeletonData)
+				if (attachmentMapEntry._name == szAttachmentName)
+				{
+					return attachmentMapEntry._attachment;
+				}
+			}
+			return nullptr;
+		};
+
+	for (const auto& pDrawable : m_drawables)
 	{
-		const auto& animationName = m_animationNames[m_nAnimationIndex];
-		spine::Animation* pAnimation = skeletonDatum->findAnimation(animationName.c_str());
-		if (pAnimation == nullptr)continue;
+		spine::Slot* pSlot = FindSlot(pDrawable->skeleton);
+		if (pSlot == nullptr)continue;
 
-		spine::Vector<spine::Timeline*>& timelines = pAnimation->getTimelines();
-		for (size_t i = 0; i < timelines.size(); ++i)
+		spine::Attachment* pAttachment = FindAttachment(pDrawable->skeleton->getData());
+		if (pAttachment == nullptr)continue;
+
+		/* Replace attachment name in spine::AttachmentTimeline if exists. */
+		if (pSlot->getAttachment() != nullptr)
 		{
-			if (timelines[i]->getRTTI().isExactly(spine::AttachmentTimeline::rtti))
+			const char* animationName = m_animationNames[m_nAnimationIndex].c_str();
+			spine::Animation* pAnimation = pDrawable->skeleton->getData()->findAnimation(animationName);
+			if (pAnimation == nullptr)continue;
+
+			spine::Vector<spine::Timeline*>& timelines = pAnimation->getTimelines();
+			for (size_t i = 0; i < timelines.size(); ++i)
 			{
-				const auto& attachmentTimeline = static_cast<spine::AttachmentTimeline*>(timelines[i]);
-
-				spine::Vector<spine::String>& attachmentNames = attachmentTimeline->getAttachmentNames();
-				for (size_t ii = 0; ii < attachmentNames.size(); ++ii)
+				if (timelines[i]->getRTTI().isExactly(spine::AttachmentTimeline::rtti))
 				{
-					const char* szName = attachmentNames[ii].buffer();
-					if (szName == nullptr)continue;
+					const auto& attachmentTimeline = static_cast<spine::AttachmentTimeline*>(timelines[i]);
 
-					if (strcmp(szName, pSlot->getAttachment()->getName().buffer()) == 0)
+					spine::Vector<spine::String>& attachmentNames = attachmentTimeline->getAttachmentNames();
+					for (size_t ii = 0; ii < attachmentNames.size(); ++ii)
 					{
-						attachmentNames[ii] = szAttachmentName;
+						const char* szName = attachmentNames[ii].buffer();
+						if (szName == nullptr)continue;
+
+						if (strcmp(szName, pSlot->getAttachment()->getName().buffer()) == 0)
+						{
+							attachmentNames[ii] = szAttachmentName;
+						}
 					}
 				}
 			}
 		}
-	}
 
-	pSlot->setAttachment(pAttachment);
+		pSlot->setAttachment(pAttachment);
+	}
 
 	return true;
 }
