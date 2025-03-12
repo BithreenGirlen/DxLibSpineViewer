@@ -650,7 +650,7 @@ void CMainWindow::MenuOnSelectFiles()
                 skels.push_back(win_text::NarrowUtf8(skel));
             }
 
-            m_bPlayReady = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary());
+            m_bPlayReady = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary(wstrSkelFiles[0].c_str()));
             if (m_bPlayReady)
             {
                 ResizeWindow();

@@ -59,13 +59,13 @@ public:
 
 	void Setup(const std::vector<std::wstring>& itemTexts);
 
+	int GetSelectedItemIndex();
 	std::wstring GetSelectedItemText();
 private:
 	HWND m_hWnd = nullptr;
 
 	void Clear();
 	bool SetSelectedItem(int iIndex);
-	int GetSelectedItemIndex();
 };
 
 class CButton

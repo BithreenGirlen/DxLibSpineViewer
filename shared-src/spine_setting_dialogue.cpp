@@ -45,7 +45,7 @@ bool CSpineSettingDialogue::Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 		m_hParentWnd = hWnd; // Stores here to avoid calling GetParent() everytime
 
 		UINT uiDpi = ::GetDpiForSystem();
-		int iWindowWidth = ::MulDiv(100, uiDpi, USER_DEFAULT_SCREEN_DPI);
+		int iWindowWidth = ::MulDiv(160, uiDpi, USER_DEFAULT_SCREEN_DPI);
 		int iWindowHeight = ::MulDiv(160, uiDpi, USER_DEFAULT_SCREEN_DPI);
 
 		RECT rect{};
@@ -70,6 +70,23 @@ bool CSpineSettingDialogue::Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 	{
 		std::wstring wstrMessage = L"RegisterClassExW failed; code: " + std::to_wstring(::GetLastError());
 		::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
+	}
+
+	return false;
+}
+
+bool CSpineSettingDialogue::IsSkelBinary(const wchar_t* pwzFileName) const
+{
+	switch (m_skeletonFormat)
+	{
+	case ESkeletonFormat::Automatic:
+		return IsLikelyBinary(pwzFileName == nullptr ? m_wstrSkelExtension : pwzFileName);
+	case ESkeletonFormat::Binary:
+		return true;
+	case ESkeletonFormat::Text:
+		return false;
+	default:
+		break;
 	}
 
 	return false;
@@ -160,8 +177,9 @@ LRESULT CSpineSettingDialogue::OnCreate(HWND hWnd)
 	m_hSkelStatic = ::CreateWindowEx(0, WC_STATIC, L"Skeleton", WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, m_hWnd, nullptr, m_hInstance, nullptr);
 	m_hSkelEdit = ::CreateWindowEx(0, WC_EDIT, m_wstrSkelExtension.c_str(), WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
 	
-	m_BinarySkelCheckButton.Create(L"Binary", m_hWnd, reinterpret_cast<HMENU>(Controls::kCheckButton), true);
-	m_BinarySkelCheckButton.SetCheckBox(m_bBinarySkel);
+	m_BinarySkelStatic = ::CreateWindowEx(0, WC_STATIC, L"Format: ", WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, m_hWnd, nullptr, m_hInstance, nullptr);
+	m_BinarySkelComboBox.Create(m_hWnd);
+	m_BinarySkelComboBox.Setup({ L"Auto", L"Binary", L"Text" });
 
 	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
 
@@ -207,7 +225,7 @@ LRESULT CSpineSettingDialogue::OnSize()
 	long lFontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForWindow(m_hWnd) / 96.f);
 
 	long x = x_space;
-	long y = y_space * 4;
+	long y = y_space * 2;
 	long w = clientWidth * 3 / 4;
 	long h = lFontHeight + y_space;
 	if (m_hAtlasStatic != nullptr)
@@ -229,10 +247,18 @@ LRESULT CSpineSettingDialogue::OnSize()
 	{
 		::MoveWindow(m_hSkelEdit, x, y, w, h, TRUE);
 	}
+
 	y += h;
-	if (m_BinarySkelCheckButton.GetHwnd() != nullptr)
+	w = clientWidth * 1/ 3;
+	if (m_BinarySkelStatic != nullptr)
 	{
-		::MoveWindow(m_BinarySkelCheckButton.GetHwnd(), x, y, w, h, TRUE);
+		::MoveWindow(m_BinarySkelStatic, x, y + y_space, w, h, TRUE);
+	}
+	x += w;
+	w = clientWidth - x - x_space;
+	if (m_BinarySkelComboBox.GetHwnd() != nullptr)
+	{
+		::MoveWindow(m_BinarySkelComboBox.GetHwnd(), x, y, w, h, TRUE);
 	}
 
 	return 0;
@@ -249,11 +275,15 @@ LRESULT CSpineSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 	else
 	{
 		/*Controls*/
-		switch (wmId)
+
+		WORD usCode = HIWORD(wParam);
+		if (usCode == CBN_SELCHANGE)
 		{
-		case Controls::kCheckButton:
-			OnCheckButton();
-			break;
+			/*Notification code*/
+			if (reinterpret_cast<HWND>(lParam) == m_BinarySkelComboBox.GetHwnd())
+			{
+				OnSkeletonFormatSelect();
+			}
 		}
 	}
 
@@ -275,10 +305,13 @@ BOOL CSpineSettingDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 	return TRUE;
 }
 
-void CSpineSettingDialogue::OnCheckButton()
+void CSpineSettingDialogue::OnSkeletonFormatSelect()
 {
-	bool bRet = m_BinarySkelCheckButton.IsChecked();
-	m_BinarySkelCheckButton.SetCheckBox(!bRet);
+	int iIndex = m_BinarySkelComboBox.GetSelectedItemIndex();
+	if (iIndex != -1)
+	{
+		m_skeletonFormat = static_cast<ESkeletonFormat>(iIndex);
+	}
 }
 /*入力欄文字列取得*/
 std::wstring CSpineSettingDialogue::GetEditBoxText(HWND hWnd)
@@ -314,5 +347,24 @@ void CSpineSettingDialogue::GetInputs()
 	{
 		m_wstrSkelExtension = wstrTemp;
 	}
-	m_bBinarySkel = m_BinarySkelCheckButton.IsChecked();
+}
+
+bool CSpineSettingDialogue::IsLikelyBinary(const std::wstring& wstrFileName) const
+{
+	const wchar_t* wszBinaryCandidates[] =
+	{
+		L".skel", L".bin", L".bytes"
+	};
+
+	size_t nPos = wstrFileName.rfind(L"\\/");
+	nPos = nPos == std::wstring::npos ? 0 : nPos + 1;
+
+	for (size_t i = 0; i < sizeof(wszBinaryCandidates) / sizeof(wszBinaryCandidates[0]); ++i)
+	{
+		if (wcsstr(&wstrFileName[nPos], wszBinaryCandidates[i]) != nullptr)
+		{
+			return true;
+		}
+	}
+	return false;
 }

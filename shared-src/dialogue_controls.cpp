@@ -299,6 +299,16 @@ void CComboBox::Setup(const std::vector<std::wstring>& itemTexts)
 		SetSelectedItem(0);
 	}
 }
+/*選択項目番号取得*/
+int CComboBox::GetSelectedItemIndex()
+{
+	if (m_hWnd != nullptr)
+	{
+		LRESULT lResult = ::SendMessage(m_hWnd, CB_GETCURSEL, 0, 0);
+		return static_cast<int>(lResult);
+	}
+	return CB_ERR;
+}
 /*選択項目文字列取得*/
 std::wstring CComboBox::GetSelectedItemText()
 {
@@ -338,16 +348,6 @@ bool CComboBox::SetSelectedItem(int iIndex)
 		return iIndex == -1 ? lResult == CB_ERR : lResult == iIndex;
 	}
 	return false;
-}
-/*コンボボックス選択番号取得*/
-int CComboBox::GetSelectedItemIndex()
-{
-	if (m_hWnd != nullptr)
-	{
-		LRESULT lResult = ::SendMessage(m_hWnd, CB_GETCURSEL, 0, 0);
-		return static_cast<int>(lResult);
-	}
-	return CB_ERR;
 }
 
 /* ==================== Button ==================== */
