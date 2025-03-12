@@ -1,12 +1,7 @@
 # DxLibSpineViewer
-Spine runtime for [DxLib](https://dxlib.xsrv.jp/index.html), accompanied with a viewer for Windows.
+Spine runtime for [DxLib](https://dxlib.xsrv.jp/index.html), and a viewer with practical manipulation feature.
 
-## Demonstration
-- Built on spine-cpp 3.8.
- 
-https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/0ab643de-73fb-42f3-8143-a871a9382f51
-
-## Runtime files
+## Spine runtime
 
 - Spine runtime for DxLib provides functionality to (1) load texture and (2) render skeleton.
 - There are two kind of runtimes depending on the official generic runtimes to be used with.
@@ -14,25 +9,60 @@ https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/0ab643de-73fb-
   - `dxlib_spine_c.cpp` and `dxlib_spine_c.h` are to be used with `spine-c`. (`3.5` to `4.1`)
     - Class is used because DxLib is C++ library, but STL is avoided.
 
-Besides, there is a runtime for spine `2.1.27` under `projects/DxLibSpineViewerC-2.1`. But note that transformation method is totally [different](https://ja.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
+Besides, there is a runtime for spine `2.1.27` under `projects/DxLibSpineViewerC-2.1`. But note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
 
-## Viewer for Windows
+## Spine viewer
 
 The viewer is built with Spine generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`, `4.0`, and `4.1`. 
 ### Feature
 - Multiple Spines rendering
-  - Animation names should be shared among all the skeleton files.
-  - Rendering order is either in filename ascending or descending order.
+  - Rendered in filename ascending or descending order.
 - Runtime manipulation
-  - Able to exclude slots, mix skins, mix animations, and replace attachment.
-    - Mixing skins is available for versions later than `3.8`.
-    - Replacing attachment is possible only when there are slots associated with multiple attachments.
-      - Even if it is possible to replace attachment, it depends on timelines whether it is appropriate or not.
-    - Mixing skins and replacing attachment will overwrite the animation state.
-      - It may be required to reload files in order to back to default state.
-- Export to media file.
+  - Exclude slot
+  - Mix skins
+  - Mix animations
+  - Replace attachment
+- Media file export
   - As `PNG`, `GIF`, `JPG`, and `H264`.
     - `H264` encoding is available only for Intel CPU.
+- Transparent/borderless widow style
+
+### Demonstration
+
+<details><summary>Multiple rendering</summary>
+ 
+https://github.com/user-attachments/assets/c1b44202-94f8-4a8b-befa-5ee2b4abbf70
+
+</details>
+
+<details><summary>Mix animations</summary>
+
+https://github.com/user-attachments/assets/4a3abb0e-63d7-4402-b929-4f9c2671c94d
+ 
+</details>
+
+<details><summary>Exclude slot</summary>
+
+https://github.com/user-attachments/assets/f3db7d40-4912-416c-8a39-03b38923d63f
+
+</details>
+
+<details><summary>Replace attachment</summary>
+ 
+https://github.com/user-attachments/assets/36c40c5c-8314-410c-9905-77255fa96a17
+
+</details>
+
+<details><summary>Media export</summary>
+
+https://github.com/user-attachments/assets/4498830d-8fc4-4333-a3d9-2a506777ec7d
+
+</details>
+<details><summary>Transparent window</summary>
+
+https://github.com/user-attachments/assets/b73a0010-d21b-4386-9d1b-084ee2dd29c0
+
+</details>
 
 The following sections explain how to use the viewer.
 
@@ -46,17 +76,14 @@ The following sections explain how to use the viewer.
 | Image | `Manipulation` | Open a dialogue to specify slots to be excluded, skins or animations to be mixed. |
 | - | `Re-attachment` | Open a dialogue to replace attachment. |
 | Window | `Through-seen` | Toggle window's transparancy. |
-| - | `Pan smoothly` | Toggle view-point behaviour; pan while dragging or when dragged button is released. |
  
 ### Load spine(s) via `Open folder` 
 1. In the `Setting` dialogue, specify atlas and skeleton extensions.
-2. Uncheck `Binary` if skeketon file is json format.
-3. From `Open folder`, select a folder containing atlas/skel(s) with specified extensions.
+2. From `Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
 ### Load spine(s) via `Select files`
-1. Uncheck `Binary` in the `Setting` dialogue if skeleton file is json format.
-2. From `Select files`, first select atlas file(s) to load. 
-3. In the secoend dialogue, select skel file(s) which is/are pair(s) of atlas.
+1. From `Select files`, first select atlas file(s) to load. 
+2. In the secoend dialogue, select skel file(s) which is/are pair(s) of atlas.
 
 ## Context-menu function
 
@@ -95,19 +122,19 @@ The following sections explain how to use the viewer.
 
 | Input | Action |
 | ---- | ---- |
-| Mouse wheel | Scale up/down. Combining with `Ctrl` to retain window size. |
-| Left click + mouse wheel | Speed up/down the animation. |
+| Wheel scroll | Scale up/down. Combining with `Ctrl` to retain window size. |
+| Left pressed + wheel scroll | Speed up/down the animation. |
 | Left click | Switch the animation. |
 | Left drag | Move view-point. |
-| Middle click | Reset scale, speed, and view-point to default. |
-| Right click + middle click | Hide/show window's border and menu. Having hidden, the window goes to the origin of the primary display. |
-| Right click + left click | Move borderless window.  |
-| Right click + mouse wheel | Switch the skin. |
+| Middle click | Reset scale, animation speed, and view-point to default. |
+| Right pressed + middle click | Hide/show window's border and menu. Having hidden, the window goes to the origin of display. |
+| Right pressed + left click | Start moving borderless window. Left click to end.  |
+| Right pressed + wheel scroll | Switch the skin. |
 
 ### Tip on transparent window
 1. Check menu item `Window->Through-seen` to make window transparent.
-2. Right click + middle click to make window borderless.
-3. Right click + left click to move borderless window.
+2. Right pressed + middle click to make window borderless.
+3. Right pressed + left click to move borderless window.
 
 ## Keyboard functions
 
@@ -116,36 +143,18 @@ The following sections explain how to use the viewer.
 | <kbd>Esc</kbd> | Close the application. |
 | <kbd>Up</kbd> | Open the previpus folder. |
 | <kbd>Down</kbd> | Open the next folder. |
-| <kbd>A</kbd> | Enable/disable premultiplied alpha.| 
-| <kbd>B</kbd> | Prefer/ignore blned-mode specified by slots.| 
-| <kbd>R</kbd> | Switch draw-order between filename asc/descending order.| 
-| <kbd>Z</kbd> | Enable/disable depth-buffer.|  
+| <kbd>A</kbd> | Enable/disable premultiplied alpha. _Default: enabled_. | 
+| <kbd>B</kbd> | Prefer/ignore blned-mode specified by slots. _Default: preferred_. | 
+| <kbd>R</kbd> | Toggle draw-order between filename asc/descending order. _Default: ascending order_. | 
+| <kbd>Z</kbd> | Enable/disable depth-buffer. _Default: disabled_. |  
 
 - <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when the current spine(s) is/are loaded via `Open folder`.
-
-## Extra-demo
-- Depth-buffer
-  - When rendering two spines, setting depth-buffer ensures one of them is always rendered in front of the other.
-
-https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/7075f77a-afa0-43fe-93d3-aec1ebdf2d1c
-
-- Mix animations
-  - Some spines require mixing skins or animations to supplement facial parts.
-
-https://github.com/BithreenGirlen/DxlibSpineTest/assets/152838289/a5ca45df-ad1c-4f9e-b968-b2cd36f069f5
-
-- Slot exclusion
-  - Sometimes it is desirable to leave out visually nuisance effect.
-
-https://github.com/user-attachments/assets/f4b5e1fa-faf7-4711-918f-2d0fbd2bb859
-
-- Replace attachment
-
- https://github.com/user-attachments/assets/18748cf5-e7c0-49a3-b254-e84def1b0a4f
+- Disable `PMA` with <kbd>A</kbd> if it is too bright, and enable if darkish.
+- Force `normal` blend mode with <kbd>B</kbd> if `multiply` is not well represented.
  
 ## External libraries
 
-- [DXライブラリ](https://dxlib.xsrv.jp/dxdload.html)
+- [DxLib](https://dxlib.xsrv.jp/dxdload.html)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
 ## Build
@@ -156,7 +165,8 @@ The `CMakeLists.txt` modifies some of the external sources as well as obtains th
 - For spine-c `3.5`, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `3.6` and later.
 - For spine-c `2.1`, supplies binary skeleton reader which is lacking in official `2.1.25` runtime, and overwrites some of the files with those from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
 
-The `deps` directory will be as follows:
+<details><summary>deps directory will be as follows:</summary>
+
 <pre>
 ...
 ├ DxLibSpineC
@@ -169,13 +179,13 @@ The `deps` directory will be as follows:
 │  ├ deps
 │  │  ├ dxlib // static libraries and headers of DxLib for VC
 │  │  │  └ ...
-│  │  ├ spine-c-x.x // sources and headers of spine-c x.x
+│  │  ├ spine-c-x.x // Spine C generic runtime for version x.x
 │  │  │  ├ include
 │  │  │  │  └ ...
 │  │  │  └ src
 │  │  │     └ ...
 │  │  ├ ...
-│  │  ├ spine-cpp-x.x // sources and headers of spine-cpp x.x
+│  │  ├ spine-cpp-x.x // Spine C++ generic runtime for version x.x
 │  │  │  ├ include
 │  │  │  │  └ ...
 │  │  │  └ src
@@ -185,3 +195,5 @@ The `deps` directory will be as follows:
 ├ DxLibSpineViewer.sln
 └ ...
 </pre>
+
+ </details>
