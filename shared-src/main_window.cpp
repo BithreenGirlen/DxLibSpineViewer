@@ -287,9 +287,6 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         case Menu::kSeeThroughImage:
             MenuOnSeeThroughImage();
             break;
-        case Menu::kPanSmoothly:
-            MenuOnPanSmoothly();
-            break;
         case Menu::kSnapAsPNG:
             MenuOnSaveAsPng();
             break;
@@ -326,8 +323,6 @@ LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
     WORD usKey = LOWORD(wParam);
     if (usKey == MK_LBUTTON)
     {
-        if (!m_bToPanWhileDragging)return 0;
-
         POINT pt{};
         ::GetCursorPos(&pt);
         int iX = m_cursorPos.x - pt.x;
@@ -415,12 +410,6 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
         if (iX == 0 && iY == 0)
         {
             m_DxLibSpinePlayer.ShiftAnimation();
-        }
-        else
-        {
-            if (m_bToPanWhileDragging)return 0;
-
-            m_DxLibSpinePlayer.MoveViewPoint(iX, iY);
         }
     }
 
@@ -554,8 +543,6 @@ void CMainWindow::InitialiseMenuBar()
     if (hMenuWindow == nullptr)goto failed;
 
     iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kSeeThroughImage, "Through-seen");
-    if (iRet == 0)goto failed;
-    iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kPanSmoothly, "Pan smoothly");
     if (iRet == 0)goto failed;
 
     hMenuBar = ::CreateMenu();
@@ -734,21 +721,6 @@ void CMainWindow::MenuOnSeeThroughImage()
             }
 
             ::CheckMenuItem(hMenu, Menu::kSeeThroughImage, m_bTransparent ? MF_CHECKED : MF_UNCHECKED);
-        }
-    }
-}
-/*視点移動法切り替え*/
-void CMainWindow::MenuOnPanSmoothly()
-{
-    HMENU hMenuBar = ::GetMenu(m_hWnd);
-    if (hMenuBar != nullptr)
-    {
-        HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
-        if (hMenu != nullptr)
-        {
-            m_bToPanWhileDragging ^= true;
-
-            ::CheckMenuItem(hMenu, Menu::kPanSmoothly , m_bToPanWhileDragging ? MF_CHECKED : MF_UNCHECKED);
         }
     }
 }

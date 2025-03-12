@@ -49,7 +49,7 @@ private:
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
 		kSkeletonSetting, kAtlasSetting,
-		kSeeThroughImage, kPanSmoothly,
+		kSeeThroughImage,
 		kSnapAsPNG, kSnapAsJPG,
 		kStartStoringImages, kStartVideoRecording,
 		kSaveAsGIF, kSaveAsPNGs,
@@ -68,7 +68,6 @@ private:
 	HMENU m_hMenuBar = nullptr;
 	bool m_bBarHidden = false;
 	bool m_bTransparent = false;
-	bool m_bToPanWhileDragging = false;
 	bool m_bPlayReady = false;
 
 	enum class RecorderState
@@ -99,7 +98,6 @@ private:
 	void MenuOnAtlasSetting();
 
 	void MenuOnSeeThroughImage();
-	void MenuOnPanSmoothly();
 
 	void KeyUpOnNextFolder();
 	void KeyUpOnForeFolder();
