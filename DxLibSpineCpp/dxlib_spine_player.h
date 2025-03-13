@@ -79,6 +79,7 @@ private:
 	void ClearDrawables();
 	bool SetupDrawer();
 
+	void WorkOutDefaultSize();
 	void WorkOutDefaultScale();
 
 	void UpdatePosition();
