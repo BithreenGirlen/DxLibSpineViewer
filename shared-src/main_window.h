@@ -63,6 +63,7 @@ private:
 	POINT m_cursorPos{};
 	bool m_bLeftCombinated = false;
 	bool m_bLeftDowned = false;
+	bool m_bLeftDragged = false;
 	bool m_bRightCombinated = false;
 
 	HMENU m_hMenuBar = nullptr;

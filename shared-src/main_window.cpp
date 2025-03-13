@@ -323,6 +323,8 @@ LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
     WORD usKey = LOWORD(wParam);
     if (usKey == MK_LBUTTON)
     {
+        if (m_bLeftCombinated)return 0;
+
         POINT pt{};
         ::GetCursorPos(&pt);
         int iX = m_cursorPos.x - pt.x;
@@ -331,7 +333,7 @@ LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
         m_DxLibSpinePlayer.MoveViewPoint(iX, iY);
 
         m_cursorPos = pt;
-        m_bLeftCombinated = true;
+        m_bLeftDragged = true;
     }
 
     return 0;
@@ -345,6 +347,7 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     if (usKey == MK_LBUTTON)
     {
         m_DxLibSpinePlayer.RescaleTime(iScroll > 0);
+
         m_bLeftCombinated = true;
     }
     else if (usKey == MK_RBUTTON)
@@ -381,9 +384,12 @@ LRESULT CMainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 /*WM_LBUTTONUP*/
 LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
-    if (m_bLeftCombinated)
+    if (m_bLeftCombinated || m_bLeftDragged)
     {
+        m_bLeftDragged = false;
         m_bLeftCombinated = false;
+        m_bLeftDowned = false;
+
         return 0;
     }
 
