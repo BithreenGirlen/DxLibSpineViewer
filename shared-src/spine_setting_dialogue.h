@@ -23,7 +23,6 @@ private:
 	const wchar_t* m_swzClassName = L"Spine setting dialogue";
 	HINSTANCE m_hInstance = nullptr;
 	HWND m_hWnd = nullptr;
-	HWND m_hParentWnd = nullptr;
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	int MessageLoop();

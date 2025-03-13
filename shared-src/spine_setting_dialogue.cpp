@@ -34,7 +34,7 @@ bool CSpineSettingDialogue::Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 	wcex.hInstance = hInstance;
 	//wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON_APP));
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wcex.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
+	wcex.hbrBackground = ::GetSysColorBrush(COLOR_BTNFACE);
 	//wcex.lpszMenuName = MAKEINTRESOURCEW(IDI_ICON_APP);
 	wcex.lpszClassName = m_swzClassName;
 	//wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_ICON_APP));
@@ -42,7 +42,6 @@ bool CSpineSettingDialogue::Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 	if (::RegisterClassExW(&wcex))
 	{
 		m_hInstance = hInstance;
-		m_hParentWnd = hWnd; // Stores here to avoid calling GetParent() everytime
 
 		UINT uiDpi = ::GetDpiForSystem();
 		int iWindowWidth = ::MulDiv(160, uiDpi, USER_DEFAULT_SCREEN_DPI);
@@ -169,7 +168,7 @@ LRESULT CSpineSettingDialogue::OnCreate(HWND hWnd)
 	m_hWnd = hWnd;
 
 	::ShowWindow(hWnd, SW_NORMAL);
-	::EnableWindow(m_hParentWnd, FALSE);
+	::EnableWindow(::GetWindow(m_hWnd, GW_OWNER), FALSE);
 
 	m_hAtlasStatic = ::CreateWindowEx(0, WC_STATIC, L"Atlas", WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, m_hWnd, nullptr, m_hInstance, nullptr);
 	m_hAtlasEdit = ::CreateWindowEx(0, WC_EDIT, m_wstrAtlasExtension.c_str(), WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
@@ -196,8 +195,9 @@ LRESULT CSpineSettingDialogue::OnClose()
 {
 	GetInputs();
 
-	::EnableWindow(m_hParentWnd, TRUE);
-	::BringWindowToTop(m_hParentWnd);
+	HWND hOwnerWnd = ::GetWindow(m_hWnd, GW_OWNER);
+	::EnableWindow(hOwnerWnd, TRUE);
+	::BringWindowToTop(hOwnerWnd);
 
 	::DestroyWindow(m_hWnd);
 	::UnregisterClassW(m_swzClassName, m_hInstance);
