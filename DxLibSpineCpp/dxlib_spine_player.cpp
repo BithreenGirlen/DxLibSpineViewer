@@ -534,44 +534,46 @@ void CDxLibSpinePlayer::WorkOutDefaultSize()
 
 	for (const auto& pSkeletonData : m_skeletonData)
 	{
-		const auto FindDefaultSkinAttachment = [&pSkeletonData]()
-			-> spine::Attachment*
-			{
-				spine::Skin::AttachmentMap::Entries attachmentMapEntries = pSkeletonData->getDefaultSkin()->getAttachments();
-				for (; attachmentMapEntries.hasNext();)
-				{
-					spine::Skin::AttachmentMap::Entry attachmentMapEntry = attachmentMapEntries.next();
-					if (attachmentMapEntry._slotIndex == 0)
-					{
-						return attachmentMapEntry._attachment;
-					}
-				}
-				return nullptr;
-			};
-
-		spine::Attachment* pAttachment = FindDefaultSkinAttachment();
-		if (pAttachment != nullptr)
+		if (pSkeletonData->getWidth() > 0.f && pSkeletonData->getHeight() > 0.f)
 		{
-			if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
+			CompareDimention(pSkeletonData->getWidth(), pSkeletonData->getHeight());
+		}
+		else
+		{
+			const auto FindDefaultSkinAttachment = [&pSkeletonData]()
+				-> spine::Attachment*
+				{
+					spine::Skin::AttachmentMap::Entries attachmentMapEntries = pSkeletonData->getDefaultSkin()->getAttachments();
+					for (; attachmentMapEntries.hasNext();)
+					{
+						spine::Skin::AttachmentMap::Entry attachmentMapEntry = attachmentMapEntries.next();
+						if (attachmentMapEntry._slotIndex == 0)
+						{
+							return attachmentMapEntry._attachment;
+						}
+					}
+					return nullptr;
+				};
+
+			spine::Attachment* pAttachment = FindDefaultSkinAttachment();
+			if (pAttachment != nullptr)
 			{
-				spine::RegionAttachment* pRegionAttachment = (spine::RegionAttachment*)pAttachment;
+				if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
+				{
+					spine::RegionAttachment* pRegionAttachment = (spine::RegionAttachment*)pAttachment;
 
-				CompareDimention(pRegionAttachment->getWidth() * pRegionAttachment->getScaleX(), pRegionAttachment->getHeight() * pRegionAttachment->getScaleY());
-			}
-			else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
-			{
-				spine::MeshAttachment* pMeshAttachment = (spine::MeshAttachment*)pAttachment;
+					CompareDimention(pRegionAttachment->getWidth() * pRegionAttachment->getScaleX(), pRegionAttachment->getHeight() * pRegionAttachment->getScaleY());
+				}
+				else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
+				{
+					spine::MeshAttachment* pMeshAttachment = (spine::MeshAttachment*)pAttachment;
 
-				float fScale = pMeshAttachment->getWidth() > Constants::kMinAtlas && pMeshAttachment->getHeight() > Constants::kMinAtlas ? 1.f : 2.f;
+					float fScale = pMeshAttachment->getWidth() > Constants::kMinAtlas && pMeshAttachment->getHeight() > Constants::kMinAtlas ? 1.f : 2.f;
 
-				CompareDimention(pMeshAttachment->getWidth() * fScale, pMeshAttachment->getHeight() * fScale);
+					CompareDimention(pMeshAttachment->getWidth() * fScale, pMeshAttachment->getHeight() * fScale);
+				}
 			}
 		}
-	}
-
-	for (const auto& pSkeletonData : m_skeletonData)
-	{
-		CompareDimention(pSkeletonData->getWidth(), pSkeletonData->getHeight());
 	}
 }
 /*既定尺度算出*/
