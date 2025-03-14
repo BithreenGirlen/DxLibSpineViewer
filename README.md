@@ -1,5 +1,5 @@
 # DxLibSpineViewer
-Spine runtime for [DxLib](https://dxlib.xsrv.jp/index.html), and a viewer with practical manipulation feature.
+Spine viewer with practical manipulation feature, based on runtime for [DxLib](https://dxlib.xsrv.jp/index.html).
 
 ## Spine runtime
 
@@ -25,7 +25,7 @@ The viewer is built with Spine generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`
 - Media file export
   - As `PNG`, `GIF`, `JPG`, and `H264`.
     - `H264` encoding is available only for Intel CPU.
-- Transparent/borderless widow style
+- Transparent/borderless window style
 
 ### Demonstration
 
@@ -64,7 +64,7 @@ https://github.com/user-attachments/assets/b73a0010-d21b-4386-9d1b-084ee2dd29c0
 
 </details>
 
-The following sections explain how to use the viewer.
+The following sections are on the viewer.
 
 ## Menu functions
 
@@ -76,6 +76,8 @@ The following sections explain how to use the viewer.
 | Image | `Manipulation` | Open a dialogue to specify slots to be excluded, skins or animations to be mixed. |
 | - | `Re-attachment` | Open a dialogue to replace attachment. |
 | Window | `Through-seen` | Toggle window's transparancy. |
+| - | `Allow manual sizing` | Allow/forbid manual sizing of window. _Default: forbidden_ |
+| - | `Move view on release` | Toggle view-point behaviour; move while dragging or when dragged button is released. |
  
 ### Load spine(s) via `Open folder` 
 1. In the `Setting` dialogue, specify atlas and skeleton extensions.
