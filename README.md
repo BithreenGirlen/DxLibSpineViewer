@@ -1,17 +1,5 @@
 # DxLibSpineViewer
-Spine viewer with practical manipulation feature, based on runtime for [DxLib](https://dxlib.xsrv.jp/index.html).
-
-## Spine runtime
-
-- Spine runtime for DxLib provides functionality to (1) load texture and (2) render skeleton.
-- There are two kind of runtimes depending on the official generic runtimes to be used with.
-  - `dxlib_spine.cpp` and `dxlib_spine.h` are to be used with `spine-cpp`. (`3.8` to `4.1`)
-  - `dxlib_spine_c.cpp` and `dxlib_spine_c.h` are to be used with `spine-c`. (`3.5` to `4.1`)
-    - Class is used because DxLib is C++ library, but STL is avoided.
-
-Besides, there is a runtime for spine `2.1.27` under `projects/DxLibSpineViewerC-2.1`. But note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
-
-## Spine viewer
+Spine viewer with practical manipulation feature, based on [runtime for DxLib](#spine-runtime-for-dxlib).
 
 The viewer is built with Spine generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`, `4.0`, and `4.1`. 
 ### Feature
@@ -64,7 +52,11 @@ https://github.com/user-attachments/assets/b73a0010-d21b-4386-9d1b-084ee2dd29c0
 
 </details>
 
-The following sections are on the viewer.
+<details><summary>Add effect</summary>
+
+https://github.com/user-attachments/assets/d6682127-e01f-444d-838d-78b3bddac121
+
+</details>
 
 ## Menu functions
 
@@ -156,7 +148,7 @@ The following sections are on the viewer.
  
 ## External libraries
 
-- [DxLib](https://dxlib.xsrv.jp/dxdload.html)
+- [DxLib](https://dxlib.xsrv.jp/)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
 ## Build
@@ -199,3 +191,13 @@ The `CMakeLists.txt` modifies some of the external sources as well as obtains th
 </pre>
 
  </details>
+
+## Spine runtime for DxLib
+
+- Spine runtime for DxLib provides functionality to (1) load texture and (2) render skeleton.
+- There are two kind of runtimes depending on the official generic runtimes to be used with.
+  - [dxlib_spine.cpp](/DxLibSpineCpp/dxlib_spine.cpp) is to be used with `spine-cpp`. (`3.8` to `4.1`)
+  - [dxlib_spine_c.cpp](/DxLibSpineC/dxlib_spine_c.cpp) is to be used with `spine-c`. (`3.5` to `4.1`)
+    - Class is used because DxLib is C++ library, but STL is avoided.
+
+Besides, there is a runtime for spine `2.1.27` under [projects/DxLibSpineViewerC-2.1](/projects/DxLibSpineViewerC-2.1). But note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
