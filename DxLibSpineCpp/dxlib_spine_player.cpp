@@ -74,6 +74,35 @@ bool CDxLibSpinePlayer::SetSpineFromMemory(const std::vector<std::string>& atlas
 
 	return SetupDrawer();
 }
+/*ファイルから追加*/
+bool CDxLibSpinePlayer::AddSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool bBinary)
+{
+	if (m_drawables.empty() || szAtlasPath == nullptr || szSkelPath == nullptr)return false;
+
+	std::unique_ptr<spine::Atlas> atlas = std::make_unique<spine::Atlas>(szAtlasPath, &m_textureLoader);
+	if (atlas.get() == nullptr)return false;
+
+	std::shared_ptr<spine::SkeletonData> skeletonData = bBinary ?
+		spine_loader::ReadBinarySkeletonFromFile(szSkelPath, atlas.get(), 1.f) :
+		spine_loader::ReadTextSkeletonFromFile(szSkelPath, atlas.get(), 1.f);
+	if (skeletonData.get() == nullptr)return false;
+
+	bool bRet = AddDrawable(skeletonData.get());
+	if (!bRet)return false;
+
+	m_atlases.push_back(std::move(atlas));
+	m_skeletonData.push_back(std::move(skeletonData));
+	m_drawables.back()->SetPma(false);
+	if (m_bDrawOrderReversed)
+	{
+		std::rotate(m_drawables.rbegin(), m_drawables.rbegin() + 1, m_drawables.rend());
+	}
+
+	UpdateAnimation();
+	ResetScale();
+
+	return true;
+}
 /*再描画*/
 void CDxLibSpinePlayer::Redraw(float fDelta)
 {
@@ -190,23 +219,23 @@ void CDxLibSpinePlayer::ShiftSkin()
 	}
 }
 /*乗算済み透過度有効・無効切り替え*/
-void CDxLibSpinePlayer::SwitchPma()
+void CDxLibSpinePlayer::TogglePma()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
-		pDrawable->SwitchPma();
+		pDrawable->SetPma(!pDrawable->GetPma());
 	}
 }
 /*槽溝指定合成方法採択可否*/
-void CDxLibSpinePlayer::SwitchBlendModeAdoption()
+void CDxLibSpinePlayer::ToggleBlendModeAdoption()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
-		pDrawable->SwitchBlendModeAdoption();
+		pDrawable->SetForceBlendModeNormal(!pDrawable->GetForceBlendModeNormal());
 	}
 }
 /*奥行き表現有効無効切り替え*/
-bool CDxLibSpinePlayer::SwitchDepthBufferValidity()
+bool CDxLibSpinePlayer::ToggleDepthBufferValidity()
 {
 	int iRet = DxLib::SetUseZBufferFlag(m_bDepthBufferEnabled ? FALSE : TRUE);
 	if (iRet == -1)return false;
@@ -218,7 +247,7 @@ bool CDxLibSpinePlayer::SwitchDepthBufferValidity()
 	return true;
 }
 /*描画順切り替え*/
-void CDxLibSpinePlayer::SwitchDrawOrder()
+void CDxLibSpinePlayer::ToggleDrawOrder()
 {
 	m_bDrawOrderReversed ^= true;
 }
@@ -472,20 +501,29 @@ void CDxLibSpinePlayer::ClearDrawables()
 	m_skinNames.clear();
 	m_nSkinIndex = 0;
 }
+/*描画物追加*/
+bool CDxLibSpinePlayer::AddDrawable(spine::SkeletonData* const pSkeletonData)
+{
+	if (pSkeletonData == nullptr)return false;
+	auto pDrawable = std::make_shared<CDxLibSpineDrawer>(pSkeletonData);
+	if (pDrawable.get() == nullptr)return false;
+
+	pDrawable->timeScale = 1.0f;
+	pDrawable->skeleton->setPosition(m_fBaseSize.u / 2, m_fBaseSize.v / 2);
+	pDrawable->skeleton->setToSetupPose();
+	pDrawable->skeleton->updateWorldTransform();
+
+	m_drawables.push_back(std::move(pDrawable));
+
+	return true;
+}
 /*描画器設定*/
 bool CDxLibSpinePlayer::SetupDrawer()
 {
 	for (const auto& pSkeletonDatum : m_skeletonData)
 	{
-		auto pDrawable = std::make_shared<CDxLibSpineDrawer>(pSkeletonDatum.get());
-		if (pDrawable.get() == nullptr)continue;
-
-		pDrawable->timeScale = 1.0f;
-		pDrawable->skeleton->setPosition(m_fBaseSize.u / 2, m_fBaseSize.v / 2);
-		pDrawable->skeleton->setToSetupPose();
-		pDrawable->skeleton->updateWorldTransform();
-
-		m_drawables.push_back(std::move(pDrawable));
+		bool bRet = AddDrawable(pSkeletonDatum.get());
+		if (!bRet)continue;
 
 		auto& animations = pSkeletonDatum->getAnimations();
 		for (size_t i = 0; i < animations.size(); ++i)
@@ -506,7 +544,6 @@ bool CDxLibSpinePlayer::SetupDrawer()
 			const auto& iter = std::find(m_skinNames.begin(), m_skinNames.end(), szSkinName);
 			if (iter == m_skinNames.cend())m_skinNames.push_back(szSkinName);
 		}
-
 	}
 
 	UpdateAnimation();

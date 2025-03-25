@@ -22,6 +22,8 @@ public:
 	bool SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
 	bool SetSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
 
+	bool AddSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool bBinary);
+
 	void Redraw(float fDelta);
 
 	void RescaleSkeleton(bool bUpscale);
@@ -34,10 +36,10 @@ public:
 	void ShiftAnimation();
 	void ShiftSkin();
 
-	void SwitchPma();
-	void SwitchBlendModeAdoption();
-	bool SwitchDepthBufferValidity();
-	void SwitchDrawOrder();
+	void TogglePma();
+	void ToggleBlendModeAdoption();
+	bool ToggleDepthBufferValidity();
+	void ToggleDrawOrder();
 
 	std::string GetCurrentAnimationNameWithTrackTime(float *fTrackTime = nullptr);
 
@@ -81,6 +83,7 @@ private:
 	bool m_bDrawOrderReversed = false;
 
 	void ClearDrawables();
+	bool AddDrawable(spSkeletonData* const pSkeletonData);
 	bool SetupDrawer();
 
 	void WorkOutDefaultSize();

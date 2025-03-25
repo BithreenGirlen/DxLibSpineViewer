@@ -22,8 +22,12 @@ public:
 	void Update(float fDelta);
 	void Draw(float fDepth = 0.f);
 
-	void SwitchPma() { m_bAlphaPremultiplied ^= true; }
-	void SwitchBlendModeAdoption() { m_bForceBlendModeNormal ^= true; }
+	void SetPma(bool bPremultiplied) { m_bAlphaPremultiplied = bPremultiplied; }
+	bool GetPma() const { return m_bAlphaPremultiplied; }
+
+	void SetForceBlendModeNormal(bool bForced) { m_bForceBlendModeNormal = bForced; }
+	bool GetForceBlendModeNormal() const { return m_bForceBlendModeNormal; }
+
 	void SetLeaveOutList(const char** list, int listCount);
 private:
 	bool m_bHasOwnAnimationStateData = false;

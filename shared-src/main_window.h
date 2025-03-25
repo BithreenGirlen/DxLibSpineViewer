@@ -48,7 +48,7 @@ private:
 	enum Menu
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
-		kSkeletonSetting, kAtlasSetting,
+		kSkeletonSetting, kAtlasSetting, kAddEffectFile,
 		kSeeThroughImage, kAllowManualSizing, kMoveViewOnRelease,
 		kSnapAsPNG, kSnapAsJPG,
 		kStartStoringImages, kStartVideoRecording,
@@ -97,6 +97,7 @@ private:
 	void MenuOnOpenFolder();
 	void MenuOnFileSetting();
 	void MenuOnSelectFiles();
+	void MenuOnAddFile();
 
 	void MenuOnSkeletonSetting();
 	void MenuOnAtlasSetting();

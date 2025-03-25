@@ -291,7 +291,8 @@ void CDxLibSpineDrawerC::Draw(float fDepth)
 		}
 
 		int iDxLibBlendMode;
-		switch (pSlot->data->blendMode)
+		spBlendMode spineBlendMode = m_bForceBlendModeNormal ? SP_BLEND_MODE_NORMAL : pSlot->data->blendMode;
+		switch (spineBlendMode)
 		{
 		case spBlendMode::SP_BLEND_MODE_ADDITIVE:
 			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ADD : DX_BLENDMODE_SPINE_ADDITIVE;
@@ -305,10 +306,6 @@ void CDxLibSpineDrawerC::Draw(float fDepth)
 		default:
 			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
 			break;
-		}
-		if (m_bForceBlendModeNormal)
-		{
-			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
 		}
 		DxLib::SetDrawBlendMode(iDxLibBlendMode, 255);
 		DxLib::DrawPolygonIndexed2D

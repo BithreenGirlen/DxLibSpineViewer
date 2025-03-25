@@ -243,16 +243,16 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
 		KeyUpOnNextFolder();
 		break;
 	case 'A':
-		m_DxLibSpinePlayer.SwitchPma();
+		m_DxLibSpinePlayer.TogglePma();
 		break;
 	case 'B':
-		m_DxLibSpinePlayer.SwitchBlendModeAdoption();
+		m_DxLibSpinePlayer.ToggleBlendModeAdoption();
 		break;
 	case 'R':
-		m_DxLibSpinePlayer.SwitchDrawOrder();
+		m_DxLibSpinePlayer.ToggleDrawOrder();
 		break;
 	case 'Z':
-		m_DxLibSpinePlayer.SwitchDepthBufferValidity();
+		m_DxLibSpinePlayer.ToggleDepthBufferValidity();
 		break;
 	default:
 		break;
@@ -283,6 +283,9 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 			break;
 		case Menu::kAtlasSetting:
 			MenuOnAtlasSetting();
+			break;
+		case Menu::kAddEffectFile:
+			MenuOnAddFile();
 			break;
 		case Menu::kSeeThroughImage:
 			MenuOnSeeThroughImage();
@@ -557,6 +560,8 @@ void CMainWindow::InitialiseMenuBar()
 	if (iRet == 0)goto failed;
 	iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kAtlasSetting, "Re-attachment");
 	if (iRet == 0)goto failed;
+	iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kAddEffectFile, "Add effect");
+	if (iRet == 0)goto failed;
 
 	hMenuWindow = ::CreateMenu();
 	if (hMenuWindow == nullptr)goto failed;
@@ -685,6 +690,23 @@ void CMainWindow::MenuOnSelectFiles()
 			ChangeWindowTitle(m_bPlayReady ? ExtractFileName().c_str() : nullptr);
 		}
 	}
+}
+/*ファイル追加*/
+void CMainWindow::MenuOnAddFile()
+{
+	if (!m_bPlayReady || m_recoderState != RecorderState::Idle)return;
+
+	std::wstring wstrAtlasFile = win_dialogue::SelectOpenFile(L"atlas file", L"", L"Select atlas file to add", m_hWnd);
+	if (wstrAtlasFile.empty())return;
+
+	std::wstring wstrSkeletonFile = win_dialogue::SelectOpenFile(L"skeleton file", L"", L"Select skeleton file to add", m_hWnd);
+	if (wstrSkeletonFile.empty())return;
+
+	std::string strAtlasFile = win_text::NarrowUtf8(wstrAtlasFile);
+	std::string strSkeletonFile = win_text::NarrowUtf8(wstrSkeletonFile);
+	bool bBinary = m_SpineSettingDialogue.IsSkelBinary(wstrSkeletonFile.c_str());
+
+	m_DxLibSpinePlayer.AddSpineFromFile(strAtlasFile.c_str(), strSkeletonFile.c_str(), bBinary);
 }
 /*骨組み操作画面呼び出し*/
 void CMainWindow::MenuOnSkeletonSetting()
