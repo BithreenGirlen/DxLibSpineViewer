@@ -20,7 +20,7 @@ public:
 	float timeScale = 1.f;
 
 	void Update(float fDelta);
-	void Draw(float fDepth = 0.f, float fScale = 1.f);
+	void Draw(float fDepth = 0.f);
 
 	void SwitchPma() { m_bAlphaPremultiplied ^= true; }
 	void SwitchBlendModeAdoption() { m_bForceBlendModeNormal ^= true; }

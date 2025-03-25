@@ -79,20 +79,25 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 {
 	if (!m_drawables.empty())
 	{
+#ifndef SPINE_3_7_OR_LATER
+		DxLib::MATRIX matrix = DxLib::MGetScale(DxLib::VGet(m_fSkeletonScale, m_fSkeletonScale, 1.f));
+
+		int iClientWidth = 0;
+		int iClientHeight = 0;
+		DxLib::GetScreenState(&iClientWidth, &iClientHeight, nullptr);
+		float fX = (m_fBaseSize.u * m_fSkeletonScale - iClientWidth) / 2;
+		float fY = (m_fBaseSize.v * m_fSkeletonScale - iClientHeight) / 2;
+		DxLib::MATRIX tranlateMatrix = DxLib::MGetTranslate(DxLib::VGet(-fX, -fY, 0.f));
+		matrix = DxLib::MMult(matrix, tranlateMatrix);
+
+		DxLib::SetTransformTo2D(&matrix);
+#endif
 		if (!m_bDrawOrderReversed)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
 			{
 				m_drawables[i]->Update(fDelta);
-#ifdef SPINE_3_7_OR_LATER
 				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
-#else 
-				/*
-				* Implementation of scaling by multiplying factor and vertice.
-				* A method suggested on official forum thread 4918.
-				*/
-				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
-#endif
 			}
 		}
 		else
@@ -100,13 +105,12 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 			for (long long i = m_drawables.size() - 1; i >= 0; --i)
 			{
 				m_drawables[i]->Update(fDelta);
-#ifdef SPINE_3_7_OR_LATER
 				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
-#else 
-				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f, m_fSkeletonScale);
-#endif
 			}
 		}
+#ifndef SPINE_3_7_OR_LATER
+		DxLib::ResetTransformTo2D();
+#endif
 	}
 }
 /*拡縮変更*/
