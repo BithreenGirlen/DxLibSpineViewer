@@ -857,10 +857,10 @@ void CMainWindow::MenuOnStartRecording(bool bAsVideo)
 	{
 		int iWidth = 0;
 		int iHeight = 0;
+		DxLib::GetScreenState(&iWidth, &iHeight, nullptr);
 		std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
 		wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
 		wstrFilePath += L".mp4";
-		CDxLibImageEncoder::GetScreenSize(&iWidth, &iHeight);
 		/* Initialising input media types takes time. In the meantime, pause rendering. */
 		m_recoderState = RecorderState::InitialisingVideoStream;
 		bool bRet = m_MfVideoEncoder.Start(wstrFilePath.c_str(), iWidth, iHeight, 60);

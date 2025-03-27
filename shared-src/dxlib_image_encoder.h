@@ -3,18 +3,13 @@
 
 #include <vector>
 
-class CDxLibImageEncoder
+class CDxLibImageEncoder abstract final
 {
 public:
-	CDxLibImageEncoder();
-	~CDxLibImageEncoder();
-
 	static bool SaveScreenAsJpg(const wchar_t* wszFilePath);
 	static bool SaveScreenAsPng(const wchar_t* wszFilePath);
 
 	static bool GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, bool bToCovertToRgba = true);
-
-	static void GetScreenSize(int* iWidth, int* iHeight);
 private:
 
 };

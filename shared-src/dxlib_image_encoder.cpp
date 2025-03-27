@@ -6,21 +6,12 @@
 #include <DxLib.h>
 
 
-CDxLibImageEncoder::CDxLibImageEncoder()
-{
-
-}
-
-CDxLibImageEncoder::~CDxLibImageEncoder()
-{
-
-}
 /*描画対象をJPGとして保存*/
 bool CDxLibImageEncoder::SaveScreenAsJpg(const wchar_t* wszFilePath)
 {
 	int iGraphWidth = 0;
 	int iGraphHeight = 0;
-	GetScreenSize(&iGraphWidth, &iGraphHeight);
+	DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
 
 	int iRet = DxLib::SaveDrawScreenToJPEG(0, 0, iGraphWidth, iGraphHeight, wszFilePath);
 	return iRet != -1;
@@ -30,7 +21,7 @@ bool CDxLibImageEncoder::SaveScreenAsPng(const wchar_t *wszFilePath)
 {
 	int iGraphWidth = 0;
 	int iGraphHeight = 0;
-	GetScreenSize(&iGraphWidth, &iGraphHeight);
+	DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
 
 	int iRet = DxLib::SaveDrawScreenToPNG(0, 0, iGraphWidth, iGraphHeight, wszFilePath);
 	return iRet != -1;
@@ -40,7 +31,7 @@ bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride
 {
 	int iGraphWidth = 0;
 	int iGraphHeight = 0;
-	GetScreenSize(&iGraphWidth, &iGraphHeight);
+	DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
 
 	/*SIHandleを毎度作成しても、寸法変更が生じた際にだけ作り直しても実行速度は大差なし*/
 	int iImageHandle = DxLib::MakeARGB8ColorSoftImage(iGraphWidth, iGraphHeight);
@@ -92,21 +83,4 @@ bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride
 	DxLib::DeleteSoftImage(iImageHandle);
 
 	return true;
-}
-
-/*描画対象寸法取得*/
-void CDxLibImageEncoder::GetScreenSize(int* iWidth, int* iHeight)
-{
-	RECT rect;
-	HWND hWnd = DxLib::GetMainWindowHandle();
-
-	::GetClientRect(hWnd, &rect);
-	int iClientWidth = rect.right - rect.left;
-	int iClientHeight = rect.bottom - rect.top;
-
-	int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
-	int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
-
-	*iWidth = iClientWidth > iDesktopWidth ? iDesktopWidth : iClientWidth;
-	*iHeight = iClientHeight > iDesktopHeight ? iDesktopHeight : iClientHeight;
 }
