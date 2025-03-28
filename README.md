@@ -1,10 +1,9 @@
 # DxLibSpineViewer
-Spine viewer with practical manipulation feature, based on [runtime for DxLib](#spine-runtime-for-dxlib).
 
-The viewer is built with Spine generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`, `4.0`, and `4.1`. 
-### Feature
-- Multiple Spines rendering
-  - Rendered in filename ascending or descending order.
+Spine viewer for Windows based on [Runtime for DxLib](#spine-runtime-for-dxlib) plus official generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`, `4.0`, and `4.1`.
+
+## Feature
+- Multiple rendering
 - Runtime manipulation
   - Exclude slot
   - Mix skins
@@ -15,7 +14,7 @@ The viewer is built with Spine generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`
     - `H264` encoding is available only for Intel CPU.
 - Transparent/borderless window style
 
-### Demonstration
+## Demonstration
 
 <details><summary>Multiple rendering</summary>
  
@@ -58,77 +57,62 @@ https://github.com/user-attachments/assets/d6682127-e01f-444d-838d-78b3bddac121
 
 </details>
 
-## Menu functions
+## How to load
 
-| Entry | Item | Action |
-| ---- | ---- | ---- | 
-| File | `Open folder` | Open folder-select-dialogue. |
-| - | `Setting` | Open a dialogue to set atlas/skelton extensions to pick up when opening folder. |
-| - | `Select files` | Pick up atlas and skeleton files one by one regardless of their extension. |
-| Image | `Manipulation` | Open a dialogue to specify slots to be excluded, skins or animations to be mixed. |
-| - | `Re-attachment` | Open a dialogue to replace attachment. |
-| Window | `Through-seen` | Toggle window's transparancy. |
-| - | `Allow manual sizing` | Allow/forbid manual sizing of window. _Default: forbidden_ |
-| - | `Move view on release` | Toggle view-point behaviour; move while dragging or when dragged button is released. |
- 
-### Load spine(s) via `Open folder` 
-1. In the `Setting` dialogue, specify atlas and skeleton extensions.
-2. From `Open folder`, select a folder containing atlas/skel(s) with specified extensions.
+### Load via `Open folder` 
+1. From `File->Setting`, specify atlas and skeleton extensions.
+2. From `File->Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
-### Load spine(s) via `Select files`
-1. From `Select files`, first select atlas file(s) to load. 
-2. In the secoend dialogue, select skel file(s) which is/are pair(s) of atlas.
+### Load via `Select files`
+1. From `File->Select files`, first select atlas file(s) to load. 
+2. Then select skel file(s) which is/are pair(s) of atlas.
 
-## Context-menu function
+## How to export
 
-- The context-menu appears only when spine is loaded, and the items of which varies depending on whether it is under recording or not.
+### Export as single image
 
-### Idle state
+1. Right click the screen.
+2. Select `Snap as PNG` or `Snap as JPG`.
 
-| Menu item | Action |
-| ---- | ---- |
-| `Snap as PNG` | Save the current screen as PNG. |
-| `Snap as JPG` | Save the current screen as JPG. |
-| `Start image recording` | Start storing screen frames at intervals. |
-| `Start video recording` | Start recording screen as H264. |
+### Export as multiple images
 
-### Image storing state
+1. Right click the screen and select `Start image recording`.
+2. Right click again and select `Save as GIF` or `Save as PNGs`.
 
-| Menu item | Action |
-| ---- | ---- |
-| `Save as GIF` | Save stored frames into a single GIF file. |
-| `Save as PNGs` | Save stored frames as separate PNG files. |
+- Mind that `width * height * 4` byte of memory will be consumed for every frame.
 
-### Video recording state
+### Export as video
 
-| Menu item | Action |
-| ---- | ---- |
-| `End recording` | End video recording. |
+1. Right click the screen and select `Start video recording`.
+2. Right click again and select `End recording`.
+
+</details>
+<details><summary>Note on filename</summary>
 
 - The files are saved in the subdirectory of the execution file.
   -  The folder is named after folder-name when loaded via `Open folder`, and the first atlas filename when via `Select files`.
-- PNG and JPG file will be named like `home_4.475018.png` where `home` is animation name, and `4.475018` is animation frame when saved.
-- GIF file will be named like `wait.gif` where `wait` is animation name.
-- Mind that `width * height * 4` byte of memory will be consumed every recording frame.
-- H264 file will be named like `fp.mp4` where `fp` is animation name.
+- `PNG` and `JPG` file will be named like `home_4.475018.png` where `home` is animation name, and `4.475018` is animation frame when saved.
+- `GIF` file will be named like `wait.gif` where `wait` is animation name.
+- `H264` file will be named like `fp.mp4` where `fp` is animation name.
+
+</details>
 
 ## Mouse functions
 
 | Input | Action |
 | ---- | ---- |
-| Wheel scroll | Scale up/down. Combining with `Ctrl` to retain window size. |
+| Wheel scroll | Scale up/down. Combinating with `Ctrl` to retain window size. |
 | Left pressed + wheel scroll | Speed up/down the animation. |
 | Left click | Switch the animation. |
 | Left drag | Move view-point. |
 | Middle click | Reset scale, animation speed, and view-point to default. |
-| Right pressed + middle click | Hide/show window's border and menu. Having hidden, the window goes to the origin of display. |
-| Right pressed + left click | Start moving borderless window. Left click to end.  |
 | Right pressed + wheel scroll | Switch the skin. |
 
-### Tip on transparent window
+<details><summary>Tip on transparent window</summary>
 1. Check menu item `Window->Through-seen` to make window transparent.
-2. Right pressed + middle click to make window borderless.
-3. Right pressed + left click to move borderless window.
+2. `Right pressed + middle click` to make window borderless.
+3. `Right pressed + left click` to move borderless window.
+</details>
 
 ## Keyboard functions
 
@@ -143,8 +127,14 @@ https://github.com/user-attachments/assets/d6682127-e01f-444d-838d-78b3bddac121
 | <kbd>Z</kbd> | Enable/disable depth-buffer. _Default: disabled_. |  
 
 - <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when the current spine(s) is/are loaded via `Open folder`.
+
+</details>
+<details><summary>Tip on PMA and blend mode</summary>
+  
 - Disable `PMA` with <kbd>A</kbd> if it is too bright, and enable if darkish.
 - Force `normal` blend mode with <kbd>B</kbd> if `multiply` is not well represented.
+  
+</details>
  
 ## External libraries
 
@@ -154,6 +144,7 @@ https://github.com/user-attachments/assets/d6682127-e01f-444d-838d-78b3bddac121
 ## Build
 1. Run `shared-src/deps/CMakeLists.txt`.
 2. Open `DxLibSpineViewer.sln` with Visual Studio.
+3. Select `Build Solution` on menu item.
 
 The `CMakeLists.txt` modifies some of the external sources as well as obtains them.
 - For spine-c `3.5`, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `3.6` and later.
