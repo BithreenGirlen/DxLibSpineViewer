@@ -219,12 +219,14 @@ LRESULT CMainWindow::OnSize(WPARAM wParam, LPARAM lParam)
 	* WM_SIZE seems to be called twice just after window style has been changed.
 	* If SetGraphMode() were not so effective, store the previous size and compare here.
 	*/
-	DxLib::SetGraphMode
-	(
-		iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth,
-		iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight,
-		32
-	);
+	int iGraphWidth = iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth;
+	int iGraphHeight = iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight;
+	DxLib::SetGraphMode(iGraphWidth,iGraphHeight,32);
+
+	if (m_bManuallyResizable)
+	{
+		m_DxLibSpinePlayer.AdjustViewOffset();
+	}
 
 	return 0;
 }
@@ -374,6 +376,7 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 			bool bWindowToBeResized = !(usKey & MK_CONTROL) && m_recoderState != RecorderState::RecordingVideo;
 			if (bWindowToBeResized)
 			{
+				m_DxLibSpinePlayer.RescaleCanvas(iScroll > 0);
 				ResizeWindow();
 			}
 		}
@@ -1110,8 +1113,8 @@ void CMainWindow::ResizeWindow()
 {
 	float fWidth = 0.f;
 	float fHeight = 0.f;
-	m_DxLibSpinePlayer.GetSkeletonSize(&fWidth, &fHeight);
-	float fScale = m_DxLibSpinePlayer.GetSkeletonScale();
+	m_DxLibSpinePlayer.GetBaseSize(&fWidth, &fHeight);
+	float fScale = m_DxLibSpinePlayer.GetCanvasScale();
 
 	RECT rect;
 	::GetWindowRect(m_hWnd, &rect);

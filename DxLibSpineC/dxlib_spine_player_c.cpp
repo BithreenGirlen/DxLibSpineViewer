@@ -145,8 +145,6 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 /*拡縮変更*/
 void CDxLibSpinePlayerC::RescaleSkeleton(bool bUpscale)
 {
-	constexpr float kfScalePortion = 0.025f;
-	constexpr float kfMinScale = 0.15f;
 	if (bUpscale)
 	{
 		m_fSkeletonScale += kfScalePortion;
@@ -158,6 +156,19 @@ void CDxLibSpinePlayerC::RescaleSkeleton(bool bUpscale)
 	}
 
 	UpdateScaletonScale();
+}
+
+void CDxLibSpinePlayerC::RescaleCanvas(bool bUpscale)
+{
+	if (bUpscale)
+	{
+		m_fCanvasScale += kfScalePortion;
+	}
+	else
+	{
+		m_fCanvasScale -= kfScalePortion;
+		if (m_fCanvasScale < kfMinScale)m_fCanvasScale = kfMinScale;
+	}
 }
 /*時間尺度変更*/
 void CDxLibSpinePlayerC::RescaleTime(bool bHasten)
@@ -180,6 +191,7 @@ void CDxLibSpinePlayerC::ResetScale()
 {
 	m_fTimeScale = 1.0f;
 	m_fSkeletonScale = m_fDefaultScale;
+	m_fCanvasScale = m_fDefaultScale;
 	m_fOffset = m_fDefaultOffset;
 	m_fViewOffset = DxLib::FLOAT2{};
 
@@ -535,15 +547,15 @@ bool CDxLibSpinePlayerC::ReplaceAttachment(const char* szSlotName, const char* s
 	return true;
 }
 /*寸法受け渡し*/
-void CDxLibSpinePlayerC::GetSkeletonSize(float* fWidth, float* fHeight) const
+void CDxLibSpinePlayerC::GetBaseSize(float* fWidth, float* fHeight) const
 {
 	if (fWidth != nullptr)*fWidth = m_fBaseSize.u;
 	if (fHeight != nullptr)*fHeight = m_fBaseSize.v;
 }
 /*尺度受け渡し*/
-float CDxLibSpinePlayerC::GetSkeletonScale() const
+float CDxLibSpinePlayerC::GetCanvasScale() const
 {
-	return m_fSkeletonScale;
+	return m_fCanvasScale;
 }
 /*消去*/
 void CDxLibSpinePlayerC::ClearDrawables()

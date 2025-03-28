@@ -22,7 +22,9 @@ public:
 	void Redraw(float fDelta);
 
 	void RescaleSkeleton(bool bUpscale);
+	void RescaleCanvas(bool bUpscale);
 	void RescaleTime(bool bHasten);
+
 	void ResetScale();
 
 	void MoveViewPoint(int iX, int iY);
@@ -49,9 +51,11 @@ public:
 	std::unordered_map<std::string, std::vector<std::string>> GetSlotNamesWithTheirAttachments();
 	bool ReplaceAttachment(const char* szSlotName, const char* szAttachmentName);
 
-	void GetSkeletonSize(float* fWidth, float* fHeight) const;
-	float GetSkeletonScale() const;
+	void GetBaseSize(float* fWidth, float* fHeight) const;
+	float GetCanvasScale() const;
 private:
+	static constexpr float kfScalePortion = 0.025f;
+	static constexpr float kfMinScale = 0.15f;
 	enum Constants { kBaseWidth = 1280, kBaseHeight = 720, kMinAtlas = 1024, };
 
 	CDxLibTextureLoader m_textureLoader;
@@ -66,6 +70,7 @@ private:
 
 	float m_fTimeScale = 1.f;
 	float m_fSkeletonScale = 1.f;
+	float m_fCanvasScale = 1.f;
 	DxLib::FLOAT2 m_fOffset{};
 	DxLib::FLOAT2 m_fViewOffset{};
 
