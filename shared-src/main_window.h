@@ -49,7 +49,7 @@ private:
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
 		kSkeletonSetting, kAtlasSetting, kAddEffectFile,
-		kSeeThroughImage, kAllowManualSizing, kMoveViewOnRelease,
+		kSeeThroughImage, kAllowManualSizing, kMoveViewOnRelease, kReverseZoomDirection,
 		kSnapAsPNG, kSnapAsJPG,
 		kStartStoringImages, kStartVideoRecording,
 		kSaveAsGIF, kSaveAsPNGs,
@@ -71,6 +71,7 @@ private:
 	bool m_bTransparent = false;
 	bool m_bManuallyResizable = false;
 	bool m_bToPanOnce = false;
+	bool m_bZoomReversed = false;
 
 	bool m_bPlayReady = false;
 
@@ -105,6 +106,7 @@ private:
 	void MenuOnSeeThroughImage();
 	void MenuOnAllowManualSizing();
 	void MenuOnMoveViewOnRelease();
+	void MenuonReverseZoomDirection();
 
 	void KeyUpOnNextFolder();
 	void KeyUpOnForeFolder();

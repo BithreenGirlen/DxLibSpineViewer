@@ -298,6 +298,9 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kMoveViewOnRelease:
 			MenuOnMoveViewOnRelease();
 			break;
+		case Menu::kReverseZoomDirection:
+			MenuonReverseZoomDirection();
+			break;
 		case Menu::kSnapAsPNG:
 			MenuOnSaveAsPng();
 			break;
@@ -371,12 +374,12 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 	{
 		if (m_bPlayReady)
 		{
-			m_DxLibSpinePlayer.RescaleSkeleton(iScroll > 0);
+			m_DxLibSpinePlayer.RescaleSkeleton((iScroll > 0) ^ m_bZoomReversed);
 
 			bool bWindowToBeResized = !(usKey & MK_CONTROL) && m_recoderState != RecorderState::RecordingVideo;
 			if (bWindowToBeResized)
 			{
-				m_DxLibSpinePlayer.RescaleCanvas(iScroll > 0);
+				m_DxLibSpinePlayer.RescaleCanvas((iScroll > 0) ^ m_bZoomReversed);
 				ResizeWindow();
 			}
 		}
@@ -574,6 +577,8 @@ void CMainWindow::InitialiseMenuBar()
 	iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kAllowManualSizing, "Allow manual sizing");
 	if (iRet == 0)goto failed;
 	iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kMoveViewOnRelease, "Move view on release");
+	if (iRet == 0)goto failed;
+	iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kReverseZoomDirection, "Reverse zoom direction");
 	if (iRet == 0)goto failed;
 
 	hMenuBar = ::CreateMenu();
@@ -803,6 +808,23 @@ void CMainWindow::MenuOnMoveViewOnRelease()
 			if (ulRet != (DWORD)-1)
 			{
 				m_bToPanOnce ^= true;
+			}
+		}
+	}
+}
+
+void CMainWindow::MenuonReverseZoomDirection()
+{
+	HMENU hMenuBar = ::GetMenu(m_hWnd);
+	if (hMenuBar != nullptr)
+	{
+		HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
+		if (hMenu != nullptr)
+		{
+			DWORD ulRet = ::CheckMenuItem(hMenu, Menu::kReverseZoomDirection, m_bZoomReversed ? MF_UNCHECKED : MF_CHECKED);
+			if (ulRet != (DWORD)-1)
+			{
+				m_bZoomReversed ^= true;
 			}
 		}
 	}
