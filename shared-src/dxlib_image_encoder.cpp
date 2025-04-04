@@ -33,8 +33,8 @@ bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride
 	int iGraphHeight = 0;
 	DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
 
-	/*SIHandleを毎度作成しても、寸法変更が生じた際にだけ作り直しても実行速度は大差なし*/
-	int iImageHandle = DxLib::MakeARGB8ColorSoftImage(iGraphWidth, iGraphHeight);
+	int iImageHandle = bToCovertToRgba ?
+		DxLib::MakeABGR8ColorSoftImage(iGraphWidth, iGraphHeight) : DxLib::MakeARGB8ColorSoftImage(iGraphWidth, iGraphHeight);
 	if (iImageHandle == -1)return false;
 
 	int iRet = DxLib::GetDrawScreenSoftImage(0, 0, iGraphWidth, iGraphHeight, iImageHandle);
@@ -64,21 +64,7 @@ bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride
 	size_t nSize = static_cast<size_t>(iPitch * iGraphHeight);
 	pixels.resize(nSize);
 
-	/*BGRA => RGBA*/
-	if (bToCovertToRgba)
-	{
-		for (size_t i = 0; i < nSize - 3; i += 4)
-		{
-			pixels[i] = *(pPixels + i + 2);
-			pixels[i + 1] = *(pPixels + i + 1);
-			pixels[i + 2] = *(pPixels + i);
-			pixels[i + 3] = *(pPixels + i + 3);
-		}
-	}
-	else
-	{
-		memcpy(&pixels[0], pPixels, nSize);
-	}
+	memcpy(&pixels[0], pPixels, nSize);
 
 	DxLib::DeleteSoftImage(iImageHandle);
 

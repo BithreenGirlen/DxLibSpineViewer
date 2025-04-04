@@ -148,12 +148,14 @@ bool CMfVideoEncoder::AddCpuFrame(unsigned char* pPixels, unsigned long ulPixelS
 	/* RGBA => BGRA */
 	if (bIsRgba)
 	{
-		for (size_t i = 0; i < ulPixelSize - 3ULL; i += 4)
+		uint32_t* pSrc32 = reinterpret_cast<uint32_t*>(pPixels);
+		uint32_t* pDst32 = reinterpret_cast<uint32_t*>(pBuffer);
+		size_t nCount = ulPixelSize / 4;
+		for (size_t i = 0; i < nCount; ++i)
 		{
-			*(pBuffer + i) = *(pPixels + i + 2);
-			*(pBuffer + i + 1) = *(pPixels + i + 1);
-			*(pBuffer + i + 2) = *(pPixels + i);
-			*(pBuffer + i + 3) = *(pPixels + i + 3);
+			pDst32[i] = ((pSrc32[i] & 0x000000ff) << 16) |
+						((pSrc32[i] & 0x00ff0000) >> 16) |
+						((pSrc32[i] & 0xff00ff00));
 		}
 	}
 	else
