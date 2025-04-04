@@ -108,19 +108,8 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 {
 	if (!m_drawables.empty())
 	{
-#ifndef SPINE_3_7_OR_LATER
-		DxLib::MATRIX matrix = DxLib::MGetScale(DxLib::VGet(m_fSkeletonScale, m_fSkeletonScale, 1.f));
+		SetTransformMatrix();
 
-		int iClientWidth = 0;
-		int iClientHeight = 0;
-		DxLib::GetScreenState(&iClientWidth, &iClientHeight, nullptr);
-		float fX = (m_fBaseSize.u * m_fSkeletonScale - iClientWidth) / 2;
-		float fY = (m_fBaseSize.v * m_fSkeletonScale - iClientHeight) / 2;
-		DxLib::MATRIX tranlateMatrix = DxLib::MGetTranslate(DxLib::VGet(-fX, -fY, 0.f));
-		matrix = DxLib::MMult(matrix, tranlateMatrix);
-
-		DxLib::SetTransformTo2D(&matrix);
-#endif
 		if (!m_bDrawOrderReversed)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
@@ -137,9 +126,8 @@ void CDxLibSpinePlayerC::Redraw(float fDelta)
 				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
 			}
 		}
-#ifndef SPINE_3_7_OR_LATER
+
 		DxLib::ResetTransformTo2D();
-#endif
 	}
 }
 /*拡縮変更*/
@@ -154,8 +142,6 @@ void CDxLibSpinePlayerC::RescaleSkeleton(bool bUpscale)
 		m_fSkeletonScale -= kfScalePortion;
 		if (m_fSkeletonScale < kfMinScale)m_fSkeletonScale = kfMinScale;
 	}
-
-	UpdateScaletonScale();
 }
 
 void CDxLibSpinePlayerC::RescaleCanvas(bool bUpscale)
@@ -193,29 +179,15 @@ void CDxLibSpinePlayerC::ResetScale()
 	m_fSkeletonScale = m_fDefaultScale;
 	m_fCanvasScale = m_fDefaultScale;
 	m_fOffset = m_fDefaultOffset;
-	m_fViewOffset = DxLib::FLOAT2{};
 
-	UpdateScaletonScale();
 	UpdateTimeScale();
-}
-/*視点移動*/
-void CDxLibSpinePlayerC::MoveViewPoint(int iX, int iY)
-{
-	m_fOffset.u += iX;
-	m_fOffset.v += iY;
 	UpdatePosition();
 }
-/*視点補正*/
-void CDxLibSpinePlayerC::AdjustViewOffset()
+/*位置移動*/
+void CDxLibSpinePlayerC::MoveViewPoint(int iX, int iY)
 {
-#ifdef SPINE_3_7_OR_LATER
-	int iClientWidth = 0;
-	int iClientHeight = 0;
-	DxLib::GetScreenState(&iClientWidth, &iClientHeight, nullptr);
-
-	m_fViewOffset.u = (m_fBaseSize.u * m_fDefaultScale - iClientWidth) / 2.f;
-	m_fViewOffset.v = (m_fBaseSize.v * m_fDefaultScale - iClientHeight) / 2.f;
-#endif
+	m_fOffset.u += iX / m_fSkeletonScale;
+	m_fOffset.v += iY / m_fSkeletonScale;
 	UpdatePosition();
 }
 /*動作移行*/
@@ -701,18 +673,10 @@ void CDxLibSpinePlayerC::WorkOutDefaultScale()
 		if (fScaleX > fScaleY)
 		{
 			m_fDefaultScale = fScaleY;
-#ifdef SPINE_3_7_OR_LATER
-			m_fDefaultOffset.u = iSkeletonWidth > iDisplayWidth ? (iSkeletonWidth * (1 - fScaleY)) / 2.f : 0.f;
-			m_fDefaultOffset.v = iSkeletonHeight > iDisplayHeight ? (iSkeletonHeight - iDisplayHeight) / 2.f : 0.f;
-#endif
 		}
 		else
 		{
 			m_fDefaultScale = fScaleX;
-#ifdef SPINE_3_7_OR_LATER
-			m_fDefaultOffset.u = iSkeletonWidth > iDisplayWidth ? (iSkeletonWidth - iDisplayWidth) / 2.f : 0.f;
-			m_fDefaultOffset.v = iSkeletonHeight > iDisplayHeight ? (iSkeletonHeight * (1 - fScaleX)) / 2.f : 0.f;
-#endif
 		}
 	}
 }
@@ -721,25 +685,9 @@ void CDxLibSpinePlayerC::UpdatePosition()
 {
 	for (const auto& drawable : m_drawables)
 	{
-		drawable->skeleton->x = m_fBaseSize.u / 2 - m_fOffset.u - m_fViewOffset.u;
-		drawable->skeleton->y = m_fBaseSize.v / 2 - m_fOffset.v - m_fViewOffset.v;
+		drawable->skeleton->x = m_fBaseSize.u / 2 - m_fOffset.u;
+		drawable->skeleton->y = m_fBaseSize.v / 2 - m_fOffset.v;
 	}
-}
-/*尺度適用*/
-void CDxLibSpinePlayerC::UpdateScaletonScale()
-{
-	/*
-	* scaleX and scaleY in spSkeleton were added since spine-3.7.
-	* It is true that skeleton->root has scaleX and scaleY, but these values will be reset to 1.f
-	* on _spScaleTimeline_apply() if the animation has no appropriate timeline properties.
-	*/
-#ifdef SPINE_3_7_OR_LATER
-	for (const auto& drawbale : m_drawables)
-	{
-		drawbale->skeleton->scaleX = m_fSkeletonScale;
-		drawbale->skeleton->scaleY = m_fSkeletonScale;
-	}
-#endif
 }
 /*速度適用*/
 void CDxLibSpinePlayerC::UpdateTimeScale()
@@ -779,4 +727,19 @@ void CDxLibSpinePlayerC::ClearAnimationTracks()
 		}
 #endif
 	}
+}
+
+void CDxLibSpinePlayerC::SetTransformMatrix() const
+{
+	int iClientWidth = 0;
+	int iClientHeight = 0;
+	DxLib::GetScreenState(&iClientWidth, &iClientHeight, nullptr);
+	float fX = (m_fBaseSize.u * m_fSkeletonScale - iClientWidth) / 2;
+	float fY = (m_fBaseSize.v * m_fSkeletonScale - iClientHeight) / 2;
+
+	DxLib::MATRIX matrix = DxLib::MGetScale(DxLib::VGet(m_fSkeletonScale, m_fSkeletonScale, 1.f));
+	DxLib::MATRIX tranlateMatrix = DxLib::MGetTranslate(DxLib::VGet(-fX, -fY, 0.f));
+	matrix = DxLib::MMult(matrix, tranlateMatrix);
+
+	DxLib::SetTransformTo2D(&matrix);
 }

@@ -28,7 +28,6 @@ public:
 	void ResetScale();
 
 	void MoveViewPoint(int iX, int iY);
-	void AdjustViewOffset();
 
 	void ShiftAnimation();
 	void ShiftSkin();
@@ -72,7 +71,6 @@ private:
 	float m_fSkeletonScale = 1.f;
 	float m_fCanvasScale = 1.f;
 	DxLib::FLOAT2 m_fOffset{};
-	DxLib::FLOAT2 m_fViewOffset{};
 
 	std::vector<std::string> m_animationNames;
 	size_t m_nAnimationIndex = 0;
@@ -91,10 +89,11 @@ private:
 	void WorkOutDefaultScale();
 
 	void UpdatePosition();
-	void UpdateScaletonScale();
 	void UpdateTimeScale();
-	void UpdateAnimation();
 
+	void UpdateAnimation();
 	void ClearAnimationTracks();
+
+	void SetTransformMatrix() const;
 };
 #endif // !DXLIB_SPINE_PLAYER_H_

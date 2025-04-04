@@ -75,13 +75,13 @@ int CMainWindow::MessageLoop()
 
 	for (;;)
 	{
-		BOOL bRet = ::GetMessageW(&msg, 0, 0, 0);
-		if (bRet > 0)
+		BOOL iRet = ::GetMessageW(&msg, 0, 0, 0);
+		if (iRet > 0)
 		{
 			::TranslateMessage(&msg);
 			::DispatchMessageW(&msg);
 		}
-		else if (bRet == 0)
+		else if (iRet == 0)
 		{
 			/*ループ終了*/
 			return static_cast<int>(msg.wParam);
@@ -215,18 +215,9 @@ LRESULT CMainWindow::OnSize(WPARAM wParam, LPARAM lParam)
 	int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
 	int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
 
-	/* 
-	* WM_SIZE seems to be called twice just after window style has been changed.
-	* If SetGraphMode() were not so effective, store the previous size and compare here.
-	*/
 	int iGraphWidth = iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth;
 	int iGraphHeight = iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight;
 	DxLib::SetGraphMode(iGraphWidth,iGraphHeight,32);
-
-	if (m_bManuallyResizable)
-	{
-		m_DxLibSpinePlayer.AdjustViewOffset();
-	}
 
 	return 0;
 }
@@ -1155,6 +1146,4 @@ void CMainWindow::ResizeWindow()
 
 	::AdjustWindowRect(&rect, lStyle, IsWidowBarHidden() ? FALSE : TRUE);
 	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
-
-	m_DxLibSpinePlayer.AdjustViewOffset();
 }

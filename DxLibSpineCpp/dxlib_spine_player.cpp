@@ -108,6 +108,8 @@ void CDxLibSpinePlayer::Redraw(float fDelta)
 {
 	if (!m_drawables.empty())
 	{
+		SetTransformMatrix();
+
 		if (!m_bDrawOrderReversed)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
@@ -124,6 +126,8 @@ void CDxLibSpinePlayer::Redraw(float fDelta)
 				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
 			}
 		}
+
+		DxLib::ResetTransformTo2D();
 	}
 }
 /*拡縮変更*/
@@ -138,8 +142,6 @@ void CDxLibSpinePlayer::RescaleSkeleton(bool bUpscale)
 		m_fSkeletonScale -= kfScalePortion;
 		if (m_fSkeletonScale < kfMinScale)m_fSkeletonScale = kfMinScale;
 	}
-
-	UpdateScaletonScale();
 }
 
 void CDxLibSpinePlayer::RescaleCanvas(bool bUpscale)
@@ -177,28 +179,15 @@ void CDxLibSpinePlayer::ResetScale()
 	m_fSkeletonScale = m_fDefaultScale;
 	m_fCanvasScale = m_fDefaultScale;
 	m_fOffset = m_fDefaultOffset;
-	m_fViewOffset = DxLib::FLOAT2{};
 
-	UpdateScaletonScale();
 	UpdateTimeScale();
-}
-/*視点移動*/
-void CDxLibSpinePlayer::MoveViewPoint(int iX, int iY)
-{
-	m_fOffset.u += iX;
-	m_fOffset.v += iY;
 	UpdatePosition();
 }
-/*視点補正*/
-void CDxLibSpinePlayer::AdjustViewOffset()
+/*位置移動*/
+void CDxLibSpinePlayer::MoveViewPoint(int iX, int iY)
 {
-	int iClientWidth = 0;
-	int iClientHeight = 0;
-	DxLib::GetScreenState(&iClientWidth, &iClientHeight, nullptr);
-
-	m_fViewOffset.u = (m_fBaseSize.u * m_fDefaultScale - iClientWidth) / 2.f;
-	m_fViewOffset.v = (m_fBaseSize.v * m_fDefaultScale - iClientHeight) / 2.f;
-
+	m_fOffset.u += iX / m_fSkeletonScale;
+	m_fOffset.v += iY / m_fSkeletonScale;
 	UpdatePosition();
 }
 /*動作移行*/
@@ -653,24 +642,10 @@ void CDxLibSpinePlayer::WorkOutDefaultScale()
 		if (fScaleX > fScaleY)
 		{
 			m_fDefaultScale = fScaleY;
-
-			/*
-			* The sum of
-			* (1) Centre-point difference between world- and locale-view.
-			* (2) deviance from ideal scaling. (This becomes zero when ideally scaled.)
-			* results in
-			* (iSkeletonWidth - iDesktopWidth) / 2.f + (iDesktopWidth - iSkeletonWidth * fScaleY) / 2.f
-			*  = (iSkeletonWidth * (1 - fScaleY)) / 2.f
-			*/
-			m_fDefaultOffset.u = iSkeletonWidth > iDisplayWidth ? (iSkeletonWidth * (1 - fScaleY)) / 2.f : 0.f;
-			m_fDefaultOffset.v = iSkeletonHeight > iDisplayHeight ? (iSkeletonHeight - iDisplayHeight) / 2.f : 0.f;
 		}
 		else
 		{
 			m_fDefaultScale = fScaleX;
-
-			m_fDefaultOffset.u = iSkeletonWidth > iDisplayWidth ? (iSkeletonWidth - iDisplayWidth) / 2.f : 0.f;
-			m_fDefaultOffset.v = iSkeletonHeight > iDisplayHeight ? (iSkeletonHeight * (1 - fScaleX)) / 2.f : 0.f;
 		}
 	}
 }
@@ -679,16 +654,7 @@ void CDxLibSpinePlayer::UpdatePosition()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
-		pDrawable->skeleton->setPosition(m_fBaseSize.u / 2 - m_fOffset.u - m_fViewOffset.u, m_fBaseSize.v / 2 - m_fOffset.v - m_fViewOffset.v);
-	}
-}
-/*尺度適用*/
-void CDxLibSpinePlayer::UpdateScaletonScale()
-{
-	for (const auto& pDrawable : m_drawables)
-	{
-		pDrawable->skeleton->setScaleX(m_fSkeletonScale);
-		pDrawable->skeleton->setScaleY(m_fSkeletonScale);
+		pDrawable->skeleton->setPosition(m_fBaseSize.u / 2 - m_fOffset.u, m_fBaseSize.v / 2 - m_fOffset.v);
 	}
 }
 /*速度適用*/
@@ -725,4 +691,19 @@ void CDxLibSpinePlayer::ClearAnimationTracks()
 			pDrawable->animationState->setEmptyAnimation(iTrack, 0.f);
 		}
 	}
+}
+
+void CDxLibSpinePlayer::SetTransformMatrix() const
+{
+	int iClientWidth = 0;
+	int iClientHeight = 0;
+	DxLib::GetScreenState(&iClientWidth, &iClientHeight, nullptr);
+	float fX = (m_fBaseSize.u * m_fSkeletonScale - iClientWidth) / 2;
+	float fY = (m_fBaseSize.v * m_fSkeletonScale - iClientHeight) / 2;
+
+	DxLib::MATRIX matrix = DxLib::MGetScale(DxLib::VGet(m_fSkeletonScale, m_fSkeletonScale, 1.f));
+	DxLib::MATRIX tranlateMatrix = DxLib::MGetTranslate(DxLib::VGet(-fX, -fY, 0.f));
+	matrix = DxLib::MMult(matrix, tranlateMatrix);
+
+	DxLib::SetTransformTo2D(&matrix);
 }
