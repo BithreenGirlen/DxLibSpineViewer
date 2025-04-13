@@ -95,6 +95,9 @@
     <ClInclude Include="..\..\shared-src\dialogue_controls.h">
       <Filter>ヘッダー ファイル\shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\dxlib_recorder.h">
+      <Filter>ヘッダー ファイル\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -266,6 +269,9 @@
       <Filter>ソース ファイル\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\dialogue_controls.cpp">
+      <Filter>ソース ファイル\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\dxlib_recorder.cpp">
       <Filter>ソース ファイル\shared</Filter>
     </ClCompile>
   </ItemGroup>

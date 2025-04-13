@@ -49,8 +49,6 @@ bool CMfVideoEncoder::Start(const wchar_t* pwzFilePath, UINT32 uiWidth, UINT32 u
 	hr = ::MFCreateAttributes(&pMfAttriubutes, 1);
 	if (FAILED(hr))return false;
 
-	/* AMD CPU hangs on IMFSinkWriter::Finalize() in spite of successful return value of the setting below. */
-
 	hr = pMfAttriubutes->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE);
 	if (FAILED(hr))return false;
 	hr = pMfAttriubutes->SetUINT32(MF_MT_DEFAULT_STRIDE, uiWidth * 4);
@@ -106,7 +104,7 @@ bool CMfVideoEncoder::Start(const wchar_t* pwzFilePath, UINT32 uiWidth, UINT32 u
 
 			hr = pInMfMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
 			if (FAILED(hr))return false;
-			hr = pInMfMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);
+			hr = pInMfMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_ARGB32);
 			if (FAILED(hr))return false;
 
 			hr = pInMfMediaType->SetUINT32(MF_MT_DEFAULT_STRIDE, uiWidth * 4);
@@ -154,8 +152,8 @@ bool CMfVideoEncoder::AddCpuFrame(unsigned char* pPixels, unsigned long ulPixelS
 		for (size_t i = 0; i < nCount; ++i)
 		{
 			pDst32[i] = ((pSrc32[i] & 0x000000ff) << 16) |
-						((pSrc32[i] & 0x00ff0000) >> 16) |
-						((pSrc32[i] & 0xff00ff00));
+				((pSrc32[i] & 0x00ff0000) >> 16) |
+				((pSrc32[i] & 0xff00ff00));
 		}
 	}
 	else
@@ -163,7 +161,7 @@ bool CMfVideoEncoder::AddCpuFrame(unsigned char* pPixels, unsigned long ulPixelS
 		memcpy(pBuffer, pPixels, ulPixelSize);
 	}
 
-	hr= m_pMfMediaBuffer->SetCurrentLength(ulPixelSize);
+	hr = m_pMfMediaBuffer->SetCurrentLength(ulPixelSize);
 	if (FAILED(hr))return false;
 
 	hr = m_pMfMediaBuffer->Unlock();

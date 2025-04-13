@@ -141,6 +141,7 @@
     <ClInclude Include="..\..\shared-src\dialogue_controls.h" />
     <ClInclude Include="..\..\shared-src\dxlib_image_encoder.h" />
     <ClInclude Include="..\..\shared-src\dxlib_init.h" />
+    <ClInclude Include="..\..\shared-src\dxlib_recorder.h" />
     <ClInclude Include="..\..\shared-src\framework.h" />
     <ClInclude Include="..\..\shared-src\main_window.h" />
     <ClInclude Include="..\..\shared-src\mf_video_encoder.h" />
@@ -223,6 +224,7 @@
     <ClCompile Include="..\..\shared-src\dialogue_controls.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_init.cpp" />
+    <ClCompile Include="..\..\shared-src\dxlib_recorder.cpp" />
     <ClCompile Include="..\..\shared-src\main.cpp" />
     <ClCompile Include="..\..\shared-src\main_window.cpp" />
     <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp" />

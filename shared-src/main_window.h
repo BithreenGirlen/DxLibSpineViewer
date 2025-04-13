@@ -11,8 +11,7 @@
 #include "spine_manipulator_dialogue.h"
 #include "spine_atlas_dialogue.h"
 
-#include "win_image.h"
-#include "mf_video_encoder.h"
+#include "dxlib_recorder.h"
 
 class CMainWindow
 {
@@ -49,7 +48,7 @@ private:
 	{
 		kOpenFolder = 1, kFileSetting, kSelectFiles,
 		kSkeletonSetting, kAtlasSetting, kAddEffectFile,
-		kSeeThroughImage, kAllowManualSizing, kMoveViewOnRelease, kReverseZoomDirection,
+		kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
 		kSnapAsPNG, kSnapAsJPG,
 		kStartStoringImages, kStartVideoRecording,
 		kSaveAsGIF, kSaveAsPNGs,
@@ -68,9 +67,9 @@ private:
 
 	HMENU m_hMenuBar = nullptr;
 	bool m_bBarHidden = false;
+
 	bool m_bTransparent = false;
 	bool m_bManuallyResizable = false;
-	bool m_bToPanOnce = false;
 	bool m_bZoomReversed = false;
 
 	bool m_bPlayReady = false;
@@ -87,8 +86,6 @@ private:
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
 
-	std::vector<SImageFrame> m_imageFrames;
-	std::vector<std::wstring> m_imageFrameNames;
 	int m_iFrameCount = 0;
 
 	float m_fDelta = 1 / 60.f;
@@ -105,8 +102,7 @@ private:
 
 	void MenuOnSeeThroughImage();
 	void MenuOnAllowManualSizing();
-	void MenuOnMoveViewOnRelease();
-	void MenuonReverseZoomDirection();
+	void MenuOnReverseZoomDirection();
 
 	void KeyUpOnNextFolder();
 	void KeyUpOnForeFolder();
@@ -131,7 +127,8 @@ private:
 	CSpineSettingDialogue m_SpineSettingDialogue;
 	CSpineManipulatorDialogue m_SpineManipulatorDialogue;
 	CSpineAtlasDialogue m_SpineAtlasDialogue;
-	CMfVideoEncoder m_MfVideoEncoder;
+
+	CDxLibRecorder m_DxLibRecorder;
 
 	void UpdateWindowResizableAttribute();
 	void ResizeWindow();

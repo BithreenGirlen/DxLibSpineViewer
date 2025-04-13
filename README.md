@@ -11,7 +11,6 @@ Spine viewer for Windows based on [Runtime for DxLib](#spine-runtime-for-dxlib) 
   - Replace attachment
 - Media file export
   - As `PNG`, `GIF`, `JPG`, and `H264`.
-    - `H264` encoding is available only for Intel CPU.
 - Transparent/borderless window style
 
 ## Demonstration
@@ -109,9 +108,11 @@ https://github.com/user-attachments/assets/d6682127-e01f-444d-838d-78b3bddac121
 | Right pressed + wheel scroll | Switch the skin. |
 
 <details><summary>Tip on transparent window</summary>
+
 1. Check menu item `Window->Through-seen` to make window transparent.
 2. `Right pressed + middle click` to make window borderless.
 3. `Right pressed + left click` to move borderless window.
+
 </details>
 
 ## Keyboard functions
