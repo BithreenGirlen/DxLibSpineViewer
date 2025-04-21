@@ -28,12 +28,12 @@ static wchar_t* WidenPath(const char* path)
 		return nullptr;
 	}
 
-	wchar_t* pTemp = static_cast<wchar_t*>(realloc(pResult, (iLen + 1LL) * sizeof(wchar_t)));
+	wchar_t* pTemp = static_cast<wchar_t*>(realloc(pResult, iLen));
 	if (pTemp != nullptr)
 	{
 		pResult = pTemp;
 	}
-	*(pResult + iLen) = L'\0';
+
 	return pResult;
 }
 
