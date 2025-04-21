@@ -1,7 +1,6 @@
 ﻿#ifndef SPINE_LOADER_C_H_
 #define SPINE_LOADER_C_H_
 
-#include <string>
 #include <memory>
 
 #include <spine/spine.h>

@@ -2,7 +2,7 @@
 
 #include "spine_loader.h"
 
-std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromFile(const spine::String& filePath, spine::Atlas* atlas, float scale)
+std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromFile(const char* filePath, spine::Atlas* atlas, float scale)
 {
 	spine::SkeletonJson json(atlas);
 	json.setScale(scale);
@@ -14,7 +14,7 @@ std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromFile(cons
 	return std::shared_ptr<spine::SkeletonData>(skeletonData);
 }
 
-std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromFile(const spine::String& filePath, spine::Atlas* atlas, float scale)
+std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromFile(const char* filePath, spine::Atlas* atlas, float scale)
 {
 	spine::SkeletonBinary binary(atlas);
 	binary.setScale(scale);
@@ -26,11 +26,11 @@ std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromFile(co
 	return std::shared_ptr<spine::SkeletonData>(skeletonData);
 }
 
-std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromMemory(const std::string& skeletonJson, spine::Atlas* atlas, float scale)
+std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromMemory(const char* skeletonJson, spine::Atlas* atlas, float scale)
 {
 	spine::SkeletonJson json(atlas);
 	json.setScale(scale);
-	auto skeletonData = json.readSkeletonData(skeletonJson.c_str());
+	auto skeletonData = json.readSkeletonData(skeletonJson);
 	if (!skeletonData)
 	{
 		return nullptr;
@@ -38,11 +38,11 @@ std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromMemory(co
 	return std::shared_ptr<spine::SkeletonData>(skeletonData);
 }
 
-std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromMemory(const std::string& skeletonBinary, spine::Atlas* atlas, float scale)
+std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromMemory(const unsigned char* skeletonBinary, int skeletonLength, spine::Atlas* atlas, float scale)
 {
 	spine::SkeletonBinary binary(atlas);
 	binary.setScale(scale);
-	auto skeletonData = binary.readSkeletonData(reinterpret_cast<const unsigned char*>(skeletonBinary.c_str()), static_cast<int>(skeletonBinary.size()));
+	auto skeletonData = binary.readSkeletonData(skeletonBinary, skeletonLength);
 	if (!skeletonData)
 	{
 		return nullptr;

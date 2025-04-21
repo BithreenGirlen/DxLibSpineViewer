@@ -59,8 +59,8 @@ bool CDxLibSpinePlayer::SetSpineFromMemory(const std::vector<std::string>& atlas
 		if (atlas.get() == nullptr)continue;
 
 		std::shared_ptr<spine::SkeletonData> skeletonData = bIsBinary ? 
-			spine_loader::ReadBinarySkeletonFromMemory(strSkeletonData, atlas.get(), 1.f) :
-			spine_loader::ReadTextSkeletonFromMemory(strSkeletonData, atlas.get(), 1.f);
+			spine_loader::ReadBinarySkeletonFromMemory(reinterpret_cast<const unsigned char*>(strSkeletonData.data()), static_cast<int>(strSkeletonData.size()), atlas.get(), 1.f) :
+			spine_loader::ReadTextSkeletonFromMemory(strSkeletonData.data(), atlas.get(), 1.f);
 		if (skeletonData.get() == nullptr)return false;
 
 		m_atlases.push_back(std::move(atlas));
