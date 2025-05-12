@@ -14,7 +14,7 @@ CDxLibSpinePlayer::~CDxLibSpinePlayer()
 }
 
 /*ファイル取り込み*/
-bool CDxLibSpinePlayer::SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary)
+bool CDxLibSpinePlayer::LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary)
 {
 	if (atlasPaths.size() != skelPaths.size())return false;
 	ClearDrawables();
@@ -44,7 +44,7 @@ bool CDxLibSpinePlayer::SetSpineFromFile(const std::vector<std::string>& atlasPa
 	return SetupDrawer();
 }
 /*メモリ取り込み*/
-bool CDxLibSpinePlayer::SetSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary)
+bool CDxLibSpinePlayer::LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary)
 {
 	if (atlasData.size() != skelData.size() || atlasData.size() != atlasPaths.size())return false;
 	ClearDrawables();
@@ -103,8 +103,16 @@ bool CDxLibSpinePlayer::AddSpineFromFile(const char* szAtlasPath, const char* sz
 
 	return true;
 }
+
+void CDxLibSpinePlayer::Update(float fDelta)
+{
+	for (const auto& drawable : m_drawables)
+	{
+		drawable->Update(fDelta);
+	}
+}
 /*再描画*/
-void CDxLibSpinePlayer::Redraw(float fDelta)
+void CDxLibSpinePlayer::Redraw()
 {
 	if (!m_drawables.empty())
 	{
@@ -114,16 +122,14 @@ void CDxLibSpinePlayer::Redraw(float fDelta)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
 			{
-				m_drawables[i]->Update(fDelta);
-				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
+				m_drawables[i]->Draw();
 			}
 		}
 		else
 		{
 			for (long long i = m_drawables.size() - 1; i >= 0; --i)
 			{
-				m_drawables[i]->Update(fDelta);
-				m_drawables[i]->Draw(m_bDepthBufferEnabled ? 0.1f * (i + 1) : 0.f);
+				m_drawables[i]->Draw();
 			}
 		}
 
@@ -135,11 +141,11 @@ void CDxLibSpinePlayer::RescaleSkeleton(bool bUpscale)
 {
 	if (bUpscale)
 	{
-		m_fSkeletonScale += kfScalePortion;
+		m_fSkeletonScale += kfScaleFactor;
 	}
 	else
 	{
-		m_fSkeletonScale -= kfScalePortion;
+		m_fSkeletonScale -= kfScaleFactor;
 		if (m_fSkeletonScale < kfMinScale)m_fSkeletonScale = kfMinScale;
 	}
 }
@@ -148,11 +154,11 @@ void CDxLibSpinePlayer::RescaleCanvas(bool bUpscale)
 {
 	if (bUpscale)
 	{
-		m_fCanvasScale += kfScalePortion;
+		m_fCanvasScale += kfScaleFactor;
 	}
 	else
 	{
-		m_fCanvasScale -= kfScalePortion;
+		m_fCanvasScale -= kfScaleFactor;
 		if (m_fCanvasScale < kfMinScale)m_fCanvasScale = kfMinScale;
 	}
 }
@@ -234,18 +240,6 @@ void CDxLibSpinePlayer::ToggleBlendModeAdoption()
 	{
 		pDrawable->SetForceBlendModeNormal(!pDrawable->GetForceBlendModeNormal());
 	}
-}
-/*奥行き表現有効無効切り替え*/
-bool CDxLibSpinePlayer::ToggleDepthBufferValidity()
-{
-	int iRet = DxLib::SetUseZBufferFlag(m_bDepthBufferEnabled ? FALSE : TRUE);
-	if (iRet == -1)return false;
-
-	iRet = DxLib::SetWriteZBufferFlag(m_bDepthBufferEnabled ? FALSE : TRUE);
-	if (iRet == -1)return false;
-
-	m_bDepthBufferEnabled ^= true;
-	return true;
 }
 /*描画順切り替え*/
 void CDxLibSpinePlayer::ToggleDrawOrder()

@@ -20,7 +20,7 @@ public:
 	float timeScale = 1.f;
 
 	void Update(float fDelta);
-	void Draw(float fDepth = 0.f);
+	void Draw();
 
 	void SetPma(bool bPremultiplied) { m_bAlphaPremultiplied = bPremultiplied; }
 	bool GetPma() const { return m_bAlphaPremultiplied; }

@@ -189,7 +189,8 @@ LRESULT CMainWindow::OnPaint()
 	{
 		DxLib::ClearDrawScreen();
 
-		m_DxLibSpinePlayer.Redraw(m_fDelta);
+		m_DxLibSpinePlayer.Update(m_fDelta);
+		m_DxLibSpinePlayer.Redraw();
 
 		StepOnRecording();
 
@@ -216,7 +217,7 @@ LRESULT CMainWindow::OnSize(WPARAM wParam, LPARAM lParam)
 
 	int iGraphWidth = iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth;
 	int iGraphHeight = iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight;
-	DxLib::SetGraphMode(iGraphWidth,iGraphHeight,32);
+	DxLib::SetGraphMode(iGraphWidth, iGraphHeight, 32);
 
 	return 0;
 }
@@ -242,9 +243,6 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
 		break;
 	case 'R':
 		m_DxLibSpinePlayer.ToggleDrawOrder();
-		break;
-	case 'Z':
-		m_DxLibSpinePlayer.ToggleDepthBufferValidity();
 		break;
 	default:
 		break;
@@ -441,7 +439,7 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 
 	if (usKey == 0 && m_bPlayReady)
 	{
-		const auto PreparePupupMenu = [this](HMENU *hMenu)
+		const auto PreparePupupMenu = [this](HMENU* hMenu)
 			-> bool
 			{
 				if (hMenu == nullptr)return false;
@@ -652,7 +650,7 @@ void CMainWindow::MenuOnSelectFiles()
 				skels.push_back(win_text::NarrowUtf8(skel));
 			}
 
-			m_bPlayReady = m_DxLibSpinePlayer.SetSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary(wstrSkelFiles[0].c_str()));
+			m_bPlayReady = m_DxLibSpinePlayer.LoadSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary(wstrSkelFiles[0].c_str()));
 			if (m_bPlayReady)
 			{
 				ResizeWindow();
@@ -983,7 +981,7 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 		}
 	}
 
-	m_bPlayReady = m_DxLibSpinePlayer.SetSpineFromFile(atlasPaths, skelPaths, bIsBinary);
+	m_bPlayReady = m_DxLibSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, bIsBinary);
 	ChangeWindowTitle(m_bPlayReady ? pwzFolderPath : nullptr);
 	if (m_bPlayReady)
 	{

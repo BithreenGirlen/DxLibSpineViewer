@@ -156,7 +156,7 @@ void CDxLibSpineDrawerC::Update(float fDelta)
 	spSkeleton_updateWorldTransform(skeleton);
 }
 
-void CDxLibSpineDrawerC::Draw(float fDepth)
+void CDxLibSpineDrawerC::Draw()
 {
 	if (m_worldVertices == nullptr || m_clipper == nullptr || skeleton == nullptr || animationState == nullptr)return;
 
@@ -273,7 +273,7 @@ void CDxLibSpineDrawerC::Draw(float fDepth)
 			DxLib::VERTEX2D dxLibVertex{};
 			dxLibVertex.pos.x = pVertices->items[ii];
 			dxLibVertex.pos.y = pVertices->items[ii + 1LL];
-			dxLibVertex.pos.z = fDepth;
+			dxLibVertex.pos.z = 0.f;
 			dxLibVertex.rhw = 1.f;
 			dxLibVertex.dif.r = (BYTE)(tint.r * 255.f);
 			dxLibVertex.dif.g = (BYTE)(tint.g * 255.f);

@@ -19,12 +19,13 @@ public:
 	CDxLibSpinePlayerC();
 	~CDxLibSpinePlayerC();
 
-	bool SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
-	bool SetSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
+	bool LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
+	bool LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
 
 	bool AddSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool bBinary);
 
-	void Redraw(float fDelta);
+	void Update(float fDelta);
+	void Redraw();
 
 	void RescaleSkeleton(bool bUpscale);
 	void RescaleCanvas(bool bUpscale);
@@ -39,7 +40,6 @@ public:
 
 	void TogglePma();
 	void ToggleBlendModeAdoption();
-	bool ToggleDepthBufferValidity();
 	void ToggleDrawOrder();
 
 	std::string GetCurrentAnimationNameWithTrackTime(float *fTrackTime = nullptr);
@@ -58,7 +58,7 @@ public:
 	void GetBaseSize(float* fWidth, float* fHeight) const;
 	float GetCanvasScale() const;
 private:
-	static constexpr float kfScalePortion = 0.025f;
+	static constexpr float kfScaleFactor = 0.025f;
 	static constexpr float kfMinScale = 0.15f;
 	enum Constants { kBaseWidth = 1280, kBaseHeight = 720 };
 
@@ -82,7 +82,6 @@ private:
 	std::vector<std::string> m_skinNames;
 	size_t m_nSkinIndex = 0;
 
-	bool m_bDepthBufferEnabled = false;
 	bool m_bDrawOrderReversed = false;
 
 	void ClearDrawables();

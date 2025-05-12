@@ -86,7 +86,7 @@ void CDxLibSpineDrawer::Update(float fDelta)
 	}
 }
 
-void CDxLibSpineDrawer::Draw(float fDepth)
+void CDxLibSpineDrawer::Draw()
 {
 	if (skeleton == nullptr || animationState == nullptr)return;
 
@@ -207,7 +207,7 @@ void CDxLibSpineDrawer::Draw(float fDepth)
 			DxLib::VERTEX2D dxLibVertex{};
 			dxLibVertex.pos.x = (*pVertices)[ii];
 			dxLibVertex.pos.y = (*pVertices)[ii + 1LL];
-			dxLibVertex.pos.z = fDepth;
+			dxLibVertex.pos.z = 0.f;
 			dxLibVertex.rhw = 1.f;
 			dxLibVertex.dif.r = (BYTE)(tint.r * 255.f);
 			dxLibVertex.dif.g = (BYTE)(tint.g * 255.f);
