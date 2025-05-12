@@ -4,13 +4,15 @@
 
 #include "win_dialogue.h"
 
-struct ComInit
+namespace win_dialogue
 {
-    HRESULT m_hrComInit;
-    ComInit() : m_hrComInit(::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)) {}
-    ~ComInit() { if (SUCCEEDED(m_hrComInit)) ::CoUninitialize(); }
-};
-
+    struct ComInit
+    {
+        HRESULT m_hrComInit;
+        ComInit() : m_hrComInit(::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)) {}
+        ~ComInit() { if (SUCCEEDED(m_hrComInit)) ::CoUninitialize(); }
+    };
+}
 
 std::wstring win_dialogue::SelectWorkFolder(void* hParentWnd)
 {
@@ -43,17 +45,19 @@ std::wstring win_dialogue::SelectWorkFolder(void* hParentWnd)
     return std::wstring();
 }
 
-std::wstring win_dialogue::SelectOpenFile(const wchar_t* pwzFileType, const wchar_t* pwzSpec, const wchar_t* pwzTitle, void* hParentWnd)
+std::wstring win_dialogue::SelectOpenFile(const wchar_t* pwzFileType, const wchar_t* pwzSpec, const wchar_t* pwzTitle, void* hParentWnd, bool bAny)
 {
     ComInit sInit;
     CComPtr<IFileOpenDialog> pFileDialog;
     HRESULT hr = pFileDialog.CoCreateInstance(CLSID_FileOpenDialog);
 
     if (SUCCEEDED(hr)) {
-        COMDLG_FILTERSPEC filter[1]{};
+        COMDLG_FILTERSPEC filter[2]{};
         filter[0].pszName = pwzFileType;
         filter[0].pszSpec = pwzSpec;
-        hr = pFileDialog->SetFileTypes(1, filter);
+        filter[1].pszName = L"All files";
+        filter[1].pszSpec = L"*";
+        hr = pFileDialog->SetFileTypes(bAny ? 2 : 1, filter);
         if (SUCCEEDED(hr))
         {
             FILEOPENDIALOGOPTIONS opt{};
@@ -82,7 +86,7 @@ std::wstring win_dialogue::SelectOpenFile(const wchar_t* pwzFileType, const wcha
     return std::wstring();
 }
 
-std::vector<std::wstring> win_dialogue::SelectOpenFiles(const wchar_t* pwzFileType, const wchar_t* pwzSpec, const wchar_t* pwzTitle, void* hParentWnd)
+std::vector<std::wstring> win_dialogue::SelectOpenFiles(const wchar_t* pwzFileType, const wchar_t* pwzSpec, const wchar_t* pwzTitle, void* hParentWnd, bool bAny)
 {
     ComInit sInit;
     CComPtr<IFileOpenDialog> pFileDialog;
@@ -91,10 +95,12 @@ std::vector<std::wstring> win_dialogue::SelectOpenFiles(const wchar_t* pwzFileTy
     std::vector<std::wstring> selectedFilePaths;
 
     if (SUCCEEDED(hr)) {
-        COMDLG_FILTERSPEC filter[1]{};
+        COMDLG_FILTERSPEC filter[2]{};
         filter[0].pszName = pwzFileType;
         filter[0].pszSpec = pwzSpec;
-        hr = pFileDialog->SetFileTypes(1, filter);
+        filter[1].pszName = L"All files";
+        filter[1].pszSpec = L"*";
+        hr = pFileDialog->SetFileTypes(bAny ? 2 : 1, filter);
         if (SUCCEEDED(hr))
         {
             FILEOPENDIALOGOPTIONS opt{};

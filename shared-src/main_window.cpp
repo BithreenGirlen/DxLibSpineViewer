@@ -621,15 +621,15 @@ void CMainWindow::MenuOnSelectFiles()
 {
 	if (m_recoderState != RecorderState::Idle)return;
 
-	std::vector<std::wstring> wstrAtlasFiles = win_dialogue::SelectOpenFiles(L"atlas files", L"", L"Select atlas files", m_hWnd);
+	std::vector<std::wstring> wstrAtlasFiles = win_dialogue::SelectOpenFiles(L"atlas files", L"*.atlas;*.atlas.txt", L"Select atlas files", m_hWnd, true);
 	if (!wstrAtlasFiles.empty())
 	{
-		std::vector<std::wstring> wstrSkelFiles = win_dialogue::SelectOpenFiles(L"skeleton files", L"", L"Select skeleton files", m_hWnd);
+		std::vector<std::wstring> wstrSkelFiles = win_dialogue::SelectOpenFiles(L"skeleton files", L"*.skel;*.bin;*.json;*.txt", L"Select skeleton files", m_hWnd, true);
 		if (!wstrSkelFiles.empty())
 		{
 			if (wstrAtlasFiles.size() != wstrSkelFiles.size())
 			{
-				::MessageBoxW(nullptr, L"The number of atlas and skeleton files should be the same.", L"Error", MB_ICONERROR);
+				::MessageBoxW(m_hWnd, L"The number of atlas and skeleton files should be the same.", L"Error", MB_ICONERROR);
 				return;
 			}
 
@@ -657,7 +657,7 @@ void CMainWindow::MenuOnSelectFiles()
 			}
 			else
 			{
-				::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
+				::MessageBoxW(m_hWnd, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
 			}
 
 			const auto ExtractFileName = [&wstrAtlasFiles]()
@@ -681,10 +681,10 @@ void CMainWindow::MenuOnAddFile()
 {
 	if (!m_bPlayReady || m_recoderState != RecorderState::Idle)return;
 
-	std::wstring wstrAtlasFile = win_dialogue::SelectOpenFile(L"atlas file", L"", L"Select atlas file to add", m_hWnd);
+	std::wstring wstrAtlasFile = win_dialogue::SelectOpenFile(L"atlas file", L"*.atlas;*.atlas.txt", L"Select atlas file to add", m_hWnd, true);
 	if (wstrAtlasFile.empty())return;
 
-	std::wstring wstrSkeletonFile = win_dialogue::SelectOpenFile(L"skeleton file", L"", L"Select skeleton file to add", m_hWnd);
+	std::wstring wstrSkeletonFile = win_dialogue::SelectOpenFile(L"skeleton file", L"*.skel;*.bin;*.json;*.txt", L"Select skeleton file to add", m_hWnd, true);
 	if (wstrSkeletonFile.empty())return;
 
 	std::string strAtlasFile = win_text::NarrowUtf8(wstrAtlasFile);
@@ -989,7 +989,7 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 	}
 	else
 	{
-		::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
+		::MessageBoxW(m_hWnd, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
 	}
 
 	return m_bPlayReady;
