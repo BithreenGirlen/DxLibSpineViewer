@@ -70,20 +70,20 @@ https://github.com/user-attachments/assets/d6682127-e01f-444d-838d-78b3bddac121
 
 ### Export as single image
 
-1. Right click the screen.
+1. Right click on the window.
 2. Select `Snap as PNG` or `Snap as JPG`.
 
 ### Export as multiple images
 
-1. Right click the screen and select `Start image recording`.
-2. Right click again and select `Save as GIF` or `Save as PNGs`.
-
-- Mind that `width * height * 4` byte of memory will be consumed for every frame.
+1. Right click on the window.
+2. Select `Start image recording`.
+3. Right click again and select `Save as GIF` or `Save as PNGs`.
 
 ### Export as video
 
-1. Right click the screen and select `Start video recording`.
-2. Right click again and select `End recording`.
+1. Right click on the window.
+2. Select `Start video recording`.
+3. Right click again and select `End recording`.
 
 </details>
 <details><summary>Note on filename</summary>
@@ -125,7 +125,6 @@ https://github.com/user-attachments/assets/d6682127-e01f-444d-838d-78b3bddac121
 | <kbd>A</kbd> | Enable/disable premultiplied alpha. _Default: enabled_. | 
 | <kbd>B</kbd> | Prefer/ignore blned-mode specified by slots. _Default: preferred_. | 
 | <kbd>R</kbd> | Toggle draw-order between filename asc/descending order. _Default: ascending order_. | 
-| <kbd>Z</kbd> | Enable/disable depth-buffer. _Default: disabled_. |  
 
 - <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when the current spine(s) is/are loaded via `Open folder`.
 
