@@ -139,10 +139,16 @@ void CDxLibSpineDrawer::Draw()
 
 			/*Fetch texture handle stored in AltasPage*/
 #ifdef SPINE_4_1_OR_LATER
-			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pRegionAttachment->getRegion())->rendererObject)));
+			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRegion());
+			m_bAlphaPremultiplied = pAtlasRegion->page->pma;
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->rendererObject)));
 #else
-			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pRegionAttachment->getRendererObject())->page->getRendererObject())));
+			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRendererObject());
+#ifdef SPINE_4_0
+			m_bAlphaPremultiplied = pAtlasRegion->page->pma;
 #endif
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->page->getRendererObject())));
+#endif // SPINE_4_1_OR_LATER
 		}
 		else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
 		{
@@ -160,10 +166,16 @@ void CDxLibSpineDrawer::Draw()
 			pIndices = &pMeshAttachment->getTriangles();
 
 #ifdef SPINE_4_1_OR_LATER
-			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pMeshAttachment->getRegion())->rendererObject)));
+			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRegion());
+			m_bAlphaPremultiplied = pAtlasRegion->page->pma;
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->rendererObject)));
 #else
-			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(static_cast<spine::AtlasRegion*>(pMeshAttachment->getRendererObject())->page->getRendererObject())));
+			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRendererObject());
+#ifdef SPINE_4_0
+			m_bAlphaPremultiplied = pAtlasRegion->page->pma;
 #endif
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->page->getRendererObject())));
+#endif // SPINE_4_1_OR_LATER
 		}
 		else if (pAttachment->getRTTI().isExactly(spine::ClippingAttachment::rtti))
 		{
