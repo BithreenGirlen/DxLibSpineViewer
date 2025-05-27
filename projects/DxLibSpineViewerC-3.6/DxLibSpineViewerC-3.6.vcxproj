@@ -131,9 +131,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Manifest Include="..\..\shared-src\dpiAwareness.manifest" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\DxLibSpineC\dxlib_spine_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\dxlib_spine_player_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\spine_loader_c.h" />
@@ -216,6 +213,9 @@
     <ClCompile Include="..\..\shared-src\win_filesystem.cpp" />
     <ClCompile Include="..\..\shared-src\win_image.cpp" />
     <ClCompile Include="..\..\shared-src\win_text.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\dpiAwareness.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

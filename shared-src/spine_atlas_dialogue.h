@@ -36,12 +36,12 @@ private:
 
 	HFONT m_hFont = nullptr;
 
-	HWND m_hSlotStatic = nullptr;
+	CStatic m_slotStatic;
 	CComboBox m_slotComboBox;
-	HWND m_hAttachmentStatic = nullptr;
+	CStatic m_attachmentStatic;
 	CComboBox m_attachmentComboBox;
 
-	HWND m_hReattachButton = nullptr;
+	CButton m_reattachButton;
 
 	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
 

@@ -331,13 +331,14 @@ std::wstring CComboBox::GetSelectedItemText()
 	}
 	return std::wstring();
 }
-/*消去*/
-void CComboBox::Clear()
+
+int CComboBox::FindIndex(const wchar_t* szName)
 {
 	if (m_hWnd != nullptr)
 	{
-		::SendMessage(m_hWnd, CB_RESETCONTENT, 0, 0);
+		return static_cast<int>(::SendMessage(m_hWnd, CB_FINDSTRING, -1, reinterpret_cast<LPARAM>(szName)));
 	}
+	return CB_ERR;
 }
 /*選択項目指定*/
 bool CComboBox::SetSelectedItem(int iIndex)
@@ -348,6 +349,14 @@ bool CComboBox::SetSelectedItem(int iIndex)
 		return iIndex == -1 ? lResult == CB_ERR : lResult == iIndex;
 	}
 	return false;
+}
+/*消去*/
+void CComboBox::Clear()
+{
+	if (m_hWnd != nullptr)
+	{
+		::SendMessage(m_hWnd, CB_RESETCONTENT, 0, 0);
+	}
 }
 
 /* ==================== Button ==================== */
@@ -386,4 +395,166 @@ bool CButton::IsChecked()
 	}
 
 	return false;
+}
+
+/* ==================== Integer trackbar ==================== */
+
+CSlider::CSlider()
+{
+
+}
+
+CSlider::~CSlider()
+{
+
+}
+
+bool CSlider::Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, unsigned short usMin, unsigned short usMax, unsigned int uiRange, bool bVertical)
+{
+	m_hWnd = ::CreateWindowExW(
+		0, TRACKBAR_CLASS, szText,
+		WS_VISIBLE | WS_CHILD | WS_TABSTOP | TBS_TOOLTIPS | TBS_BOTH | (bVertical ? TBS_VERT : 0),
+		0, 0, 0, 0, hParentWnd, hMenu, ::GetModuleHandleA(nullptr), nullptr
+	);
+
+	if (m_hWnd != nullptr)
+	{
+		::SendMessage(m_hWnd, TBM_SETRANGE, TRUE, MAKELONG(usMin, usMax));
+		::SendMessage(m_hWnd, TBM_SETPAGESIZE, TRUE, uiRange);
+	}
+
+	return m_hWnd != nullptr;
+}
+
+long long CSlider::GetPosition() const
+{
+	return ::SendMessage(m_hWnd, TBM_GETPOS, 0, 0);
+}
+
+void CSlider::SetPosition(long long llPos) const
+{
+	::SendMessage(m_hWnd, TBM_SETPOS, TRUE, llPos);
+}
+
+HWND CSlider::GetToolTipHandle()
+{
+	return reinterpret_cast<HWND>(::SendMessage(m_hWnd, TBM_GETTOOLTIPS, 0, 0));
+}
+
+/* ==================== Float trackBar ==================== */
+
+CFloatSlider::CFloatSlider()
+{
+
+}
+
+CFloatSlider::~CFloatSlider()
+{
+
+}
+
+bool CFloatSlider::Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, float fMin, float fMax, float fRange, unsigned int uiRatio, bool bVertical)
+{
+	m_hWnd = ::CreateWindowExW(
+		0, TRACKBAR_CLASS, szText,
+		WS_VISIBLE | WS_CHILD | WS_TABSTOP | TBS_TOOLTIPS | TBS_BOTH | (bVertical ? TBS_VERT : 0),
+		0, 0, 0, 0, hParentWnd, hMenu, ::GetModuleHandleA(nullptr), nullptr
+	);
+
+	if (uiRatio > 0)m_uiRatio = uiRatio;
+
+	if (m_hWnd != nullptr)
+	{
+		unsigned int uiMin = static_cast<unsigned int>(fMin * m_uiRatio);
+		unsigned int uiMax = static_cast<unsigned int>(fMax * m_uiRatio);
+		unsigned int uiRange = static_cast<unsigned int>(fRange * m_uiRatio);
+
+		::SendMessage(m_hWnd, TBM_SETRANGE, TRUE, MAKELONG(uiMin, uiMax));
+		::SendMessage(m_hWnd, TBM_SETPAGESIZE, TRUE, uiRange);
+	}
+
+	return m_hWnd != nullptr;
+}
+
+float CFloatSlider::GetPosition() const
+{
+	return ::SendMessage(m_hWnd, TBM_GETPOS, 0, 0) / static_cast<float>(m_uiRatio);
+}
+
+void CFloatSlider::SetPosition(float fPos) const
+{
+	::SendMessage(m_hWnd, TBM_SETPOS, TRUE, static_cast<LPARAM>(fPos * m_uiRatio));
+}
+
+HWND CFloatSlider::GetToolTipHandle()
+{
+	return reinterpret_cast<HWND>(::SendMessage(m_hWnd, TBM_GETTOOLTIPS, 0, 0));
+}
+
+void CFloatSlider::OnToolTipNeedText(LPNMTTDISPINFOW pNmtTextDispInfo)
+{
+	if (pNmtTextDispInfo != nullptr)
+	{
+		long n = 0;
+		for (long l = m_uiRatio; l > 1; ++n, l = l / kDefaultRatio);
+		/* LPNMTTDISPINFOW::szText is 80 chars in length. */
+		swprintf_s(pNmtTextDispInfo->szText, L"%0.*f", n, GetPosition());
+	}
+
+}
+
+/* ==================== Static ==================== */
+
+CStatic::CStatic()
+{
+
+}
+
+CStatic::~CStatic()
+{
+
+}
+
+bool CStatic::Create(const wchar_t* szText, HWND hParentWnd)
+{
+	m_hWnd = ::CreateWindowEx(0, WC_STATIC, szText, WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+
+	return m_hWnd != nullptr;
+}
+
+/* ==================== Edit ==================== */
+
+CEdit::CEdit()
+{
+
+}
+
+CEdit::~CEdit()
+{
+
+}
+
+bool CEdit::Create(const wchar_t* initialText, HWND hParentWnd)
+{
+	m_hWnd = ::CreateWindowEx(0, WC_EDIT, initialText, WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+	return m_hWnd != nullptr;
+}
+
+std::wstring CEdit::GetText()
+{
+	int iLen = ::GetWindowTextLength(m_hWnd); // 終端を含まない
+	if (iLen > 0)
+	{
+		std::vector<wchar_t> vBuffer(iLen + 1LL, L'\0');
+		LRESULT lResult = ::SendMessage(m_hWnd, WM_GETTEXT, static_cast<WPARAM>(vBuffer.size()), reinterpret_cast<LPARAM>(vBuffer.data()));
+		return vBuffer.data();
+	}
+
+	return std::wstring();
+}
+
+bool CEdit::SetText(size_t textLength, const wchar_t* text)
+{
+	LRESULT lResult = ::SendMessage(m_hWnd, WM_SETTEXT, textLength, reinterpret_cast<LPARAM>(text));
+	return lResult == TRUE;
 }

@@ -68,13 +68,13 @@ LRESULT CSpineAtlasDialogue::OnInit(HWND hWnd)
 {
 	m_hWnd = hWnd;
 
-	m_hSlotStatic = ::CreateWindowEx(0, WC_STATIC, L"Slot", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
-	m_hAttachmentStatic = ::CreateWindowEx(0, WC_STATIC, L"Attachment", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+	m_slotStatic.Create(L"Slot", m_hWnd);
+	m_attachmentStatic.Create(L"Attachment", m_hWnd);
 
 	m_slotComboBox.Create(m_hWnd);
 	m_attachmentComboBox.Create(m_hWnd);
 
-	m_hReattachButton = ::CreateWindowExW(0, WC_BUTTONW, L"Re-attach", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON, 0, 0, 0, 0, m_hWnd, reinterpret_cast<HMENU>(Controls::kReattachButton), ::GetModuleHandle(NULL), nullptr);
+	m_reattachButton.Create(L"Re-attach", m_hWnd, reinterpret_cast<HMENU>(Controls::kReattachButton));
 
 	if (m_pDxLibSpinePlayer != nullptr)
 	{
@@ -189,41 +189,24 @@ void CSpineAtlasDialogue::ResizeControls()
 	long w = clientWidth - spaceX * 2;
 	long h = clientHeight * 8 / 10;
 
-	int iFontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
+	long fontHeight = static_cast<long>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
 
-	if (m_hSlotStatic != nullptr)
-	{
-		::MoveWindow(m_hSlotStatic, x, y, w, h, TRUE);
-	}
-	y += iFontHeight;
+	::MoveWindow(m_slotStatic.GetHwnd(), x, y, w, h, TRUE);
 
-	HWND hSlotComboBox = m_slotComboBox.GetHwnd();
-	if (hSlotComboBox != nullptr)
-	{
-		::MoveWindow(hSlotComboBox, x, y, w, h, TRUE);
-	}
+	y += fontHeight;
+	::MoveWindow(m_slotComboBox.GetHwnd(), x, y, w, h, TRUE);
 
-	y += iFontHeight * 2 + spaceY;
-	if (m_hAttachmentStatic != nullptr)
-	{
-		::MoveWindow(m_hAttachmentStatic, x, y, w, h, TRUE);
-	}
-	y += iFontHeight;
+	y += fontHeight * 2 + spaceY;
+	::MoveWindow(m_attachmentStatic.GetHwnd(), x, y, w, h, TRUE);
 
-	HWND hAttachmentComboBox = m_attachmentComboBox.GetHwnd();
-	if (hAttachmentComboBox != nullptr)
-	{
-		::MoveWindow(hAttachmentComboBox, x, y, w, h, TRUE);
-	}
+	y += fontHeight;
+	::MoveWindow(m_attachmentComboBox.GetHwnd(), x, y, w, h, TRUE);
 
 	w = clientWidth / 2;
-	h = static_cast<int>(iFontHeight * 1.5);
+	h = static_cast<int>(fontHeight * 1.5);
 	x = spaceX;
 	y = clientHeight - h -spaceY * 2;
-	if (m_hReattachButton != nullptr)
-	{
-		::MoveWindow(m_hReattachButton, x, y, w, h, TRUE);
-	}
+	::MoveWindow(m_reattachButton.GetHwnd(), x, y, w, h, TRUE);
 }
 /*ëIëçÄñ⁄ïœçX*/
 void CSpineAtlasDialogue::OnSlotSelect()

@@ -39,7 +39,7 @@ private:
 	CListView m_skinListView;
 	CListView m_animationListView;
 
-	HWND m_hApplyButton = nullptr;
+	CButton m_applyButton;
 
 	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
 

@@ -70,30 +70,19 @@ bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
 
 int CMainWindow::MessageLoop()
 {
-	MSG msg;
+	MSG msg{};
 
-	for (;;)
+	for (; msg.message != WM_QUIT;)
 	{
-		BOOL iRet = ::GetMessageW(&msg, 0, 0, 0);
-		if (iRet > 0)
+		BOOL iRet = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);
+		if (iRet)
 		{
 			::TranslateMessage(&msg);
 			::DispatchMessageW(&msg);
 		}
-		else if (iRet == 0)
-		{
-			/*ループ終了*/
-			return static_cast<int>(msg.wParam);
-		}
-		else
-		{
-			/*ループ異常*/
-			std::wstring wstrMessage = L"GetMessageW failed; code: " + std::to_wstring(::GetLastError());
-			::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
-			return -1;
-		}
 	}
-	return 0;
+
+	return static_cast<int>(msg.wParam);
 }
 /*C CALLBACK*/
 LRESULT CMainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -182,9 +171,6 @@ LRESULT CMainWindow::OnClose()
 /*WM_PAINT*/
 LRESULT CMainWindow::OnPaint()
 {
-	PAINTSTRUCT ps;
-	HDC hdc = ::BeginPaint(m_hWnd, &ps);
-
 	if (m_bPlayReady && m_recoderState != RecorderState::InitialisingVideoStream)
 	{
 		DxLib::ClearDrawScreen();
@@ -195,14 +181,7 @@ LRESULT CMainWindow::OnPaint()
 		StepOnRecording();
 
 		DxLib::ScreenFlip();
-
-		if (m_hWnd != nullptr)
-		{
-			::InvalidateRect(m_hWnd, nullptr, FALSE);
-		}
 	}
-
-	::EndPaint(m_hWnd, &ps);
 
 	return 0;
 }
@@ -885,7 +864,6 @@ void CMainWindow::MenuOnEndRecording(bool bAsGif)
 
 	m_recoderState = RecorderState::Idle;
 	m_iFrameCount = 0;
-	::InvalidateRect(m_hWnd, nullptr, FALSE);
 }
 /*表題変更*/
 void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)

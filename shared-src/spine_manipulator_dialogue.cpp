@@ -83,7 +83,7 @@ LRESULT CSpineManipulatorDialogue::OnInit(HWND hWnd)
 	m_skinListView.Create(m_hWnd, skinColumnNames, true);
 	m_animationListView.Create(m_hWnd, animationColumnNames, true);
 
-	m_hApplyButton = ::CreateWindowExW(0, WC_BUTTONW, L"Apply", WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_PUSHBUTTON, 0, 0, 0, 0, m_hWnd, reinterpret_cast<HMENU>(Controls::kApplyButton), ::GetModuleHandle(NULL), nullptr);
+	m_applyButton.Create(L"Apply", m_hWnd, reinterpret_cast<HMENU>(Controls::kApplyButton));
 
 	ResizeControls();
 	/* If the dialogue was created with DS_MODALFRAME style, it cannot be resized even if its style has been changed to WS_THICKFRAME */
@@ -221,45 +221,31 @@ LRESULT CSpineManipulatorDialogue::ResizeControls()
 	long clientWidth = rect.right - rect.left;
 	long clientHeight = rect.bottom - rect.top;
 
-	long x_space = clientWidth / 96;
-	long y_space = clientHeight / 96;
+	long spaceX = clientWidth / 96;
+	long spaceY = clientHeight / 96;
 
-	long x = x_space;
-	long y = y_space;
-	long w = clientWidth - x_space * 2;
+	long x = spaceX;
+	long y = spaceY;
+	long w = clientWidth - spaceX * 2;
 	long h = clientHeight * 3 / 10;
 
-	HWND hWnd = m_slotListView.GetHwnd();
-	if (hWnd != nullptr)
-	{
-		::MoveWindow(hWnd, x, y, w, h, TRUE);
-		m_slotListView.AdjustWidth();
-	}
-	y += h + y_space;
-	h = clientHeight * 3 / 10;
+	::MoveWindow(m_slotListView.GetHwnd(), x, y, w, h, TRUE);
+	m_slotListView.AdjustWidth();
 
-	hWnd = m_skinListView.GetHwnd();
-	if (hWnd != nullptr)
-	{
-		::MoveWindow(hWnd, x, y, w, h, TRUE);
-		m_skinListView.AdjustWidth();
-	}
-	y += h + y_space;
+	y += h + spaceY;
 	h = clientHeight * 3 / 10;
+	::MoveWindow(m_skinListView.GetHwnd(), x, y, w, h, TRUE);
+	m_skinListView.AdjustWidth();
 
-	hWnd = m_animationListView.GetHwnd();
-	if (hWnd != nullptr)
-	{
-		::MoveWindow(hWnd, x, y, w, h, TRUE);
-		m_animationListView.AdjustWidth();
-	}
-	y += h + y_space;
+	y += h + spaceY;
+	h = clientHeight * 3 / 10;
+	::MoveWindow(m_animationListView.GetHwnd(), x, y, w, h, TRUE);
+	m_animationListView.AdjustWidth();
+
+	y += h + spaceY;
 	h = clientHeight / 16;
 	w = clientWidth / 4;
-	if (m_hApplyButton != nullptr)
-	{
-		::MoveWindow(m_hApplyButton, x, y, w, h, TRUE);
-	}
+	::MoveWindow(m_applyButton.GetHwnd(), x, y, w, h, TRUE);
 
 	return 0;
 }

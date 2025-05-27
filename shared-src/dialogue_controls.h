@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <Windows.h>
+#include <CommCtrl.h>
 
 class CListView
 {
@@ -61,11 +62,13 @@ public:
 
 	int GetSelectedItemIndex();
 	std::wstring GetSelectedItemText();
+
+	int FindIndex(const wchar_t* szName);
+	bool SetSelectedItem(int iIndex);
 private:
 	HWND m_hWnd = nullptr;
 
 	void Clear();
-	bool SetSelectedItem(int iIndex);
 };
 
 class CButton
@@ -79,6 +82,73 @@ public:
 
 	void SetCheckBox(bool bToBeChecked);
 	bool IsChecked();
+private:
+	HWND m_hWnd = nullptr;
+};
+
+class CSlider
+{
+public:
+	CSlider();
+	~CSlider();
+
+	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, unsigned short usMin, unsigned short usMax, unsigned int uiRange, bool bVertical = false);
+	HWND GetHwnd()const { return m_hWnd; }
+
+	long long GetPosition() const;
+	void SetPosition(long long llPos) const;
+
+	HWND GetToolTipHandle();
+private:
+	HWND m_hWnd = nullptr;
+};
+
+class CFloatSlider
+{
+public:
+	CFloatSlider();
+	~CFloatSlider();
+
+	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, float fMin, float fMax, float fRange, unsigned int uiRatio = kDefaultRatio, bool bVertical = false);
+	HWND GetHwnd()const { return m_hWnd; }
+
+	float GetPosition() const;
+	void SetPosition(float fPos) const;
+
+	HWND GetToolTipHandle();
+	void OnToolTipNeedText(LPNMTTDISPINFOW pNmtTextDispInfo);
+
+	unsigned int GetRatio()const { return m_uiRatio; }
+private:
+	static constexpr unsigned int kDefaultRatio = 10;
+	HWND m_hWnd = nullptr;
+
+	unsigned int m_uiRatio = kDefaultRatio;
+};
+
+class CStatic
+{
+public:
+	CStatic();
+	~CStatic();
+
+	bool Create(const wchar_t* szText, HWND hParentWnd);
+	HWND GetHwnd()const { return m_hWnd; }
+private:
+	HWND m_hWnd = nullptr;
+};
+
+class CEdit
+{
+public:
+	CEdit();
+	~CEdit();
+
+	bool Create(const wchar_t* initialText, HWND hParentWnd);
+	HWND GetHwnd()const { return m_hWnd; }
+
+	std::wstring GetText();
+	bool SetText(size_t textLength, const wchar_t* text);
 private:
 	HWND m_hWnd = nullptr;
 };

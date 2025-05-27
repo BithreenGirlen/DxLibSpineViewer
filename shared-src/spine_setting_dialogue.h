@@ -37,10 +37,11 @@ private:
 	enum Constants { kFontSize = 16 };
 
 	HFONT m_hFont = nullptr;
-	HWND m_hAtlasStatic = nullptr;
-	HWND m_hAtlasEdit = nullptr;
-	HWND m_hSkelStatic = nullptr;
-	HWND m_hSkelEdit = nullptr;
+
+	CStatic m_atlasStatic;
+	CEdit m_atlasEdit;
+	CStatic m_skelStatic;
+	CEdit m_skelEdit;
 
 	enum class ESkeletonFormat
 	{
@@ -49,20 +50,16 @@ private:
 		Text,
 	};
 
-	HWND m_BinarySkelStatic = nullptr;
-	CComboBox m_BinarySkelComboBox;
+	CStatic m_binarySkelStatic;
+	CComboBox m_binarySkelComboBox;
 
 	std::wstring m_wstrAtlasExtension = L".atlas";
 	std::wstring m_wstrSkelExtension = L".skel";
 	ESkeletonFormat m_skeletonFormat = ESkeletonFormat::Automatic;
 
-	void GetClientAreaSize(long* width, long* height);
 	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
 
 	void OnSkeletonFormatSelect();
-
-	std::wstring GetEditBoxText(HWND hWnd);
-	bool SetEditBoxText(HWND hWnd, const std::wstring& wstr);
 
 	void GetInputs();
 	bool IsLikelyBinary(const std::wstring& wstrFileName) const;

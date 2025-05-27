@@ -170,15 +170,15 @@ LRESULT CSpineSettingDialogue::OnCreate(HWND hWnd)
 	::ShowWindow(hWnd, SW_NORMAL);
 	::EnableWindow(::GetWindow(m_hWnd, GW_OWNER), FALSE);
 
-	m_hAtlasStatic = ::CreateWindowEx(0, WC_STATIC, L"Atlas", WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, m_hWnd, nullptr, m_hInstance, nullptr);
-	m_hAtlasEdit = ::CreateWindowEx(0, WC_EDIT, m_wstrAtlasExtension.c_str(), WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+	m_atlasStatic.Create(L"Atlas", m_hWnd);
+	m_atlasEdit.Create(m_wstrAtlasExtension.c_str(), m_hWnd);
 
-	m_hSkelStatic = ::CreateWindowEx(0, WC_STATIC, L"Skeleton", WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, m_hWnd, nullptr, m_hInstance, nullptr);
-	m_hSkelEdit = ::CreateWindowEx(0, WC_EDIT, m_wstrSkelExtension.c_str(), WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL, 0, 0, 0, 0, m_hWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
-	
-	m_BinarySkelStatic = ::CreateWindowEx(0, WC_STATIC, L"Format: ", WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, m_hWnd, nullptr, m_hInstance, nullptr);
-	m_BinarySkelComboBox.Create(m_hWnd);
-	m_BinarySkelComboBox.Setup({ L"Auto", L"Binary", L"Text" });
+	m_skelStatic.Create(L"Skeleton", m_hWnd);
+	m_skelEdit.Create(m_wstrSkelExtension.c_str(), m_hWnd);
+
+	m_binarySkelStatic.Create(L"Format: ", m_hWnd);
+	m_binarySkelComboBox.Create(m_hWnd);
+	m_binarySkelComboBox.Setup({ L"Auto", L"Binary", L"Text" });
 
 	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
 
@@ -188,6 +188,7 @@ LRESULT CSpineSettingDialogue::OnCreate(HWND hWnd)
 LRESULT CSpineSettingDialogue::OnDestroy()
 {
 	::PostQuitMessage(0);
+
 	return 0;
 }
 /*WM_CLOSE*/
@@ -217,49 +218,39 @@ LRESULT CSpineSettingDialogue::OnPaint()
 /*WM_SIZE*/
 LRESULT CSpineSettingDialogue::OnSize()
 {
-	long clientWidth, clientHeight;
-	GetClientAreaSize(&clientWidth, &clientHeight);
-	long x_space = clientWidth / 12;
-	long y_space = clientHeight / 48;
+	RECT rect;
+	::GetClientRect(m_hWnd, &rect);
 
-	long lFontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForWindow(m_hWnd) / 96.f);
+	long clientWidth = rect.right - rect.left;
+	long clientHeight = rect.bottom - rect.top;
 
-	long x = x_space;
-	long y = y_space * 2;
+	long spaceX = clientWidth / 12;
+	long spaceY = clientHeight / 48;
+
+	long fontHeight = static_cast<long>(Constants::kFontSize * ::GetDpiForWindow(m_hWnd) / 96.f);
+
+	long x = spaceX;
+	long y = spaceY * 2;
 	long w = clientWidth * 3 / 4;
-	long h = lFontHeight + y_space;
-	if (m_hAtlasStatic != nullptr)
-	{
-		::MoveWindow(m_hAtlasStatic, x, y, w, h, TRUE);
-	}
+	long h = fontHeight + spaceY;
+	::MoveWindow(m_atlasStatic.GetHwnd(), x, y, w, h, TRUE);
+
 	y += h;
-	if (m_hAtlasEdit != nullptr)
-	{
-		::MoveWindow(m_hAtlasEdit, x, y, w, h, TRUE);
-	}
-	y += h + y_space * 4;
-	if (m_hSkelStatic != nullptr)
-	{
-		::MoveWindow(m_hSkelStatic, x, y, w, h, TRUE);
-	}
+	::MoveWindow(m_atlasEdit.GetHwnd(), x, y, w, h, TRUE);
+
+	y += h + spaceY * 4;
+	::MoveWindow(m_skelStatic.GetHwnd(), x, y, w, h, TRUE);
+
 	y += h;
-	if (m_hSkelEdit != nullptr)
-	{
-		::MoveWindow(m_hSkelEdit, x, y, w, h, TRUE);
-	}
+	::MoveWindow(m_skelEdit.GetHwnd(), x, y, w, h, TRUE);
 
 	y += h;
 	w = clientWidth * 1/ 3;
-	if (m_BinarySkelStatic != nullptr)
-	{
-		::MoveWindow(m_BinarySkelStatic, x, y + y_space, w, h, TRUE);
-	}
+	::MoveWindow(m_binarySkelStatic.GetHwnd(), x, y + spaceY, w, h, TRUE);
+
 	x += w;
-	w = clientWidth - x - x_space;
-	if (m_BinarySkelComboBox.GetHwnd() != nullptr)
-	{
-		::MoveWindow(m_BinarySkelComboBox.GetHwnd(), x, y, w, h, TRUE);
-	}
+	w = clientWidth - x - spaceX;
+	::MoveWindow(m_binarySkelComboBox.GetHwnd(), x, y, w, h, TRUE);
 
 	return 0;
 }
@@ -280,7 +271,7 @@ LRESULT CSpineSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 		if (usCode == CBN_SELCHANGE)
 		{
 			/*Notification code*/
-			if (reinterpret_cast<HWND>(lParam) == m_BinarySkelComboBox.GetHwnd())
+			if (reinterpret_cast<HWND>(lParam) == m_binarySkelComboBox.GetHwnd())
 			{
 				OnSkeletonFormatSelect();
 			}
@@ -288,14 +279,6 @@ LRESULT CSpineSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
-}
-/*描画領域の大きさ取得*/
-void CSpineSettingDialogue::GetClientAreaSize(long* width, long* height)
-{
-	RECT rect;
-	::GetClientRect(m_hWnd, &rect);
-	*width = rect.right - rect.left;
-	*height = rect.bottom - rect.top;
 }
 /*EnumChildWindows CALLBACK*/
 BOOL CSpineSettingDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
@@ -307,42 +290,21 @@ BOOL CSpineSettingDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 
 void CSpineSettingDialogue::OnSkeletonFormatSelect()
 {
-	int iIndex = m_BinarySkelComboBox.GetSelectedItemIndex();
+	int iIndex = m_binarySkelComboBox.GetSelectedItemIndex();
 	if (iIndex != -1)
 	{
 		m_skeletonFormat = static_cast<ESkeletonFormat>(iIndex);
 	}
 }
-/*入力欄文字列取得*/
-std::wstring CSpineSettingDialogue::GetEditBoxText(HWND hWnd)
-{
-	int iLen = ::GetWindowTextLength(hWnd); // 終端を含まない
-	if (iLen > 0)
-	{
-		std::vector<wchar_t> vBuffer(iLen + 1LL, L'\0');
-		LRESULT lResult = ::SendMessage(hWnd, WM_GETTEXT, static_cast<WPARAM>(vBuffer.size()), reinterpret_cast<LPARAM>(vBuffer.data()));
-		return vBuffer.data();
-	}
-
-	return std::wstring();
-}
-/*入力欄文字列設定*/
-bool CSpineSettingDialogue::SetEditBoxText(HWND hWnd, const std::wstring& wstr)
-{
-	LRESULT lResult = ::SendMessage(hWnd, WM_SETTEXT, wstr.size(), reinterpret_cast<LPARAM>(wstr.data()));
-	return lResult == TRUE;
-}
 /*入力値取得*/
 void CSpineSettingDialogue::GetInputs()
 {
-	std::wstring wstrTemp;
-	wstrTemp = GetEditBoxText(m_hAtlasEdit);
+	std::wstring wstrTemp = m_atlasEdit.GetText();
 	if (!wstrTemp.empty())
 	{
 		m_wstrAtlasExtension = wstrTemp;
 	}
-	wstrTemp.clear();
-	wstrTemp = GetEditBoxText(m_hSkelEdit);
+	wstrTemp = m_skelEdit.GetText();
 	if (!wstrTemp.empty())
 	{
 		m_wstrSkelExtension = wstrTemp;
@@ -351,7 +313,7 @@ void CSpineSettingDialogue::GetInputs()
 
 bool CSpineSettingDialogue::IsLikelyBinary(const std::wstring& wstrFileName) const
 {
-	const wchar_t* wszBinaryCandidates[] =
+	const wchar_t* binaryCandidates[] =
 	{
 		L".skel", L".bin", L".bytes"
 	};
@@ -359,9 +321,9 @@ bool CSpineSettingDialogue::IsLikelyBinary(const std::wstring& wstrFileName) con
 	size_t nPos = wstrFileName.rfind(L"\\/");
 	nPos = nPos == std::wstring::npos ? 0 : nPos + 1;
 
-	for (size_t i = 0; i < sizeof(wszBinaryCandidates) / sizeof(wszBinaryCandidates[0]); ++i)
+	for (size_t i = 0; i < sizeof(binaryCandidates) / sizeof(binaryCandidates[0]); ++i)
 	{
-		if (wcsstr(&wstrFileName[nPos], wszBinaryCandidates[i]) != nullptr)
+		if (wcsstr(&wstrFileName[nPos], binaryCandidates[i]) != nullptr)
 		{
 			return true;
 		}
