@@ -89,13 +89,11 @@ bool win_image::LoadImageToMemory(const wchar_t* filePath, SImageFrame* pImageFr
 	hr = pWicBitmap->Lock(&wicRect, WICBitmapLockRead, &pWicBitmapLock);
 	if (FAILED(hr))return false;
 
-	UINT uiStride;
-	hr = pWicBitmapLock->GetStride(&uiStride);
+	hr = pWicBitmapLock->GetStride(&s->uiStride);
 	if (FAILED(hr))return false;
 
-	s->iStride = static_cast<INT>(uiStride);
-	s->pixels.resize(static_cast<size_t>(s->iStride * s->uiHeight));
-	hr = pWicBitmap->CopyPixels(nullptr, uiStride, static_cast<UINT>(s->pixels.size()), s->pixels.data());
+	s->pixels.resize(static_cast<size_t>(s->uiStride * s->uiHeight));
+	hr = pWicBitmap->CopyPixels(nullptr, s->uiStride, static_cast<UINT>(s->pixels.size()), s->pixels.data());
 	if (FAILED(hr))return false;
 
 	return true;
@@ -359,10 +357,9 @@ namespace win_image
 		return m_impl->HasBeenInitialised();
 	}
 
-	bool CWicGifEncoder::CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delay)
+	bool CWicGifEncoder::CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delayInSeconds)
 	{
-		/* 10ms単位 */
-		unsigned short delayInHundredths = static_cast<unsigned short>(delay * 100.f);
+		unsigned short delayInHundredths = static_cast<unsigned short>(delayInSeconds * 100.f);
 
 		return m_impl->CommitFrame(width, height, stride, pixels, hasAlpha, delayInHundredths == 0 ? 1 : delayInHundredths);
 	}

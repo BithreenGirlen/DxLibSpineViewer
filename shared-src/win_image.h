@@ -7,7 +7,7 @@ struct SImageFrame
 {
 	unsigned int uiWidth = 0;
 	unsigned int uiHeight = 0;
-	int iStride = 0;
+	unsigned int uiStride = 0;
 	std::vector<unsigned char> pixels;
 };
 
@@ -31,9 +31,7 @@ namespace win_image
 		bool Initialise(const wchar_t* filePath);
 		bool HasBeenInitialised() const;
 
-		/// @brief フレーム書き込み。画素配列はRGBA32を想定。
-		/// @param delay 前フレームとの間隔(秒単位)
-		bool CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delay);
+		bool CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delayInSeconds);
 
 		bool Finalise();
 	private:
