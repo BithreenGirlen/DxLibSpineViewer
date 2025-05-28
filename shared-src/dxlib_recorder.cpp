@@ -14,7 +14,53 @@
 #include <DxLib.h>
 
 using DxLibImageHandle = DxLibHandle<&DxLib::DeleteGraph>;
-using DxLibSoftImageHandle = DxLibHandle<&DxLib::DeleteSoftImage>;
+
+/// @brief Reads pixels from GPU resource
+class CDxLibMap
+{
+public:
+	CDxLibMap(int iTextureHandle)
+		:m_imageHandle(iTextureHandle)
+	{
+		ReadPixels();
+	}
+	~CDxLibMap()
+	{
+		Unlock();
+	}
+
+	bool isRead() const { return m_isLocked; }
+
+	int width = 0;
+	int height = 0;
+
+	int stride = 0;
+	unsigned char* pPixels = nullptr;
+	DxLib::COLORDATA* pFormat = nullptr;
+private:
+	int m_imageHandle = -1;
+	bool m_isLocked = false;
+
+	bool ReadPixels()
+	{
+		int iRet = DxLib::GetGraphSize(m_imageHandle, &width, &height);
+		if (iRet == -1)return false;
+
+		void* pData = nullptr;
+		iRet = DxLib::GraphLock(m_imageHandle, &stride, &pData, &pFormat);
+		m_isLocked = iRet != -1;
+		pPixels = static_cast<unsigned char*>(pData);
+
+		return m_isLocked;
+	}
+	void Unlock() const
+	{
+		if (m_imageHandle != -1 && m_isLocked)
+		{
+			DxLib::GraphUnLock(m_imageHandle);
+		}
+	}
+};
 
 
 class CDxLibRecorder::Impl
@@ -22,159 +68,153 @@ class CDxLibRecorder::Impl
 public:
 	Impl()
 	{
-		m_bAmd = cpu::IsAmd();
+		m_isAmdCpu = cpu::IsAmd();
 	}
 	~Impl()
 	{
 		Clear();
 	}
 
-	bool Start(bool bToBeVideo)
-	{
-		Clear();
-		m_bToBeVideo = bToBeVideo;
+	bool Start(bool isToBeVideo);
+	bool IsUnderRecording()const { return m_isUnderRecording; }
 
-		return true;
-	}
+	bool Capture(const wchar_t* filePath);
 
-	bool Capture(const wchar_t* pwzFilePath)
-	{
-		int iGraphWidth = 0;
-		int iGraphHeight = 0;
-		DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
-
-		/*
-		* Truncate video dimension to be multiple of 4 to prevent AMD CPU from hanging on final output
-		* in spite of successful return values of mediatype setup and sample delivering.
-		*/
-		if (m_bAmd && m_bToBeVideo)
-		{
-			iGraphWidth &= 0xfffffffc;
-			iGraphHeight &= 0xfffffffc;
-		}
-
-		DxLibImageHandle dxLibGraphHandle(DxLib::MakeGraph(iGraphWidth, iGraphHeight));
-		if (dxLibGraphHandle.Get() == -1)return false;
-
-		int iRet = DxLib::GetDrawScreenGraph(0, 0, iGraphWidth, iGraphHeight, dxLibGraphHandle.Get());
-		if (iRet == -1)return false;
-
-		m_images.push_back(std::move(dxLibGraphHandle));
-		if (pwzFilePath != nullptr)m_imageFilePaths.push_back(pwzFilePath);
-
-		return true;
-	}
-
-	bool End(EOutputType eOutputType, const wchar_t* pwzFilePath)
-	{
-		if (pwzFilePath == nullptr)
-		{
-			Clear();
-			return false;
-		}
-
-		if (eOutputType == EOutputType::kPngs)
-		{
-			for (size_t i = 0; i < m_images.size() && i < m_imageFilePaths.size(); ++i)
-			{
-				auto& image = m_images[i];
-
-				SImageFrame s{};
-				GetTexturePixels(image.Get(), &s);
-				image.Reset();
-				if (!s.pixels.empty())
-				{
-					std::wstring wstrFilePath = pwzFilePath + m_imageFilePaths[i] + L".png";
-					win_image::SaveImageAsPng(wstrFilePath.c_str(), &s);
-				}
-			}
-		}
-		else if (eOutputType == EOutputType::kGif)
-		{
-			win_image::CWicGifEncoder sWicGifEncoder;
-			bool bRet = sWicGifEncoder.Initialise(pwzFilePath);
-			if (bRet)
-			{
-				for (auto& image : m_images)
-				{
-					SImageFrame s{};
-					GetTexturePixels(image.Get(), &s);
-					image.Reset();
-					if(!s.pixels.empty())sWicGifEncoder.CommitFrame(&s);
-				}
-				sWicGifEncoder.End();
-			}
-		}
-		else if (eOutputType == EOutputType::kVideo)
-		{
-			CMfVideoEncoder sMfVideoEncoder;
-			int iVideoWidth = 0;
-			int iVideoHeight = 0;
-			if (!m_images.empty())
-			{
-				DxLib::GetGraphSize(m_images[0].Get(), &iVideoWidth, &iVideoHeight);
-			}
-
-			bool bRet = sMfVideoEncoder.Start(pwzFilePath, iVideoWidth, iVideoHeight, 60);
-			if (bRet)
-			{
-				for (auto& image : m_images)
-				{
-					SImageFrame s{};
-					GetTexturePixels(image.Get(), &s);
-					image.Reset();
-					if (!s.pixels.empty())sMfVideoEncoder.AddCpuFrame(s.pixels.data(), static_cast<unsigned long>(s.pixels.size()), true);
-				}
-
-				sMfVideoEncoder.End();
-			}
-		}
-
-		Clear();
-
-		return true;
-	}
+	bool End(EOutputType eOutputType, const wchar_t* pwzFilePath);
 private:
 	std::vector<DxLibImageHandle> m_images;
 	std::vector<std::wstring> m_imageFilePaths;
 
-	bool m_bAmd = false;
-	bool m_bToBeVideo = false;
+	bool m_isAmdCpu = false;
+	bool m_isToBeVideo = false;
+	bool m_isUnderRecording = false;
 
-	void Clear()
-	{
-		m_images.clear();
-		m_imageFilePaths.clear();
-
-		m_bToBeVideo = false;
-	}
-
-	void GetTexturePixels(int iImageHandle, SImageFrame* s)
-	{
-		if (s == nullptr)return;
-
-		int iGraphWidth = 0;
-		int iGraphsHeight = 0;
-		int iRet = DxLib::GetGraphSize(iImageHandle, &iGraphWidth, &iGraphsHeight);
-		if (iRet == -1)return;
-
-		int iPitch = 0;
-		void* pPixels = nullptr;
-		DxLib::COLORDATA* pFormat = nullptr;
-		iRet = DxLib::GraphLock(iImageHandle, &iPitch, &pPixels, &pFormat);
-		if (iRet == -1)return;
-
-		s->iStride = iPitch;
-		s->uiWidth = iGraphWidth;
-		s->uiHeight = iGraphsHeight;
-
-		size_t nSize = static_cast<size_t>(iPitch * iGraphsHeight);
-		s->pixels.resize(nSize);
-		memcpy(&s->pixels[0], pPixels, nSize);
-
-		DxLib::GraphUnLock(iImageHandle);
-	}
+	void Clear();
 };
+
+bool CDxLibRecorder::Impl::Start(bool isToBeVideo)
+{
+	Clear();
+
+	m_isToBeVideo = isToBeVideo;
+	m_isUnderRecording = true;
+
+	return true;
+}
+
+bool CDxLibRecorder::Impl::Capture(const wchar_t* filePath)
+{
+	if (!IsUnderRecording())
+	{
+		return false;
+	}
+
+	int iGraphWidth = 0;
+	int iGraphHeight = 0;
+	DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
+
+	/*
+	* Truncate video dimension to be multiple of 4 to prevent AMD CPU from hanging on final output
+	* in spite of successful return values of mediatype setup and sample delivering.
+	*/
+	if (m_isAmdCpu && m_isToBeVideo)
+	{
+		iGraphWidth &= 0xfffffffc;
+		iGraphHeight &= 0xfffffffc;
+	}
+
+	DxLibImageHandle dxLibGraphHandle(DxLib::MakeGraph(iGraphWidth, iGraphHeight));
+	if (dxLibGraphHandle.Get() == -1)return false;
+
+	int iRet = DxLib::GetDrawScreenGraph(0, 0, iGraphWidth, iGraphHeight, dxLibGraphHandle.Get());
+	if (iRet == -1)return false;
+
+	m_images.push_back(std::move(dxLibGraphHandle));
+	if (filePath != nullptr)m_imageFilePaths.push_back(filePath);
+
+	return true;
+}
+
+bool CDxLibRecorder::Impl::End(EOutputType eOutputType, const wchar_t* filePath)
+{
+	if (filePath == nullptr)
+	{
+		Clear();
+		return false;
+	}
+
+	if (eOutputType == EOutputType::kPngs)
+	{
+		for (size_t i = 0; i < m_images.size() && i < m_imageFilePaths.size(); ++i)
+		{
+			auto& image = m_images[i];
+
+			CDxLibMap s(image.Get());
+			if (s.isRead())
+			{
+				std::wstring wstrFilePath = filePath + m_imageFilePaths[i] + L".png";
+				win_image::SaveImageAsPng(wstrFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
+			}
+			image.Reset();
+		}
+	}
+	else if (eOutputType == EOutputType::kGif)
+	{
+		win_image::CWicGifEncoder sWicGifEncoder;
+		bool bRet = sWicGifEncoder.Initialise(filePath);
+		if (bRet)
+		{
+			for (auto& image : m_images)
+			{
+				CDxLibMap s(image.Get());
+				if (s.isRead())
+				{
+					sWicGifEncoder.CommitFrame(s.width, s.height, s.stride, s.pPixels, true,  1/ 15.f);
+				}
+				image.Reset();
+			}
+			sWicGifEncoder.Finalise();
+		}
+	}
+	else if (eOutputType == EOutputType::kVideo)
+	{
+		CMfVideoEncoder sMfVideoEncoder;
+		int iVideoWidth = 0;
+		int iVideoHeight = 0;
+		if (!m_images.empty())
+		{
+			DxLib::GetGraphSize(m_images[0].Get(), &iVideoWidth, &iVideoHeight);
+		}
+
+		bool bRet = sMfVideoEncoder.Start(filePath, iVideoWidth, iVideoHeight, 60);
+		if (bRet)
+		{
+			for (auto& image : m_images)
+			{
+				CDxLibMap s(image.Get());
+				sMfVideoEncoder.AddCpuFrame(s.pPixels, static_cast<unsigned long>(s.stride * s.height), true);
+				image.Reset();
+			}
+
+			sMfVideoEncoder.End();
+		}
+	}
+
+	Clear();
+
+	return true;
+}
+
+void CDxLibRecorder::Impl::Clear()
+{
+	m_images.clear();
+	m_imageFilePaths.clear();
+
+	m_isToBeVideo = false;
+	m_isUnderRecording = false;
+}
+
+
 
 CDxLibRecorder::CDxLibRecorder()
 {

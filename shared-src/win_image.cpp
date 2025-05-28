@@ -6,99 +6,7 @@
 
 #pragma comment (lib,"Windowscodecs.lib")
 
-namespace win_image
-{
-	enum class EFrameMetadata
-	{
-		None,
-		Gif
-	};
-
-	static bool CommitImageFrame(IWICImagingFactory* pWicImagingFactory, IWICBitmapEncoder* pWicBitmapEncoder, SImageFrame* s, bool bHasAlpha = true, EFrameMetadata frameMetaData = EFrameMetadata::None)
-	{
-		if (pWicImagingFactory == nullptr || pWicBitmapEncoder == nullptr || s == nullptr)return false;
-
-		CComPtr<IWICBitmapFrameEncode> pWicBitmapFrameEncode;
-		CComPtr<IPropertyBag2> pPropertyBag;
-		HRESULT hr = pWicBitmapEncoder->CreateNewFrame(&pWicBitmapFrameEncode, &pPropertyBag);
-		if (FAILED(hr))return false;
-
-		hr = pWicBitmapFrameEncode->Initialize(pPropertyBag);
-		if (FAILED(hr))return false;
-
-		hr = pWicBitmapFrameEncode->SetSize(s->uiWidth, s->uiHeight);
-		if (FAILED(hr))return false;
-
-		CComPtr<IWICBitmap> pWicBitmap;
-		hr = pWicImagingFactory->CreateBitmapFromMemory
-		(
-			s->uiWidth,
-			s->uiHeight,
-			bHasAlpha ? GUID_WICPixelFormat32bppRGBA : GUID_WICPixelFormat32bppRGB,
-			s->iStride,
-			static_cast<UINT>(s->pixels.size()),
-			s->pixels.data(),
-			&pWicBitmap
-		);
-		if (FAILED(hr))return false;
-
-		if (frameMetaData == EFrameMetadata::Gif)
-		{
-			CComPtr<IWICMetadataQueryWriter> pWicMetadataQueryWriter;
-			hr = pWicBitmapFrameEncode->GetMetadataQueryWriter(&pWicMetadataQueryWriter);
-			if (FAILED(hr))return false;
-
-			const auto SetDelayMetadata = [&pWicMetadataQueryWriter]()
-				-> bool
-				{
-					PROPVARIANT sPropVariant{};
-					sPropVariant.vt = VT_UI2;
-					sPropVariant.uiVal = 8;
-					HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/Delay", &sPropVariant);
-					return SUCCEEDED(hr);
-				};
-
-			const auto SetDisposalMetaData = [&pWicMetadataQueryWriter]()
-				-> bool
-				{
-					PROPVARIANT sPropVariant{};
-					sPropVariant.vt = VT_UI1;
-					sPropVariant.bVal = 2;
-					HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/Disposal", &sPropVariant);
-					return SUCCEEDED(hr);
-				};
-			const auto SetTransparencyFlag = [&pWicMetadataQueryWriter]()
-				-> bool
-				{
-					PROPVARIANT sPropVariant{};
-					sPropVariant.vt = VT_BOOL;
-					sPropVariant.boolVal = 1;
-					HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/TransparencyFlag", &sPropVariant);
-					return SUCCEEDED(hr);
-				};
-			const auto SetTransparentColorIndex = [&pWicMetadataQueryWriter]()
-				-> bool
-				{
-					PROPVARIANT sPropVariant{};
-					sPropVariant.vt = VT_UI1;
-					sPropVariant.bVal = 255;
-					HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/TransparentColorIndex", &sPropVariant);
-					return SUCCEEDED(hr);
-				};
-
-			SetDisposalMetaData() && SetTransparencyFlag() && SetDelayMetadata() && SetTransparentColorIndex();
-		}
-
-		hr = pWicBitmapFrameEncode->WriteSource(pWicBitmap, nullptr);
-		if (FAILED(hr))return false;
-
-		hr = pWicBitmapFrameEncode->Commit();
-
-		return SUCCEEDED(hr);
-	}
-}
-
-bool win_image::LoadImageToMemory(const wchar_t* pwzFilePath, SImageFrame* pImageFrame, float fScale, ERotation rotation)
+bool win_image::LoadImageToMemory(const wchar_t* filePath, SImageFrame* pImageFrame, float fScale, ERotation rotation)
 {
 	if (pImageFrame == nullptr)return false;
 
@@ -109,7 +17,7 @@ bool win_image::LoadImageToMemory(const wchar_t* pwzFilePath, SImageFrame* pImag
 	if (FAILED(hr))return false;
 
 	CComPtr<IWICBitmapDecoder> pWicBitmapDecoder;
-	hr = pWicImageFactory->CreateDecoderFromFilename(pwzFilePath, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pWicBitmapDecoder);
+	hr = pWicImageFactory->CreateDecoderFromFilename(filePath, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pWicBitmapDecoder);
 	if (FAILED(hr))return false;
 
 	CComPtr<IWICBitmapFrameDecode> pWicFrameDecode;
@@ -193,107 +101,116 @@ bool win_image::LoadImageToMemory(const wchar_t* pwzFilePath, SImageFrame* pImag
 	return true;
 }
 
-bool win_image::SkimImageSize(const wchar_t* pwzFilePath, unsigned int* uiWidth, unsigned int* uiHeight)
+bool win_image::SkimImageSize(const wchar_t* filePath, unsigned int* width, unsigned int* height)
 {
-	if (uiWidth == nullptr || uiHeight == nullptr)return false;
+	if (width == nullptr || height == nullptr)return false;
 
 	CComPtr<IWICImagingFactory> pWicImageFactory;
 	HRESULT hr = ::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pWicImageFactory));
 	if (FAILED(hr))return false;
 
 	CComPtr<IWICBitmapDecoder> pWicBitmapDecoder;
-	hr = pWicImageFactory->CreateDecoderFromFilename(pwzFilePath, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pWicBitmapDecoder);
+	hr = pWicImageFactory->CreateDecoderFromFilename(filePath, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pWicBitmapDecoder);
 	if (FAILED(hr))return false;
 
 	CComPtr<IWICBitmapFrameDecode> pWicFrameDecode;
 	hr = pWicBitmapDecoder->GetFrame(0, &pWicFrameDecode);
 	if (FAILED(hr))return false;
 
-	hr = pWicFrameDecode->GetSize(uiWidth, uiHeight);
+	hr = pWicFrameDecode->GetSize(width, height);
 	return SUCCEEDED(hr);
 }
 
-bool win_image::SaveImageAsPng(const wchar_t* pwzFilePath, SImageFrame* pImageFrame)
+bool win_image::SaveImageAsPng(const wchar_t* filePath, unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha)
 {
-	if (pImageFrame == nullptr)return false;
+	if (pixels == nullptr)return false;
 
-	SImageFrame* s = pImageFrame;
-
-	CComPtr<IWICImagingFactory> pWicImageFactory;
-	HRESULT hr = ::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pWicImageFactory));
+	CComPtr<IWICImagingFactory> pWicImagingFactory;
+	HRESULT hr = ::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pWicImagingFactory));
 	if (FAILED(hr))return false;
 
 	CComPtr<IWICBitmapEncoder> pWicBitmapEncoder;
-	hr = pWicImageFactory->CreateEncoder(GUID_ContainerFormatPng, nullptr, &pWicBitmapEncoder);
+	hr = pWicImagingFactory->CreateEncoder(GUID_ContainerFormatPng, nullptr, &pWicBitmapEncoder);
 	if (FAILED(hr))return false;
 
 	CComPtr<IWICStream> pWicStream;
-	hr = pWicImageFactory->CreateStream(&pWicStream);
+	hr = pWicImagingFactory->CreateStream(&pWicStream);
 	if (FAILED(hr))return false;
 
-	hr = pWicStream->InitializeFromFilename(pwzFilePath, GENERIC_WRITE);
+	hr = pWicStream->InitializeFromFilename(filePath, GENERIC_WRITE);
 	if (FAILED(hr))return false;
 
 	hr = pWicBitmapEncoder->Initialize(pWicStream, WICBitmapEncoderCacheOption::WICBitmapEncoderNoCache);
 	if (FAILED(hr))return false;
 
-	bool bRet = CommitImageFrame(pWicImageFactory, pWicBitmapEncoder, pImageFrame);
-	if (!bRet)return false;
+	CComPtr<IWICBitmapFrameEncode> pWicBitmapFrameEncode;
+	CComPtr<IPropertyBag2> pPropertyBag;
+	hr = pWicBitmapEncoder->CreateNewFrame(&pWicBitmapFrameEncode, &pPropertyBag);
+	if (FAILED(hr))return false;
+
+	hr = pWicBitmapFrameEncode->Initialize(pPropertyBag);
+	if (FAILED(hr))return false;
+
+	hr = pWicBitmapFrameEncode->SetSize(width, height);
+	if (FAILED(hr))return false;
+
+	CComPtr<IWICBitmap> pWicBitmap;
+	hr = pWicImagingFactory->CreateBitmapFromMemory
+	(
+		width,
+		height,
+		hasAlpha ? GUID_WICPixelFormat32bppRGBA : GUID_WICPixelFormat32bppRGB,
+		stride,
+		stride * height,
+		pixels,
+		&pWicBitmap
+	);
+	if (FAILED(hr))return false;
+
+	hr = pWicBitmapFrameEncode->WriteSource(pWicBitmap, nullptr);
+	if (FAILED(hr))return false;
+
+	hr = pWicBitmapFrameEncode->Commit();
+	if (FAILED(hr))return false;
 
 	hr = pWicBitmapEncoder->Commit();
 
 	return SUCCEEDED(hr);
 }
 
+
 namespace win_image
 {
 	class CWicGifEncoder::Impl
 	{
 	public:
-		bool Initialise(const wchar_t* pwzFilePath);
-		bool CommitFrame(SImageFrame* pImageFrame);
-		bool End();
+		bool Initialise(const wchar_t* filePath);
+		bool HasBeenInitialised() const { return m_hasBeenInitialised; }
+
+		bool CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, unsigned short delay);
+
+		bool Finalise();
 	private:
-		CComPtr<IWICImagingFactory> m_pWicImageFactory;
+		CComPtr<IWICImagingFactory> m_pWicImagingFactory;
 		CComPtr<IWICBitmapEncoder> m_pWicBitmapEncoder;
 		CComPtr<IWICStream> m_pWicStream;
+
+		bool m_hasBeenInitialised = false;
 	};
 
-	CWicGifEncoder::CWicGifEncoder()
-	{
-		m_impl = new CWicGifEncoder::Impl();
-	}
 
-	CWicGifEncoder::~CWicGifEncoder()
+	bool CWicGifEncoder::Impl::Initialise(const wchar_t* filePath)
 	{
-		delete m_impl;
-		m_impl = nullptr;
-	}
-	bool CWicGifEncoder::Initialise(const wchar_t* pwzFilePath)
-	{
-		return m_impl->Initialise(pwzFilePath);
-	}
-	bool CWicGifEncoder::CommitFrame(SImageFrame* pImageFrame)
-	{
-		return m_impl->CommitFrame(pImageFrame);
-	}
-	bool CWicGifEncoder::End()
-	{
-		return m_impl->End();
-	}
-
-	bool CWicGifEncoder::Impl::Initialise(const wchar_t* pwzFilePath)
-	{
-		HRESULT hr = ::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pWicImageFactory));
+		HRESULT hr = ::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pWicImagingFactory));
 		if (FAILED(hr))return false;
 
-		hr = m_pWicImageFactory->CreateEncoder(GUID_ContainerFormatGif, nullptr, &m_pWicBitmapEncoder);
+		hr = m_pWicImagingFactory->CreateEncoder(GUID_ContainerFormatGif, nullptr, &m_pWicBitmapEncoder);
 		if (FAILED(hr))return false;
 
-		hr = m_pWicImageFactory->CreateStream(&m_pWicStream);
+		hr = m_pWicImagingFactory->CreateStream(&m_pWicStream);
 		if (FAILED(hr))return false;
 
-		hr = m_pWicStream->InitializeFromFilename(pwzFilePath, GENERIC_WRITE);
+		hr = m_pWicStream->InitializeFromFilename(filePath, GENERIC_WRITE);
 		if (FAILED(hr))return false;
 
 		hr = m_pWicBitmapEncoder->Initialize(m_pWicStream, WICBitmapEncoderCacheOption::WICBitmapEncoderNoCache);
@@ -325,22 +242,133 @@ namespace win_image
 				HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/appext/data", &sPropVariant);
 				return SUCCEEDED(hr);
 			};
-		bool bRet = SetApplicationMetadata() && SetDataMetadata();
+		m_hasBeenInitialised = SetApplicationMetadata() && SetDataMetadata();
 
-		return bRet;
+		return m_hasBeenInitialised;
 	}
 
-	bool CWicGifEncoder::Impl::CommitFrame(SImageFrame* pImageFrame)
+	bool CWicGifEncoder::Impl::CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, unsigned short delay)
 	{
-		bool bRet = win_image::CommitImageFrame(m_pWicImageFactory, m_pWicBitmapEncoder, pImageFrame, true, win_image::EFrameMetadata::Gif);
-		return bRet;
-	}
+		CComPtr<IWICBitmapFrameEncode> pWicBitmapFrameEncode;
+		CComPtr<IPropertyBag2> pPropertyBag;
+		HRESULT hr = m_pWicBitmapEncoder->CreateNewFrame(&pWicBitmapFrameEncode, &pPropertyBag);
+		if (FAILED(hr))return false;
 
-	bool CWicGifEncoder::Impl::End()
-	{
-		HRESULT hr = m_pWicBitmapEncoder->Commit();
+		hr = pWicBitmapFrameEncode->Initialize(pPropertyBag);
+		if (FAILED(hr))return false;
+
+		hr = pWicBitmapFrameEncode->SetSize(width, height);
+		if (FAILED(hr))return false;
+
+		CComPtr<IWICBitmap> pWicBitmap;
+		hr = m_pWicImagingFactory->CreateBitmapFromMemory
+		(
+			width,
+			height,
+			hasAlpha ? GUID_WICPixelFormat32bppRGBA : GUID_WICPixelFormat32bppRGB,
+			stride,
+			stride * height,
+			pixels,
+			&pWicBitmap
+		);
+		if (FAILED(hr))return false;
+
+		CComPtr<IWICMetadataQueryWriter> pWicMetadataQueryWriter;
+		hr = pWicBitmapFrameEncode->GetMetadataQueryWriter(&pWicMetadataQueryWriter);
+		if (FAILED(hr))return false;
+
+		const auto SetDelayMetadata = [&pWicMetadataQueryWriter, &delay]()
+			-> bool
+			{
+				PROPVARIANT sPropVariant{};
+				sPropVariant.vt = VT_UI2;
+				sPropVariant.uiVal = delay;
+				HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/Delay", &sPropVariant);
+				return SUCCEEDED(hr);
+			};
+
+		const auto SetDisposalMetaData = [&pWicMetadataQueryWriter]()
+			-> bool
+			{
+				PROPVARIANT sPropVariant{};
+				sPropVariant.vt = VT_UI1;
+				sPropVariant.bVal = 2;
+				HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/Disposal", &sPropVariant);
+				return SUCCEEDED(hr);
+			};
+		const auto SetTransparencyFlag = [&pWicMetadataQueryWriter]()
+			-> bool
+			{
+				PROPVARIANT sPropVariant{};
+				sPropVariant.vt = VT_BOOL;
+				sPropVariant.boolVal = 1;
+				HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/TransparencyFlag", &sPropVariant);
+				return SUCCEEDED(hr);
+			};
+		const auto SetTransparentColorIndex = [&pWicMetadataQueryWriter]()
+			-> bool
+			{
+				PROPVARIANT sPropVariant{};
+				sPropVariant.vt = VT_UI1;
+				sPropVariant.bVal = 255;
+				HRESULT hr = pWicMetadataQueryWriter->SetMetadataByName(L"/grctlext/TransparentColorIndex", &sPropVariant);
+				return SUCCEEDED(hr);
+			};
+
+		SetDisposalMetaData() && SetTransparencyFlag() && SetDelayMetadata() && SetTransparentColorIndex();
+
+		hr = pWicBitmapFrameEncode->WriteSource(pWicBitmap, nullptr);
+		if (FAILED(hr))return false;
+
+		hr = pWicBitmapFrameEncode->Commit();
 
 		return SUCCEEDED(hr);
 	}
 
+	bool CWicGifEncoder::Impl::Finalise()
+	{
+		HRESULT hr = m_pWicBitmapEncoder->Commit();
+
+		if (SUCCEEDED(hr))
+		{
+			m_hasBeenInitialised = false;
+		}
+
+		return SUCCEEDED(hr);
+	}
+
+
+
+	CWicGifEncoder::CWicGifEncoder()
+	{
+		m_impl = new CWicGifEncoder::Impl();
+	}
+
+	CWicGifEncoder::~CWicGifEncoder()
+	{
+		delete m_impl;
+	}
+
+	bool CWicGifEncoder::Initialise(const wchar_t* filePath)
+	{
+		return m_impl->Initialise(filePath);
+	}
+
+	bool CWicGifEncoder::HasBeenInitialised() const
+	{
+		return m_impl->HasBeenInitialised();
+	}
+
+	bool CWicGifEncoder::CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delay)
+	{
+		/* 10ms単位 */
+		unsigned short delayInHundredths = static_cast<unsigned short>(delay * 100.f);
+
+		return m_impl->CommitFrame(width, height, stride, pixels, hasAlpha, delayInHundredths == 0 ? 1 : delayInHundredths);
+	}
+
+	bool CWicGifEncoder::Finalise()
+	{
+		return m_impl->Finalise();
+	}
 }

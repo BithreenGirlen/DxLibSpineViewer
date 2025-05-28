@@ -17,10 +17,10 @@ namespace win_image
 	{
 		None, Deg90, Deg180, Deg270
 	};
-	bool LoadImageToMemory(const wchar_t* pwzFilePath, SImageFrame* pImageFrame, float fScale = 1.f, ERotation rotation = ERotation::None);
-	bool SkimImageSize(const wchar_t* pwzFilePath, unsigned int* uiWidth, unsigned int* uiHeight);
+	bool LoadImageToMemory(const wchar_t* filePath, SImageFrame* pImageFrame, float fScale = 1.f, ERotation rotation = ERotation::None);
+	bool SkimImageSize(const wchar_t* filePath, unsigned int* width, unsigned int* height);
 
-	bool SaveImageAsPng(const wchar_t* pwzFilePath, SImageFrame* pImageFrame);
+	bool SaveImageAsPng(const wchar_t* filePath, unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha);
 
 	class CWicGifEncoder
 	{
@@ -28,9 +28,14 @@ namespace win_image
 		CWicGifEncoder();
 		~CWicGifEncoder();
 
-		bool Initialise(const wchar_t* pwzFilePath);
-		bool CommitFrame(SImageFrame* pImageFrame);
-		bool End();
+		bool Initialise(const wchar_t* filePath);
+		bool HasBeenInitialised() const;
+
+		/// @brief フレーム書き込み。画素配列はRGBA32を想定。
+		/// @param delay 前フレームとの間隔(秒単位)
+		bool CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delay);
+
+		bool Finalise();
 	private:
 		class Impl;
 		Impl* m_impl = nullptr;
