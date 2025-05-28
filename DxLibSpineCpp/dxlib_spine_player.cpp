@@ -98,7 +98,7 @@ bool CDxLibSpinePlayer::AddSpineFromFile(const char* szAtlasPath, const char* sz
 		std::rotate(m_drawables.rbegin(), m_drawables.rbegin() + 1, m_drawables.rend());
 	}
 
-	UpdateAnimation();
+	RestartAnimation();
 	ResetScale();
 
 	return true;
@@ -213,7 +213,7 @@ void CDxLibSpinePlayer::ShiftAnimation()
 	if (m_nAnimationIndex >= m_animationNames.size())m_nAnimationIndex = 0;
 
 	ClearAnimationTracks();
-	UpdateAnimation();
+	RestartAnimation();
 }
 /*装い移行*/
 void CDxLibSpinePlayer::ShiftSkin()
@@ -232,6 +232,30 @@ void CDxLibSpinePlayer::ShiftSkin()
 		{
 			pDrawable->skeleton->setSkin(skin);
 			pDrawable->skeleton->setSlotsToSetupPose();
+		}
+	}
+}
+
+void CDxLibSpinePlayer::SetAnimationByIndex(size_t nIndex)
+{
+	if (nIndex < m_animationNames.size())
+	{
+		m_nAnimationIndex = nIndex;
+		RestartAnimation();
+	}
+}
+/*動作適用*/
+void CDxLibSpinePlayer::RestartAnimation()
+{
+	if (m_nAnimationIndex >= m_animationNames.size())return;
+	const char* szAnimationName = m_animationNames[m_nAnimationIndex].c_str();
+
+	for (const auto& pDrawable : m_drawables)
+	{
+		spine::Animation* pAnimation = pDrawable->skeleton->getData()->findAnimation(szAnimationName);
+		if (pAnimation != nullptr)
+		{
+			pDrawable->animationState->setAnimation(0, pAnimation->getName(), true);
 		}
 	}
 }
@@ -568,7 +592,7 @@ bool CDxLibSpinePlayer::SetupDrawer()
 		}
 	}
 
-	UpdateAnimation();
+	RestartAnimation();
 
 	ResetScale();
 
@@ -684,21 +708,6 @@ void CDxLibSpinePlayer::UpdateTimeScale()
 	for (const auto& pDrawable : m_drawables)
 	{
 		pDrawable->timeScale = m_fTimeScale;
-	}
-}
-/*動作適用*/
-void CDxLibSpinePlayer::UpdateAnimation()
-{
-	if (m_nAnimationIndex >= m_animationNames.size())return;
-	const char* szAnimationName = m_animationNames[m_nAnimationIndex].c_str();
-
-	for (const auto& pDrawable : m_drawables)
-	{
-		spine::Animation* pAnimation = pDrawable->skeleton->getData()->findAnimation(szAnimationName);
-		if (pAnimation != nullptr)
-		{
-			pDrawable->animationState->setAnimation(0, pAnimation->getName(), true);
-		}
 	}
 }
 /*合成動作消去*/

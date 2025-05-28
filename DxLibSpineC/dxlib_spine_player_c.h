@@ -41,6 +41,9 @@ public:
 	void ShiftAnimation();
 	void ShiftSkin();
 
+	void SetAnimationByIndex(size_t nIndex);
+	void RestartAnimation();
+
 	void TogglePma();
 	void ToggleBlendModeAdoption();
 	void ToggleDrawOrder();
@@ -103,7 +106,6 @@ private:
 	void UpdatePosition();
 	void UpdateTimeScale();
 
-	void UpdateAnimation();
 	void ClearAnimationTracks();
 
 	void SetTransformMatrix() const;

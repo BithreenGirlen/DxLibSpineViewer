@@ -98,7 +98,7 @@ bool CDxLibSpinePlayerC::AddSpineFromFile(const char* szAtlasPath, const char* s
 		std::rotate(m_drawables.rbegin(), m_drawables.rbegin() + 1, m_drawables.rend());
 	}
 
-	UpdateAnimation();
+	RestartAnimation();
 	ResetScale();
 
 	return true;
@@ -213,7 +213,7 @@ void CDxLibSpinePlayerC::ShiftAnimation()
 	if (m_nAnimationIndex >= m_animationNames.size())m_nAnimationIndex = 0;
 
 	ClearAnimationTracks();
-	UpdateAnimation();
+	RestartAnimation();
 }
 /*装い移行*/
 void CDxLibSpinePlayerC::ShiftSkin()
@@ -232,6 +232,30 @@ void CDxLibSpinePlayerC::ShiftSkin()
 		{
 			spSkeleton_setSkin(pDrawable->skeleton, pSkin);
 			spSkeleton_setToSetupPose(pDrawable->skeleton);
+		}
+	}
+}
+
+void CDxLibSpinePlayerC::SetAnimationByIndex(size_t nIndex)
+{
+	if (nIndex < m_animationNames.size())
+	{
+		m_nAnimationIndex = nIndex;
+		RestartAnimation();
+	}
+}
+/*動作適用*/
+void CDxLibSpinePlayerC::RestartAnimation()
+{
+	if (m_nAnimationIndex >= m_animationNames.size())return;
+	const char* szAnimationName = m_animationNames[m_nAnimationIndex].c_str();
+
+	for (const auto& pDrawable : m_drawables)
+	{
+		spAnimation* pAnimation = spSkeletonData_findAnimation(pDrawable->skeleton->data, szAnimationName);
+		if (pAnimation != nullptr)
+		{
+			spAnimationState_setAnimationByName(pDrawable->animationState, 0, pAnimation->name, 1);
 		}
 	}
 }
@@ -292,7 +316,8 @@ void CDxLibSpinePlayerC::GetCurrentAnimationTime(float* fTrack, float* fLast, fl
 				{
 #ifdef SPINE_2_1
 					if (fTrack != nullptr)*fTrack = pTrackEntry->time;
-					if (fLast != nullptr)*fLast = pTrackEntry->lastTime;
+					/* spTrackEntry::lastTime is the same as pTrackEntry->time */
+					if (fLast != nullptr)*fLast = ::fmodf(pTrackEntry->time, pTrackEntry->endTime);
 					if (fStart != nullptr)*fStart = pTrackEntry->delay;
 					if (fEnd != nullptr)*fEnd = pTrackEntry->endTime;
 #else
@@ -610,7 +635,7 @@ bool CDxLibSpinePlayerC::SetupDrawer()
 		}
 	}
 
-	UpdateAnimation();
+	RestartAnimation();
 
 	ResetScale();
 
@@ -720,21 +745,6 @@ void CDxLibSpinePlayerC::UpdateTimeScale()
 	for (const auto& pDrawble : m_drawables)
 	{
 		pDrawble->timeScale = m_fTimeScale;
-	}
-}
-/*動作適用*/
-void CDxLibSpinePlayerC::UpdateAnimation()
-{
-	if (m_nAnimationIndex >= m_animationNames.size())return;
-	const char* szAnimationName = m_animationNames[m_nAnimationIndex].c_str();
-
-	for (const auto& pDrawable : m_drawables)
-	{
-		spAnimation* pAnimation = spSkeletonData_findAnimation(pDrawable->skeleton->data, szAnimationName);
-		if (pAnimation != nullptr)
-		{
-			spAnimationState_setAnimationByName(pDrawable->animationState, 0, pAnimation->name, 1);
-		}
 	}
 }
 /*合成動作消去*/
