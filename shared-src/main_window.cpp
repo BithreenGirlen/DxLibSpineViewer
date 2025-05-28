@@ -171,12 +171,12 @@ LRESULT CMainWindow::OnClose()
 /*WM_PAINT*/
 LRESULT CMainWindow::OnPaint()
 {
-	if (m_bPlayReady && m_recoderState != RecorderState::InitialisingVideoStream)
+	if (m_dxLibSpinePlayer.HasLoaded() && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::InitialisingVideoStream)
 	{
 		DxLib::ClearDrawScreen();
 
-		m_DxLibSpinePlayer.Update(m_fDelta);
-		m_DxLibSpinePlayer.Redraw();
+		m_dxLibSpinePlayer.Update(m_fDelta);
+		m_dxLibSpinePlayer.Redraw();
 
 		StepOnRecording();
 
@@ -215,13 +215,13 @@ LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
 		KeyUpOnNextFolder();
 		break;
 	case 'A':
-		m_DxLibSpinePlayer.TogglePma();
+		m_dxLibSpinePlayer.TogglePma();
 		break;
 	case 'B':
-		m_DxLibSpinePlayer.ToggleBlendModeAdoption();
+		m_dxLibSpinePlayer.ToggleBlendModeAdoption();
 		break;
 	case 'R':
-		m_DxLibSpinePlayer.ToggleDrawOrder();
+		m_dxLibSpinePlayer.ToggleDrawOrder();
 		break;
 	default:
 		break;
@@ -308,7 +308,7 @@ LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 		int iX = m_cursorPos.x - pt.x;
 		int iY = m_cursorPos.y - pt.y;
 
-		m_DxLibSpinePlayer.MoveViewPoint(iX, iY);
+		m_dxLibSpinePlayer.MoveViewPoint(iX, iY);
 
 		m_cursorPos = pt;
 		m_bLeftDragged = true;
@@ -324,26 +324,26 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 
 	if (usKey == MK_LBUTTON)
 	{
-		m_DxLibSpinePlayer.RescaleTime(iScroll > 0);
+		m_dxLibSpinePlayer.RescaleTime(iScroll > 0);
 
 		m_bLeftCombinated = true;
 	}
 	else if (usKey == MK_RBUTTON)
 	{
-		m_DxLibSpinePlayer.ShiftSkin();
+		m_dxLibSpinePlayer.ShiftSkin();
 
 		m_bRightCombinated = true;
 	}
 	else
 	{
-		if (m_bPlayReady)
+		if (m_dxLibSpinePlayer.HasLoaded())
 		{
-			m_DxLibSpinePlayer.RescaleSkeleton((iScroll > 0) ^ m_bZoomReversed);
+			m_dxLibSpinePlayer.RescaleSkeleton((iScroll > 0) ^ m_bZoomReversed);
 
-			bool bWindowToBeResized = !(usKey & MK_CONTROL) && m_recoderState != RecorderState::RecordingVideo;
+			bool bWindowToBeResized = !(usKey & MK_CONTROL) && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
 			if (bWindowToBeResized)
 			{
-				m_DxLibSpinePlayer.RescaleCanvas((iScroll > 0) ^ m_bZoomReversed);
+				m_dxLibSpinePlayer.RescaleCanvas((iScroll > 0) ^ m_bZoomReversed);
 				ResizeWindow();
 			}
 		}
@@ -394,7 +394,7 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 
 		if (iX == 0 && iY == 0)
 		{
-			m_DxLibSpinePlayer.ShiftAnimation();
+			m_dxLibSpinePlayer.ShiftAnimation();
 		}
 		else
 		{
@@ -416,7 +416,7 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 	}
 	WORD usKey = LOWORD(wParam);
 
-	if (usKey == 0 && m_bPlayReady)
+	if (usKey == 0 && m_dxLibSpinePlayer.HasLoaded())
 	{
 		const auto PreparePupupMenu = [this](HMENU* hMenu)
 			-> bool
@@ -427,7 +427,8 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 				if (hPopupMenu == nullptr)return false;
 
 				*hMenu = hPopupMenu;
-				if (m_recoderState == RecorderState::Idle)
+				const auto& recorderState = m_dxLibRecorder.GetState();
+				if (recorderState == CDxLibRecorder::EState::Idle)
 				{
 					int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSnapAsPNG, L"Snap as PNG");
 					if (iRet == 0)return false;
@@ -440,14 +441,14 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 					iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kStartVideoRecording, L"Start video recording");
 					if (iRet == 0)return false;
 				}
-				else if (m_recoderState == RecorderState::StoringImages)
+				else if (recorderState == CDxLibRecorder::EState::StoringImages)
 				{
 					int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSaveAsGIF, L"Save as GIF");
 					if (iRet == 0)return false;
 					iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSaveAsPNGs, L"Save as PNGs");
 					if (iRet == 0)return false;
 				}
-				else if (m_recoderState == RecorderState::RecordingVideo)
+				else if (recorderState == CDxLibRecorder::EState::RecordingVideo)
 				{
 					int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kEndVideoRecording, L"End recording");
 					if (iRet == 0)return false;
@@ -479,15 +480,14 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 
 	if (usKey == 0)
 	{
-		if (m_bPlayReady)
+		if (m_dxLibSpinePlayer.HasLoaded() && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo)
 		{
-			m_DxLibSpinePlayer.ResetScale();
+			m_dxLibSpinePlayer.ResetScale();
 
 			ResizeWindow();
 		}
 	}
-
-	if (usKey == MK_RBUTTON)
+	else if (usKey == MK_RBUTTON)
 	{
 		SwitchWindowMode();
 
@@ -577,7 +577,7 @@ failed:
 /*フォルダ選択*/
 void CMainWindow::MenuOnOpenFolder()
 {
-	if (m_recoderState != RecorderState::Idle)return;
+	if (m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
 
 	std::wstring wstrPickedFolder = win_dialogue::SelectWorkFolder(m_hWnd);
 	if (!wstrPickedFolder.empty())
@@ -593,12 +593,12 @@ void CMainWindow::MenuOnOpenFolder()
 /*取り込みファイル設定*/
 void CMainWindow::MenuOnFileSetting()
 {
-	m_SpineSettingDialogue.Open(::GetModuleHandleA(nullptr), m_hWnd, L"Extensions");
+	m_spineSettingDialogue.Open(::GetModuleHandleA(nullptr), m_hWnd, L"Extensions");
 }
 /*ファイル選択*/
 void CMainWindow::MenuOnSelectFiles()
 {
-	if (m_recoderState != RecorderState::Idle)return;
+	if (m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
 
 	std::vector<std::wstring> wstrAtlasFiles = win_dialogue::SelectOpenFiles(L"atlas files", L"*.atlas;*.atlas.txt", L"Select atlas files", m_hWnd, true);
 	if (!wstrAtlasFiles.empty())
@@ -629,36 +629,38 @@ void CMainWindow::MenuOnSelectFiles()
 				skels.push_back(win_text::NarrowUtf8(skel));
 			}
 
-			m_bPlayReady = m_DxLibSpinePlayer.LoadSpineFromFile(atlases, skels, m_SpineSettingDialogue.IsSkelBinary(wstrSkelFiles[0].c_str()));
-			if (m_bPlayReady)
+			bool hasLoaded = m_dxLibSpinePlayer.LoadSpineFromFile(atlases, skels, m_spineSettingDialogue.IsSkelBinary(wstrSkelFiles[0].c_str()));
+			if (hasLoaded)
 			{
 				ResizeWindow();
+				const auto ExtractFileName = [&wstrAtlasFiles]()
+					-> std::wstring
+					{
+						const std::wstring& wstrFilePath = wstrAtlasFiles[0];
+						size_t nPos = wstrFilePath.find_last_of(L"\\/");
+						nPos = nPos == std::string::npos ? 0 : nPos + 1;
+
+						size_t nPos2 = wstrFilePath.find(L".", nPos);
+						if (nPos2 == std::wstring::npos)nPos2 = wstrFilePath.size();
+
+						return wstrFilePath.substr(nPos, nPos2 - nPos);
+					};
+				ChangeWindowTitle(ExtractFileName().c_str());
 			}
 			else
 			{
 				::MessageBoxW(m_hWnd, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
+				ChangeWindowTitle(nullptr);
 			}
 
-			const auto ExtractFileName = [&wstrAtlasFiles]()
-				-> std::wstring
-				{
-					const std::wstring& wstrFilePath = wstrAtlasFiles[0];
-					size_t nPos = wstrFilePath.find_last_of(L"\\/");
-					nPos = nPos == std::string::npos ? 0 : nPos + 1;
 
-					size_t nPos2 = wstrFilePath.find(L".", nPos);
-					if (nPos2 == std::wstring::npos)nPos2 = wstrFilePath.size();
-
-					return wstrFilePath.substr(nPos, nPos2 - nPos);
-				};
-			ChangeWindowTitle(m_bPlayReady ? ExtractFileName().c_str() : nullptr);
 		}
 	}
 }
 /*ファイル追加*/
 void CMainWindow::MenuOnAddFile()
 {
-	if (!m_bPlayReady || m_recoderState != RecorderState::Idle)return;
+	if (!m_dxLibSpinePlayer.HasLoaded() || m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
 
 	std::wstring wstrAtlasFile = win_dialogue::SelectOpenFile(L"atlas file", L"*.atlas;*.atlas.txt", L"Select atlas file to add", m_hWnd, true);
 	if (wstrAtlasFile.empty())return;
@@ -668,42 +670,42 @@ void CMainWindow::MenuOnAddFile()
 
 	std::string strAtlasFile = win_text::NarrowUtf8(wstrAtlasFile);
 	std::string strSkeletonFile = win_text::NarrowUtf8(wstrSkeletonFile);
-	bool bBinary = m_SpineSettingDialogue.IsSkelBinary(wstrSkeletonFile.c_str());
+	bool bBinary = m_spineSettingDialogue.IsSkelBinary(wstrSkeletonFile.c_str());
 
-	m_DxLibSpinePlayer.AddSpineFromFile(strAtlasFile.c_str(), strSkeletonFile.c_str(), bBinary);
+	m_dxLibSpinePlayer.AddSpineFromFile(strAtlasFile.c_str(), strSkeletonFile.c_str(), bBinary);
 }
 /*骨組み操作画面呼び出し*/
 void CMainWindow::MenuOnSkeletonSetting()
 {
-	if (m_SpineManipulatorDialogue.GetHwnd() == nullptr)
+	if (m_spineManipulatorDialogue.GetHwnd() == nullptr)
 	{
-		HWND hWnd = m_SpineManipulatorDialogue.Create(m_hInstance, m_hWnd, L"Spine manipulation", &m_DxLibSpinePlayer);
+		HWND hWnd = m_spineManipulatorDialogue.Create(m_hInstance, m_hWnd, L"Spine manipulation", &m_dxLibSpinePlayer);
 
 		::ShowWindow(hWnd, SW_SHOWNORMAL);
 	}
 	else
 	{
-		::SetFocus(m_SpineManipulatorDialogue.GetHwnd());
+		::SetFocus(m_spineManipulatorDialogue.GetHwnd());
 	}
 }
 /*装着変更画面呼び出し*/
 void CMainWindow::MenuOnAtlasSetting()
 {
-	if (m_SpineAtlasDialogue.GetHwnd() == nullptr)
+	if (m_spineAtlasDialogue.GetHwnd() == nullptr)
 	{
-		HWND hWnd = m_SpineAtlasDialogue.Create(m_hInstance, m_hWnd, L"Spine re-attachment", &m_DxLibSpinePlayer);
+		HWND hWnd = m_spineAtlasDialogue.Create(m_hInstance, m_hWnd, L"Spine re-attachment", &m_dxLibSpinePlayer);
 
 		::ShowWindow(hWnd, SW_SHOWNORMAL);
 	}
 	else
 	{
-		::SetFocus(m_SpineAtlasDialogue.GetHwnd());
+		::SetFocus(m_spineAtlasDialogue.GetHwnd());
 	}
 }
 /*透過*/
 void CMainWindow::MenuOnSeeThroughImage()
 {
-	if (!m_bPlayReady)return;
+	if (!m_dxLibSpinePlayer.HasLoaded())return;
 
 	HMENU hMenuBar = ::GetMenu(m_hWnd);
 	if (hMenuBar != nullptr)
@@ -741,7 +743,7 @@ void CMainWindow::MenuOnAllowManualSizing()
 		HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
 		if (hMenu != nullptr)
 		{
-			bool bAllowed = m_bPlayReady && !m_bManuallyResizable && m_recoderState != RecorderState::RecordingVideo;
+			bool bAllowed = m_dxLibSpinePlayer.HasLoaded() && !m_bManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
 			DWORD ulRet = ::CheckMenuItem(hMenu, Menu::kAllowManualSizing, bAllowed ? MF_CHECKED : MF_UNCHECKED);
 			if (ulRet != (DWORD)-1)
 			{
@@ -771,7 +773,7 @@ void CMainWindow::MenuOnReverseZoomDirection()
 /*次のフォルダに移動*/
 void CMainWindow::KeyUpOnNextFolder()
 {
-	if (m_folders.empty() || m_recoderState != RecorderState::Idle)return;
+	if (m_folders.empty() || m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
 
 	++m_nFolderIndex;
 	if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = 0;
@@ -780,7 +782,7 @@ void CMainWindow::KeyUpOnNextFolder()
 /*前のフォルダに移動*/
 void CMainWindow::KeyUpOnForeFolder()
 {
-	if (m_folders.empty() || m_recoderState != RecorderState::Idle)return;
+	if (m_folders.empty() || m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
 
 	--m_nFolderIndex;
 	if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = m_folders.size() - 1;
@@ -789,11 +791,12 @@ void CMainWindow::KeyUpOnForeFolder()
 /*JPGとして保存*/
 void CMainWindow::MenuOnSaveAsJpg()
 {
-	if (!m_bPlayReady)return;
+	if (!m_dxLibSpinePlayer.HasLoaded())return;
 
 	std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
 	float fTrackTime = 0.f;
-	wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
+	m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrackTime, nullptr, nullptr, nullptr);
+	wstrFilePath += win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
 	wstrFilePath += L"_" + std::to_wstring(fTrackTime);
 	wstrFilePath += L".jpg";
 
@@ -802,11 +805,12 @@ void CMainWindow::MenuOnSaveAsJpg()
 /*PNGとして保存*/
 void CMainWindow::MenuOnSaveAsPng()
 {
-	if (!m_bPlayReady)return;
+	if (!m_dxLibSpinePlayer.HasLoaded())return;
 
 	std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
 	float fTrackTime = 0.f;
-	wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
+	m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrackTime, nullptr, nullptr, nullptr);
+	wstrFilePath += win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
 	wstrFilePath += L"_" + std::to_wstring(fTrackTime);
 	wstrFilePath += L".png";
 
@@ -815,55 +819,47 @@ void CMainWindow::MenuOnSaveAsPng()
 /*記録開始*/
 void CMainWindow::MenuOnStartRecording(bool bAsVideo)
 {
-	if (!m_bPlayReady)return;
+	if (!m_dxLibSpinePlayer.HasLoaded())return;
 
 	if (bAsVideo)
 	{
-		m_recoderState = RecorderState::RecordingVideo;
 		/* Disable manual resizing once video recording has started. */
 		MenuOnAllowManualSizing();
 
-		m_DxLibRecorder.Start(CDxLibRecorder::EOption::kAsVideo);
+		m_dxLibRecorder.Start(CDxLibRecorder::EOption::kAsVideo, 60);
 	}
 	else
 	{
-		m_recoderState = RecorderState::StoringImages;
-
-		m_DxLibRecorder.Start();
+		m_dxLibRecorder.Start();
 	}
 }
 /*記録終了*/
 void CMainWindow::MenuOnEndRecording(bool bAsGif)
 {
-	if (m_recoderState == RecorderState::RecordingVideo)
+	if (m_dxLibRecorder.GetState() == CDxLibRecorder::EState::RecordingVideo)
 	{
 		std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
-		wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
+		wstrFilePath += win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
 		wstrFilePath += L".mp4";
 
-		/* Initialising input media types takes time. In the meantime, pause rendering. */
-		m_recoderState = RecorderState::InitialisingVideoStream;
-		m_DxLibRecorder.End(CDxLibRecorder::EOutputType::kVideo, wstrFilePath.c_str());
+		m_dxLibRecorder.End(CDxLibRecorder::EOutputType::kVideo, wstrFilePath.c_str());
 	}
 	else
 	{
 		if (bAsGif)
 		{
 			std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
-			wstrFilePath += win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime());
+			wstrFilePath += win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
 			wstrFilePath += L".gif";
 
-			m_DxLibRecorder.End(CDxLibRecorder::EOutputType::kGif, wstrFilePath.c_str());
+			m_dxLibRecorder.End(CDxLibRecorder::EOutputType::kGif, wstrFilePath.c_str());
 		}
 		else
 		{
 			std::wstring wstrFolderPath = win_filesystem::CreateWorkFolder(GetWindowTitle());
-			m_DxLibRecorder.End(CDxLibRecorder::EOutputType::kPngs, wstrFolderPath.c_str());
+			m_dxLibRecorder.End(CDxLibRecorder::EOutputType::kPngs, wstrFolderPath.c_str());
 		}
 	}
-
-	m_recoderState = RecorderState::Idle;
-	m_iFrameCount = 0;
 }
 /*表題変更*/
 void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
@@ -895,7 +891,7 @@ std::wstring CMainWindow::GetWindowTitle()
 /*表示形式変更*/
 void CMainWindow::SwitchWindowMode()
 {
-	if (!m_bPlayReady || m_recoderState == RecorderState::RecordingVideo)return;
+	if (!m_dxLibSpinePlayer.HasLoaded() || m_dxLibRecorder.GetState() == CDxLibRecorder::EState::RecordingVideo)return;
 
 	RECT rect;
 	::GetWindowRect(m_hWnd, &rect);
@@ -925,9 +921,9 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 	std::vector<std::string> atlasPaths;
 	std::vector<std::string> skelPaths;
 
-	const std::wstring& wstrAtlasExt = m_SpineSettingDialogue.GetAtlasExtension();
-	const std::wstring& wstrSkelExt = m_SpineSettingDialogue.GetSkelExtension();
-	bool bIsBinary = m_SpineSettingDialogue.IsSkelBinary();
+	const std::wstring& wstrAtlasExt = m_spineSettingDialogue.GetAtlasExtension();
+	const std::wstring& wstrSkelExt = m_spineSettingDialogue.GetSkelExtension();
+	bool bIsBinary = m_spineSettingDialogue.IsSkelBinary();
 
 	bool bAtlasLonger = wstrAtlasExt.size() > wstrSkelExt.size();
 
@@ -959,18 +955,19 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 		}
 	}
 
-	m_bPlayReady = m_DxLibSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, bIsBinary);
-	ChangeWindowTitle(m_bPlayReady ? pwzFolderPath : nullptr);
-	if (m_bPlayReady)
+	bool hasLoaded = m_dxLibSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, bIsBinary);
+	if (hasLoaded)
 	{
 		ResizeWindow();
+		ChangeWindowTitle(pwzFolderPath);
 	}
 	else
 	{
 		::MessageBoxW(m_hWnd, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
+		ChangeWindowTitle(nullptr);
 	}
 
-	return m_bPlayReady;
+	return hasLoaded;
 }
 /*階層構成情報消去*/
 void CMainWindow::ClearFolderInfo()
@@ -988,52 +985,36 @@ void CMainWindow::UpdateDrawingInterval()
 /*記録逓進*/
 void CMainWindow::StepOnRecording()
 {
-	if (m_recoderState == RecorderState::Idle)return;
-
-	/*
-	* WM_PAINT comes at intervals of display refresh rate.
-	* For example, if refresh rate is 120Hz, iInterval will be 2.
-	* The condition "m_iFrameCount >= iInterval" results in 60fps for video, and 15fps for images.
-	* Slower refresh rate such as 40Hz is not taken into consideration here.
-	*/
-	int iInterval = static_cast<int>(::ceilf(1 / m_fDelta / 60.f));
-	if (m_recoderState == RecorderState::StoringImages)
+	if (m_dxLibRecorder.GetState() == CDxLibRecorder::EState::StoringImages)
 	{
-		++m_iFrameCount;
-		iInterval *= 4;
-		if (m_iFrameCount >= iInterval)
+		if (m_dxLibRecorder.HasTimePassed())
 		{
 			float fTrackTime = 0.f;
-			std::wstring wstrFrameName = win_text::WidenUtf8(m_DxLibSpinePlayer.GetCurrentAnimationNameWithTrackTime(&fTrackTime));
+			m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrackTime, nullptr, nullptr, nullptr);
+			std::wstring wstrFrameName = win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
 			wstrFrameName += L"_" + std::to_wstring(fTrackTime);
 
-			m_DxLibRecorder.CaptureFrame(wstrFrameName.c_str());
-			m_iFrameCount = 0;
+			m_dxLibRecorder.CaptureFrame(wstrFrameName.c_str());
 		}
 	}
-	else if (m_recoderState == RecorderState::RecordingVideo)
+	else if (m_dxLibRecorder.GetState() == CDxLibRecorder::EState::RecordingVideo)
 	{
-		++m_iFrameCount;
-		if (m_iFrameCount >= iInterval)
-		{
-			m_DxLibRecorder.CaptureFrame();
-			m_iFrameCount = 0;
-		}
+		m_dxLibRecorder.CaptureFrame();
 	}
 }
 /*寸法手動変更可否属性更新*/
 void CMainWindow::UpdateWindowResizableAttribute()
 {
 	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
-	::SetWindowLong(m_hWnd, GWL_STYLE, (m_bPlayReady && m_bManuallyResizable) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
+	::SetWindowLong(m_hWnd, GWL_STYLE, (m_dxLibSpinePlayer.HasLoaded() && m_bManuallyResizable) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
 }
 /*窓寸法変更*/
 void CMainWindow::ResizeWindow()
 {
 	float fWidth = 0.f;
 	float fHeight = 0.f;
-	m_DxLibSpinePlayer.GetBaseSize(&fWidth, &fHeight);
-	float fScale = m_DxLibSpinePlayer.GetCanvasScale();
+	m_dxLibSpinePlayer.GetBaseSize(&fWidth, &fHeight);
+	float fScale = m_dxLibSpinePlayer.GetCanvasScale();
 
 	RECT rect;
 	::GetWindowRect(m_hWnd, &rect);

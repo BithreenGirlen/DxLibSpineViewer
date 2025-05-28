@@ -72,21 +72,8 @@ private:
 	bool m_bManuallyResizable = false;
 	bool m_bZoomReversed = false;
 
-	bool m_bPlayReady = false;
-
-	enum class RecorderState
-	{
-		Idle,
-		StoringImages,
-		InitialisingVideoStream,
-		RecordingVideo
-	};
-	RecorderState m_recoderState = RecorderState::Idle;
-
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
-
-	int m_iFrameCount = 0;
 
 	float m_fDelta = 1 / 60.f;
 
@@ -123,12 +110,12 @@ private:
 	void UpdateDrawingInterval();
 	void StepOnRecording();
 
-	CDxLibSpinePlayer m_DxLibSpinePlayer;
-	CSpineSettingDialogue m_SpineSettingDialogue;
-	CSpineManipulatorDialogue m_SpineManipulatorDialogue;
-	CSpineAtlasDialogue m_SpineAtlasDialogue;
+	CDxLibSpinePlayer m_dxLibSpinePlayer;
+	CSpineSettingDialogue m_spineSettingDialogue;
+	CSpineManipulatorDialogue m_spineManipulatorDialogue;
+	CSpineAtlasDialogue m_spineAtlasDialogue;
 
-	CDxLibRecorder m_DxLibRecorder;
+	CDxLibRecorder m_dxLibRecorder;
 
 	void UpdateWindowResizableAttribute();
 	void ResizeWindow();

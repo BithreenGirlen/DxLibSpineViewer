@@ -138,8 +138,10 @@
     <ClInclude Include="..\..\shared-src\deps\spine-c-3.5\src\spine\Json.h" />
     <ClInclude Include="..\..\shared-src\deps\spine-c-3.5\src\spine\kvec.h" />
     <ClInclude Include="..\..\shared-src\dialogue_controls.h" />
+    <ClInclude Include="..\..\shared-src\dxlib_clock.h" />
     <ClInclude Include="..\..\shared-src\dxlib_image_encoder.h" />
     <ClInclude Include="..\..\shared-src\dxlib_init.h" />
+    <ClInclude Include="..\..\shared-src\dxlib_map.h" />
     <ClInclude Include="..\..\shared-src\dxlib_recorder.h" />
     <ClInclude Include="..\..\shared-src\framework.h" />
     <ClInclude Include="..\..\shared-src\main_window.h" />
@@ -198,8 +200,10 @@
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.5\src\spine\Triangulator.c" />
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.5\src\spine\VertexAttachment.c" />
     <ClCompile Include="..\..\shared-src\dialogue_controls.cpp" />
+    <ClCompile Include="..\..\shared-src\dxlib_clock.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_init.cpp" />
+    <ClCompile Include="..\..\shared-src\dxlib_map.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_recorder.cpp" />
     <ClCompile Include="..\..\shared-src\main.cpp" />
     <ClCompile Include="..\..\shared-src\main_window.cpp" />

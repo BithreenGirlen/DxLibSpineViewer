@@ -24,6 +24,9 @@ public:
 
 	bool AddSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool bBinary);
 
+	size_t GetNumberOfSpines() const;
+	bool HasLoaded() const;
+
 	void Update(float fDelta);
 	void Redraw();
 
@@ -42,7 +45,13 @@ public:
 	void ToggleBlendModeAdoption();
 	void ToggleDrawOrder();
 
-	std::string GetCurrentAnimationNameWithTrackTime(float *fTrackTime = nullptr);
+	std::string GetCurrentAnimationName();
+	/// @brief Get time of animation actually entried in track.
+	/// @param fTrack elapsed time since the track was entried.
+	/// @param fLast current timeline position.
+	/// @param fStart timeline start position.
+	/// @param fEnd timeline end position.
+	void GetCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd);
 
 	std::vector<std::string> GetSlotNames();
 	const std::vector<std::string>& GetSkinNames() const;

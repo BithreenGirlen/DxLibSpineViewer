@@ -12,8 +12,18 @@ public:
 		kNone,
 		kAsVideo
 	};
-	bool Start(EOption eOption = EOption::kNone);
+	bool Start(EOption eOption = EOption::kNone, unsigned int fps = kDefaultFps);
 
+	enum class EState
+	{
+		Idle,
+		StoringImages,
+		InitialisingVideoStream,
+		RecordingVideo
+	};
+	EState GetState() const;
+
+	bool HasTimePassed() const;
 	bool CaptureFrame(const wchar_t* pwzFileName = nullptr);
 
 	enum class EOutputType
@@ -24,6 +34,8 @@ public:
 	};
 	bool End(EOutputType eOutputType, const wchar_t* pwzFilePath);
 private:
+	static constexpr unsigned int kDefaultFps = 30;
+
 	class Impl;
 	Impl* m_impl = nullptr;
 };

@@ -103,6 +103,17 @@ bool CDxLibSpinePlayerC::AddSpineFromFile(const char* szAtlasPath, const char* s
 
 	return true;
 }
+
+size_t CDxLibSpinePlayerC::GetNumberOfSpines() const
+{
+	return m_drawables.size();
+}
+
+bool CDxLibSpinePlayerC::HasLoaded() const
+{
+	return !m_drawables.empty();
+}
+
 void CDxLibSpinePlayerC::Update(float fDelta)
 {
 	for (const auto& drawable : m_drawables)
@@ -245,8 +256,8 @@ void CDxLibSpinePlayerC::ToggleDrawOrder()
 {
 	m_bDrawOrderReversed ^= true;
 }
-/*現在の動作名と経過時間取得*/
-std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime(float* fTrackTime)
+
+std::string CDxLibSpinePlayerC::GetCurrentAnimationName()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
@@ -258,14 +269,6 @@ std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime(float* fTra
 				spAnimation* pAnimation = pTrackEntry->animation;
 				if (pAnimation != nullptr && pAnimation->name != nullptr)
 				{
-					if (fTrackTime != nullptr)
-					{
-#ifdef SPINE_2_1
-						*fTrackTime = pTrackEntry->time;
-#else
-						*fTrackTime = pTrackEntry->trackTime;
-#endif
-					}
 					return pAnimation->name;
 				}
 			}
@@ -273,6 +276,35 @@ std::string CDxLibSpinePlayerC::GetCurrentAnimationNameWithTrackTime(float* fTra
 	}
 
 	return std::string();
+}
+
+void CDxLibSpinePlayerC::GetCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd)
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		for (size_t i = 0; i < pDrawable->animationState->tracksCount; ++i)
+		{
+			spTrackEntry* pTrackEntry = pDrawable->animationState->tracks[i];
+			if (pTrackEntry != nullptr)
+			{
+				spAnimation* pAnimation = pTrackEntry->animation;
+				if (pAnimation != nullptr)
+				{
+#ifdef SPINE_2_1
+					if (fTrack != nullptr)*fTrack = pTrackEntry->time;
+					if (fLast != nullptr)*fLast = pTrackEntry->lastTime;
+					if (fStart != nullptr)*fStart = pTrackEntry->delay;
+					if (fEnd != nullptr)*fEnd = pTrackEntry->endTime;
+#else
+					if (fTrack != nullptr)*fTrack = pTrackEntry->trackTime;
+					if (fLast != nullptr)*fLast = pTrackEntry->animationLast;
+					if (fStart != nullptr)*fStart = pTrackEntry->animationStart;
+					if (fEnd != nullptr)*fEnd = pTrackEntry->animationEnd;
+#endif
+				}
+			}
+		}
+	}
 }
 /*槽溝名称取得*/
 std::vector<std::string> CDxLibSpinePlayerC::GetSlotNames()
@@ -392,7 +424,7 @@ std::unordered_map<std::string, std::vector<std::string>> CDxLibSpinePlayerC::Ge
 				const auto& iter = std::find(attachmentNames.begin(), attachmentNames.end(), attachmentName);
 				if (iter == attachmentNames.cend())attachmentNames.push_back(attachmentName);
 			}
-			
+
 			if (attachmentNames.size() > 1)
 			{
 				slotAttachmentMap.insert({ pSkeletonDatum->slots[iSlotIndex]->name, attachmentNames });
@@ -564,7 +596,7 @@ bool CDxLibSpinePlayerC::SetupDrawer()
 			const char* szAnimationName = pSkeletonDatum->animations[i]->name;
 			if (szAnimationName == nullptr)continue;
 
-			const auto &iter = std::find(m_animationNames.begin(), m_animationNames.end(), szAnimationName);
+			const auto& iter = std::find(m_animationNames.begin(), m_animationNames.end(), szAnimationName);
 			if (iter == m_animationNames.cend())m_animationNames.push_back(szAnimationName);
 		}
 
@@ -572,8 +604,8 @@ bool CDxLibSpinePlayerC::SetupDrawer()
 		{
 			const char* szSkinName = pSkeletonDatum->skins[i]->name;
 			if (szSkinName == nullptr)continue;
-			
-			const auto &iter = std::find(m_skinNames.begin(), m_skinNames.end(), szSkinName);
+
+			const auto& iter = std::find(m_skinNames.begin(), m_skinNames.end(), szSkinName);
 			if (iter == m_skinNames.cend())m_skinNames.push_back(szSkinName);
 		}
 	}

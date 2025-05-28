@@ -87,6 +87,12 @@
     <ClInclude Include="..\..\shared-src\dxlib_recorder.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\dxlib_clock.h">
+      <Filter>Header File\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\dxlib_map.h">
+      <Filter>Header File\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -327,6 +333,12 @@
       <Filter>Source File\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\dxlib_recorder.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\dxlib_clock.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\dxlib_map.cpp">
       <Filter>Source File\shared</Filter>
     </ClCompile>
   </ItemGroup>

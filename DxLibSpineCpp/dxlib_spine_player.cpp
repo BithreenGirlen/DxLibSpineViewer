@@ -58,7 +58,7 @@ bool CDxLibSpinePlayer::LoadSpineFromMemory(const std::vector<std::string>& atla
 		std::unique_ptr<spine::Atlas> atlas = std::make_unique<spine::Atlas>(strAtlasDatum.c_str(), static_cast<int>(strAtlasDatum.size()), strAtlasPath.c_str(), &m_textureLoader);
 		if (atlas.get() == nullptr)continue;
 
-		std::shared_ptr<spine::SkeletonData> skeletonData = bIsBinary ? 
+		std::shared_ptr<spine::SkeletonData> skeletonData = bIsBinary ?
 			spine_loader::ReadBinarySkeletonFromMemory(reinterpret_cast<const unsigned char*>(strSkeletonData.data()), static_cast<int>(strSkeletonData.size()), atlas.get(), 1.f) :
 			spine_loader::ReadTextSkeletonFromMemory(strSkeletonData.data(), atlas.get(), 1.f);
 		if (skeletonData.get() == nullptr)return false;
@@ -102,6 +102,16 @@ bool CDxLibSpinePlayer::AddSpineFromFile(const char* szAtlasPath, const char* sz
 	ResetScale();
 
 	return true;
+}
+
+size_t CDxLibSpinePlayer::GetNumberOfSpines() const
+{
+	return m_drawables.size();
+}
+
+bool CDxLibSpinePlayer::HasLoaded() const
+{
+	return !m_drawables.empty();
 }
 
 void CDxLibSpinePlayer::Update(float fDelta)
@@ -246,8 +256,8 @@ void CDxLibSpinePlayer::ToggleDrawOrder()
 {
 	m_bDrawOrderReversed ^= true;
 }
-/*現在の動作名と経過時間取得*/
-std::string CDxLibSpinePlayer::GetCurrentAnimationNameWithTrackTime(float* fTrackTime)
+/* 現在設定されている動作名取得*/
+std::string CDxLibSpinePlayer::GetCurrentAnimationName()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
@@ -257,16 +267,33 @@ std::string CDxLibSpinePlayer::GetCurrentAnimationNameWithTrackTime(float* fTrac
 			spine::Animation* pAnimation = tracks[i]->getAnimation();
 			if (pAnimation != nullptr)
 			{
-				if (fTrackTime != nullptr)
-				{
-					*fTrackTime = tracks[i]->getTrackTime();
-				}
 				return pAnimation->getName().buffer();
 			}
 		}
 	}
 
 	return std::string();
+}
+
+void CDxLibSpinePlayer::GetCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd)
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		auto& tracks = pDrawable->animationState->getTracks();
+		for (size_t i = 0; i < tracks.size(); ++i)
+		{
+			spine::Animation* pAnimation = tracks[i]->getAnimation();
+			if (pAnimation != nullptr)
+			{
+				if (fTrack != nullptr)*fTrack = tracks[i]->getTrackTime();
+				if (fLast != nullptr)*fLast = tracks[i]->getAnimationLast();
+				if (fStart != nullptr)*fStart = tracks[i]->getAnimationStart();
+				if (fEnd != nullptr)*fEnd = tracks[i]->getAnimationEnd();
+
+				return;
+			}
+		}
+	}
 }
 /*槽溝名称取得*/
 std::vector<std::string> CDxLibSpinePlayer::GetSlotNames()
