@@ -102,7 +102,8 @@ private:
 
 	void ChangeWindowTitle(const wchar_t* pwzTitle);
 	std::wstring GetWindowTitle();
-	void SwitchWindowMode();
+	void ToggleWindowBorderStyle();
+	bool SetMenuCheckState(unsigned int uiMenuIndex, unsigned int uiItemIndex, bool checked) const;
 
 	bool SetupResources(const wchar_t* pwzFolderPath);
 	void ClearFolderInfo();

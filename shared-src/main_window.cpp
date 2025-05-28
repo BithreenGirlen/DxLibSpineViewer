@@ -489,7 +489,7 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 	}
 	else if (usKey == MK_RBUTTON)
 	{
-		SwitchWindowMode();
+		ToggleWindowBorderStyle();
 
 		m_bRightCombinated = true;
 	}
@@ -652,8 +652,6 @@ void CMainWindow::MenuOnSelectFiles()
 				::MessageBoxW(m_hWnd, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
 				ChangeWindowTitle(nullptr);
 			}
-
-
 		}
 	}
 }
@@ -707,67 +705,44 @@ void CMainWindow::MenuOnSeeThroughImage()
 {
 	if (!m_dxLibSpinePlayer.HasLoaded())return;
 
-	HMENU hMenuBar = ::GetMenu(m_hWnd);
-	if (hMenuBar != nullptr)
+	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kSeeThroughImage, !m_bTransparent);
+	if (result)
 	{
-		HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
-		if (hMenu != nullptr)
+		m_bTransparent ^= true;
+		LONG lStyleEx = ::GetWindowLong(m_hWnd, GWL_EXSTYLE);
+
+		if (m_bTransparent)
 		{
-			m_bTransparent ^= true;
-
-			LONG lStyleEx = ::GetWindowLong(m_hWnd, GWL_EXSTYLE);
-
-			if (m_bTransparent)
-			{
-				::SetWindowLong(m_hWnd, GWL_EXSTYLE, lStyleEx | WS_EX_LAYERED);
-				::SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), 255, LWA_COLORKEY);
-				::SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-			}
-			else
-			{
-				::SetWindowLong(m_hWnd, GWL_EXSTYLE, lStyleEx & ~WS_EX_LAYERED);
-				::SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
-				::SetWindowPos(m_hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-			}
-
-			::CheckMenuItem(hMenu, Menu::kSeeThroughImage, m_bTransparent ? MF_CHECKED : MF_UNCHECKED);
+			::SetWindowLong(m_hWnd, GWL_EXSTYLE, lStyleEx | WS_EX_LAYERED);
+			::SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), 255, LWA_COLORKEY);
+			::SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+		}
+		else
+		{
+			::SetWindowLong(m_hWnd, GWL_EXSTYLE, lStyleEx & ~WS_EX_LAYERED);
+			::SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), 255, LWA_COLORKEY);
+			::SetWindowPos(m_hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 		}
 	}
 }
 /*手動寸法変更許可切り替え*/
 void CMainWindow::MenuOnAllowManualSizing()
 {
-	HMENU hMenuBar = ::GetMenu(m_hWnd);
-	if (hMenuBar != nullptr)
+	bool bAllowed = m_dxLibSpinePlayer.HasLoaded() && !m_bManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
+	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kAllowManualSizing, bAllowed);
+	if (result)
 	{
-		HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
-		if (hMenu != nullptr)
-		{
-			bool bAllowed = m_dxLibSpinePlayer.HasLoaded() && !m_bManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
-			DWORD ulRet = ::CheckMenuItem(hMenu, Menu::kAllowManualSizing, bAllowed ? MF_CHECKED : MF_UNCHECKED);
-			if (ulRet != (DWORD)-1)
-			{
-				m_bManuallyResizable = bAllowed;
-				UpdateWindowResizableAttribute();
-			}
-		}
+		m_bManuallyResizable = bAllowed;
+		UpdateWindowResizableAttribute();
 	}
 }
 /*拡縮方向反転*/
 void CMainWindow::MenuOnReverseZoomDirection()
 {
-	HMENU hMenuBar = ::GetMenu(m_hWnd);
-	if (hMenuBar != nullptr)
+	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kReverseZoomDirection, !m_bZoomReversed);
+	if (result)
 	{
-		HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
-		if (hMenu != nullptr)
-		{
-			DWORD ulRet = ::CheckMenuItem(hMenu, Menu::kReverseZoomDirection, m_bZoomReversed ? MF_UNCHECKED : MF_CHECKED);
-			if (ulRet != (DWORD)-1)
-			{
-				m_bZoomReversed ^= true;
-			}
-		}
+		m_bZoomReversed ^= true;
 	}
 }
 /*次のフォルダに移動*/
@@ -823,10 +798,10 @@ void CMainWindow::MenuOnStartRecording(bool bAsVideo)
 
 	if (bAsVideo)
 	{
+		m_dxLibRecorder.Start(CDxLibRecorder::EOption::kAsVideo, 60);
+
 		/* Disable manual resizing once video recording has started. */
 		MenuOnAllowManualSizing();
-
-		m_dxLibRecorder.Start(CDxLibRecorder::EOption::kAsVideo, 60);
 	}
 	else
 	{
@@ -889,7 +864,7 @@ std::wstring CMainWindow::GetWindowTitle()
 	return std::wstring();
 }
 /*表示形式変更*/
-void CMainWindow::SwitchWindowMode()
+void CMainWindow::ToggleWindowBorderStyle()
 {
 	if (!m_dxLibSpinePlayer.HasLoaded() || m_dxLibRecorder.GetState() == CDxLibRecorder::EState::RecordingVideo)return;
 
@@ -912,6 +887,22 @@ void CMainWindow::SwitchWindowMode()
 	}
 
 	ResizeWindow();
+}
+
+bool CMainWindow::SetMenuCheckState(unsigned int uiMenuIndex, unsigned int uiItemIndex, bool checked) const
+{
+	HMENU hMenuBar = ::GetMenu(m_hWnd);
+	if (hMenuBar != nullptr)
+	{
+		HMENU hMenu = ::GetSubMenu(hMenuBar, uiMenuIndex);
+		if (hMenu != nullptr)
+		{
+			DWORD ulRet = ::CheckMenuItem(hMenu, uiItemIndex, checked ? MF_CHECKED : MF_UNCHECKED);
+			return ulRet != (DWORD)-1;
+		}
+	}
+
+	return false;
 }
 /*描画素材設定*/
 bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
