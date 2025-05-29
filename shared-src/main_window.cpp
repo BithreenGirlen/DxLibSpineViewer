@@ -72,17 +72,28 @@ int CMainWindow::MessageLoop()
 {
 	MSG msg{};
 
-	for (; msg.message != WM_QUIT;)
+	for (;;)
 	{
-		BOOL iRet = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);
-		if (iRet)
+		BOOL iRet = ::GetMessageW(&msg, 0, 0, 0);
+		if (iRet > 0)
 		{
 			::TranslateMessage(&msg);
 			::DispatchMessageW(&msg);
 		}
+		else if (iRet == 0)
+		{
+			/*ループ終了*/
+			return static_cast<int>(msg.wParam);
+		}
+		else
+		{
+			/*ループ異常*/
+			std::wstring wstrMessage = L"GetMessageW failed; code: " + std::to_wstring(::GetLastError());
+			::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
+			return -1;
+		}
 	}
-
-	return static_cast<int>(msg.wParam);
+	return 0;
 }
 /*C CALLBACK*/
 LRESULT CMainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -171,6 +182,9 @@ LRESULT CMainWindow::OnClose()
 /*WM_PAINT*/
 LRESULT CMainWindow::OnPaint()
 {
+	PAINTSTRUCT ps;
+	HDC hdc = ::BeginPaint(m_hWnd, &ps);
+
 	if (m_dxLibSpinePlayer.HasLoaded() && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::InitialisingVideoStream)
 	{
 		DxLib::ClearDrawScreen();
@@ -181,7 +195,14 @@ LRESULT CMainWindow::OnPaint()
 		StepOnRecording();
 
 		DxLib::ScreenFlip();
+
+		if (m_hWnd != nullptr)
+		{
+			::InvalidateRect(m_hWnd, nullptr, FALSE);
+		}
 	}
+
+	::EndPaint(m_hWnd, &ps);
 
 	return 0;
 }
@@ -608,7 +629,7 @@ void CMainWindow::MenuOnSelectFiles()
 		{
 			if (wstrAtlasFiles.size() != wstrSkelFiles.size())
 			{
-				::MessageBoxW(m_hWnd, L"The number of atlas and skeleton files should be the same.", L"Error", MB_ICONERROR);
+				::MessageBoxW(nullptr, L"The number of atlas and skeleton files should be the same.", L"Error", MB_ICONERROR);
 				return;
 			}
 
@@ -616,20 +637,20 @@ void CMainWindow::MenuOnSelectFiles()
 			std::sort(wstrSkelFiles.begin(), wstrSkelFiles.end());
 
 			ClearFolderInfo();
-			std::vector<std::string> atlases;
-			std::vector<std::string> skels;
+			std::vector<std::string> atlasPaths;
+			std::vector<std::string> skelPaths;
 
 			for (const auto& atlas : wstrAtlasFiles)
 			{
-				atlases.push_back(win_text::NarrowUtf8(atlas));
+				atlasPaths.emplace_back(win_text::NarrowUtf8(atlas));
 			}
 
 			for (const auto& skel : wstrSkelFiles)
 			{
-				skels.push_back(win_text::NarrowUtf8(skel));
+				skelPaths.emplace_back(win_text::NarrowUtf8(skel));
 			}
 
-			bool hasLoaded = m_dxLibSpinePlayer.LoadSpineFromFile(atlases, skels, m_spineSettingDialogue.IsSkelBinary(wstrSkelFiles[0].c_str()));
+			bool hasLoaded = m_dxLibSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, m_spineSettingDialogue.IsSkelBinary(wstrSkelFiles[0].c_str()));
 			if (hasLoaded)
 			{
 				ResizeWindow();
@@ -649,7 +670,7 @@ void CMainWindow::MenuOnSelectFiles()
 			}
 			else
 			{
-				::MessageBoxW(m_hWnd, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
+				::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
 				ChangeWindowTitle(nullptr);
 			}
 		}
@@ -835,6 +856,8 @@ void CMainWindow::MenuOnEndRecording(bool bAsGif)
 			m_dxLibRecorder.End(CDxLibRecorder::EOutputType::kPngs, wstrFolderPath.c_str());
 		}
 	}
+
+	::InvalidateRect(m_hWnd, nullptr, FALSE);
 }
 /*表題変更*/
 void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
@@ -938,11 +961,11 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 
 		if (EndsWith(wstrLongerExtesion))
 		{
-			strLongerPaths.push_back(win_text::NarrowUtf8(filePath));
+			strLongerPaths.emplace_back(win_text::NarrowUtf8(filePath));
 		}
 		else if (EndsWith(wstrShorterExtension))
 		{
-			strShorterPaths.push_back(win_text::NarrowUtf8(filePath));
+			strShorterPaths.emplace_back(win_text::NarrowUtf8(filePath));
 		}
 	}
 
@@ -954,7 +977,7 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 	}
 	else
 	{
-		::MessageBoxW(m_hWnd, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
+		::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
 		ChangeWindowTitle(nullptr);
 	}
 
