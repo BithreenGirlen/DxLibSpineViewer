@@ -100,6 +100,7 @@ private:
 	bool AddDrawable(spSkeletonData* const pSkeletonData);
 	bool SetupDrawer();
 
+	DxLib::FLOAT4 GetBoundingBox();
 	void WorkOutDefaultSize();
 	void WorkOutDefaultScale();
 

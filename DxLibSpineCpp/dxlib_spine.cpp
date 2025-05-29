@@ -277,6 +277,19 @@ void CDxLibSpineDrawer::SetLeaveOutList(spine::Vector<spine::String>& list)
 	}
 }
 
+DxLib::FLOAT4 CDxLibSpineDrawer::GetBoundingBox() const
+{
+	DxLib::FLOAT4 boundingBox{};
+
+	if (skeleton != nullptr)
+	{
+		spine::Vector<float> tempVertices;
+		skeleton->getBounds(boundingBox.x, boundingBox.y, boundingBox.z, boundingBox.w, tempVertices);
+	}
+
+	return boundingBox;
+}
+
 bool CDxLibSpineDrawer::IsToBeLeftOut(const spine::String& slotName)
 {
 	/*The comparison method depends on what should be excluded; the precise matching or just containing.*/

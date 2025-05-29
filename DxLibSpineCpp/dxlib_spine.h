@@ -29,6 +29,8 @@ public:
 	bool GetForceBlendModeNormal() const { return m_bForceBlendModeNormal; }
 
 	void SetLeaveOutList(spine::Vector<spine::String> &list);
+
+	DxLib::FLOAT4 GetBoundingBox() const;
 private:
 	bool m_bHasOwnAnimationStateData = false;
 	bool m_bAlphaPremultiplied = true;

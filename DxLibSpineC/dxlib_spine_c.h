@@ -91,6 +91,8 @@ public:
 
 	void SwitchBlendModeAdoption() { m_bForceBlendModeNormal ^= true; }
 	void SetLeaveOutList(const char** list, int listCount);
+
+	DxLib::FLOAT4 GetBoundingBox() const;
 private:
 	bool m_bHasOwnAnimationStateData = false;
 	bool m_bAlphaPremultiplied = true;

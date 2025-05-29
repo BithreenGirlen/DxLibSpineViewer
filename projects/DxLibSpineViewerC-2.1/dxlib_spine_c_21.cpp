@@ -1,4 +1,7 @@
 
+/* To calculate bounding box */
+#include <float.h>
+
 #include <spine/extension.h>
 
 #include "dxlib_spine_c_21.h"
@@ -213,7 +216,7 @@ void CDxLibSpineDrawerC21::Draw()
 			attachmentColour.b = pSkinnedMeshAttachment->b;
 			attachmentColour.a = pSkinnedMeshAttachment->a;
 
-			spFloatArray_setSize(pVertices, pSkinnedMeshAttachment->bonesCount);
+			spFloatArray_setSize(pVertices, pSkinnedMeshAttachment->uvsCount);
 			spSkinnedMeshAttachment_computeWorldVertices(pSkinnedMeshAttachment, pSlot, pVertices->items);
 			pAttachmentUvs = pSkinnedMeshAttachment->uvs;
 			pIndices = pSkinnedMeshAttachment->triangles;
@@ -289,6 +292,65 @@ void CDxLibSpineDrawerC21::SetLeaveOutList(const char** list, int listCount)
 	{
 		MALLOC_STR(m_leaveOutList[i], list[i]);
 	}
+}
+
+DxLib::FLOAT4 CDxLibSpineDrawerC21::GetBoundingBox() const
+{
+	float fMinX = FLT_MAX;
+	float fMinY = FLT_MAX;
+	float fMaxX = -FLT_MAX;
+	float fMaxY = -FLT_MAX;
+
+	spFloatArray* pTempVertices = spFloatArray_create(128);
+
+	for (int i = 0; i < skeleton->slotsCount; ++i)
+	{
+		spSlot* pSlot = skeleton->drawOrder[i];
+		spAttachment* pAttachment = pSlot->attachment;
+
+		if (pAttachment == nullptr)continue;
+
+		if (pAttachment->type == SP_ATTACHMENT_REGION)
+		{
+			spRegionAttachment* pRegionAttachment = (spRegionAttachment*)pAttachment;
+
+			spFloatArray_setSize(pTempVertices, 8);
+			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, pTempVertices->items);
+		}
+		else if (pAttachment->type == SP_ATTACHMENT_MESH)
+		{
+			spMeshAttachment* pMeshAttachment = (spMeshAttachment*)pAttachment;
+
+			spFloatArray_setSize(pTempVertices, pMeshAttachment->verticesCount);
+			spMeshAttachment_computeWorldVertices(pMeshAttachment, pSlot, pTempVertices->items);
+		}
+		else if (pAttachment->type == SP_ATTACHMENT_SKINNED_MESH)
+		{
+			spSkinnedMeshAttachment* pSkinnedMeshAttachment = (spSkinnedMeshAttachment*)pAttachment;
+
+			spFloatArray_setSize(pTempVertices, pSkinnedMeshAttachment->uvsCount);
+			spSkinnedMeshAttachment_computeWorldVertices(pSkinnedMeshAttachment, pSlot, pTempVertices->items);
+		}
+		else
+		{
+			continue;
+		}
+
+		for (size_t i = 0; i < pTempVertices->size; i += 2)
+		{
+			float fX = pTempVertices->items[i];
+			float fY = pTempVertices->items[i + 1LL];
+
+			fMinX = fMinX < fX ? fMinX : fX;
+			fMinY = fMinY < fY ? fMinY : fY;
+			fMaxX = fMaxX > fX ? fMaxX : fX;
+			fMaxY = fMaxY > fY ? fMaxY : fY;
+		}
+	}
+
+	if (pTempVertices != nullptr)spFloatArray_dispose(pTempVertices);
+
+	return DxLib::FLOAT4{ fMinX, fMinY, fMaxX - fMinX, fMaxY - fMinY };
 }
 
 void CDxLibSpineDrawerC21::ClearLeaveOutList()

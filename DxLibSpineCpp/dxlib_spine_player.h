@@ -96,6 +96,7 @@ private:
 	bool AddDrawable(spine::SkeletonData* const pSkeletonData);
 	bool SetupDrawer();
 
+	DxLib::FLOAT4 GetBoundingBox();
 	void WorkOutDefaultSize();
 	void WorkOutDefaultScale();
 

@@ -38,9 +38,6 @@ bool CDxLibSpinePlayer::LoadSpineFromFile(const std::vector<std::string>& atlasP
 
 	if (m_skeletonData.empty())return false;
 
-	WorkOutDefaultSize();
-	WorkOutDefaultScale();
-
 	return SetupDrawer();
 }
 /*メモリ取り込み*/
@@ -68,9 +65,6 @@ bool CDxLibSpinePlayer::LoadSpineFromMemory(const std::vector<std::string>& atla
 	}
 
 	if (m_skeletonData.empty())return false;
-
-	WorkOutDefaultSize();
-	WorkOutDefaultScale();
 
 	return SetupDrawer();
 }
@@ -566,6 +560,9 @@ bool CDxLibSpinePlayer::AddDrawable(spine::SkeletonData* const pSkeletonData)
 /*描画器設定*/
 bool CDxLibSpinePlayer::SetupDrawer()
 {
+	WorkOutDefaultSize();
+	WorkOutDefaultScale();
+
 	for (const auto& pSkeletonDatum : m_skeletonData)
 	{
 		bool bRet = AddDrawable(pSkeletonDatum.get());
@@ -592,11 +589,32 @@ bool CDxLibSpinePlayer::SetupDrawer()
 		}
 	}
 
+	DxLib::FLOAT4 rect = GetBoundingBox();
+	m_fDefaultOffset.u = rect.x;
+	m_fDefaultOffset.v = rect.y;
+
 	RestartAnimation();
 
 	ResetScale();
 
 	return m_animationNames.size() > 0;
+}
+DxLib::FLOAT4 CDxLibSpinePlayer::GetBoundingBox()
+{
+	float fMinX = FLT_MAX;
+	float fMinY = FLT_MAX;
+	float fMaxWidth = -FLT_MAX;
+	float fMaxHeight = -FLT_MAX;
+
+	for (const auto& m_drawable : m_drawables)
+	{
+		DxLib::FLOAT4 rect = m_drawable->GetBoundingBox();
+		fMinX = (std::min)(fMinX, rect.x);
+		fMinY = (std::min)(fMinY, rect.y);
+		fMaxWidth = (std::max)(fMaxWidth, rect.z);
+		fMaxHeight = (std::max)(fMaxHeight, rect.w);
+	}
+	return DxLib::FLOAT4{ fMinX, fMinY, fMaxWidth, fMaxHeight};
 }
 /*標準寸法算出*/
 void CDxLibSpinePlayer::WorkOutDefaultSize()
