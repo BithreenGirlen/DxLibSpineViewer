@@ -147,6 +147,7 @@
     <ClInclude Include="..\..\shared-src\spine_atlas_dialogue.h" />
     <ClInclude Include="..\..\shared-src\spine_manipulator_dialogue.h" />
     <ClInclude Include="..\..\shared-src\spine_player_shared.h" />
+    <ClInclude Include="..\..\shared-src\export_setting_dialogue.h" />
     <ClInclude Include="..\..\shared-src\spine_setting_dialogue.h" />
     <ClInclude Include="..\..\shared-src\win_dialogue.h" />
     <ClInclude Include="..\..\shared-src\dialogue_template.h" />
@@ -231,6 +232,7 @@
     <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp" />
     <ClCompile Include="..\..\shared-src\spine_atlas_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\spine_manipulator_dialogue.cpp" />
+    <ClCompile Include="..\..\shared-src\export_setting_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\spine_setting_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\win_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\dialogue_template.cpp" />

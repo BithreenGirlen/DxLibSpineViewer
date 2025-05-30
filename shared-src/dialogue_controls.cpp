@@ -534,9 +534,11 @@ CEdit::~CEdit()
 
 }
 
-bool CEdit::Create(const wchar_t* initialText, HWND hParentWnd)
+bool CEdit::Create(const wchar_t* initialText, HWND hParentWnd, bool bReadOnly, bool bBorder, bool bNumber, bool bPassword)
 {
-	m_hWnd = ::CreateWindowEx(0, WC_EDIT, initialText, WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+	m_hWnd = ::CreateWindowEx(0, WC_EDIT, initialText,
+		WS_VISIBLE | WS_CHILD | WS_TABSTOP | (bReadOnly ? ES_READONLY : 0x00) | (bBorder ? WS_BORDER : 0x00) | (bNumber ? ES_NUMBER : 0x00) | (bPassword ? ES_PASSWORD : 0x00),
+		0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
 	return m_hWnd != nullptr;
 }
 
@@ -557,4 +559,67 @@ bool CEdit::SetText(size_t textLength, const wchar_t* text)
 {
 	LRESULT lResult = ::SendMessage(m_hWnd, WM_SETTEXT, textLength, reinterpret_cast<LPARAM>(text));
 	return lResult == TRUE;
+}
+
+/* ==================== Up-down control ==================== */
+
+CSpin::CSpin()
+{
+
+}
+
+CSpin::~CSpin()
+{
+
+}
+
+bool CSpin::Create(HWND hParentWnd, unsigned short usMin, unsigned short usMax)
+{
+	m_buddy.Create(L"", hParentWnd, false, true, true, false);
+
+	m_hWnd = ::CreateWindowExW(0, UPDOWN_CLASSW, L"",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_HOTTRACK,
+		0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+
+	if (m_hWnd != nullptr)
+	{
+		::SendMessage(m_hWnd, UDM_SETRANGE, TRUE, MAKELONG(usMax, usMin));
+		::SendMessage(m_hWnd, UDM_SETPOS, 0, usMax);
+	}
+
+	return m_hWnd != nullptr && m_buddy.GetHwnd() != nullptr;
+}
+
+long CSpin::GetValue() const
+{
+	/*
+	* Document say 'lParam` is pointer to BOOL, which becomes 0 on success, non-zero on failure,
+	* but must be NULL on cross-process situation.
+	* Historical background being unsure, this tedious error reporting should be left untouched.
+	*/
+	//if (result)
+	//{
+	//	BOOL iResult = -1;
+	//	long lPosition = ::SendMessage(m_hWnd, UDM_GETPOS32, 0, reinterpret_cast<LPARAM>(&iResult));
+	//	if (result != nullptr)*result = (iResult != 0);
+	//	return lPosition;
+	//}
+
+	return static_cast<long>(::SendMessage(m_hWnd, UDM_GETPOS32, 0, 0));
+}
+
+void CSpin::SetValue(long value) const
+{
+	::SendMessage(m_hWnd, UDM_SETPOS32, 0, value);
+}
+
+HWND CSpin::GetBuddyHandle() const
+{
+	return m_buddy.GetHwnd();
+}
+
+void CSpin::AdjustPosition(int x, int y, int width, int height)
+{
+	::MoveWindow(m_buddy.GetHwnd(), x, y, width, height, TRUE);
+	::MoveWindow(m_hWnd, x + width, y, width / 2, height, TRUE);
 }

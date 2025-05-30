@@ -277,6 +277,9 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kAddEffectFile:
 			MenuOnAddFile();
 			break;
+		case Menu::kExportSetting:
+			MenuOnExportSetting();
+			break;
 		case Menu::kSeeThroughImage:
 			MenuOnSeeThroughImage();
 			break;
@@ -533,7 +536,7 @@ void CMainWindow::InitialiseMenuBar()
 
 	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kOpenFolder, "Open folder");
 	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kFileSetting, "Setting");
+	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kFileSetting, "Load setting");
 	if (iRet == 0)goto failed;
 	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kSelectFiles, "Select files");
 	if (iRet == 0)goto failed;
@@ -546,6 +549,8 @@ void CMainWindow::InitialiseMenuBar()
 	iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kAtlasSetting, "Re-attachment");
 	if (iRet == 0)goto failed;
 	iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kAddEffectFile, "Add effect");
+	if (iRet == 0)goto failed;
+	iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kExportSetting, "Export setting");
 	if (iRet == 0)goto failed;
 
 	hMenuWindow = ::CreateMenu();
@@ -676,23 +681,6 @@ void CMainWindow::MenuOnSelectFiles()
 		}
 	}
 }
-/*ファイル追加*/
-void CMainWindow::MenuOnAddFile()
-{
-	if (!m_dxLibSpinePlayer.HasLoaded() || m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
-
-	std::wstring wstrAtlasFile = win_dialogue::SelectOpenFile(L"atlas file", L"*.atlas;*.atlas.txt", L"Select atlas file to add", m_hWnd, true);
-	if (wstrAtlasFile.empty())return;
-
-	std::wstring wstrSkeletonFile = win_dialogue::SelectOpenFile(L"skeleton file", L"*.skel;*.bin;*.json;*.txt", L"Select skeleton file to add", m_hWnd, true);
-	if (wstrSkeletonFile.empty())return;
-
-	std::string strAtlasFile = win_text::NarrowUtf8(wstrAtlasFile);
-	std::string strSkeletonFile = win_text::NarrowUtf8(wstrSkeletonFile);
-	bool bBinary = m_spineSettingDialogue.IsSkelBinary(wstrSkeletonFile.c_str());
-
-	m_dxLibSpinePlayer.AddSpineFromFile(strAtlasFile.c_str(), strSkeletonFile.c_str(), bBinary);
-}
 /*骨組み操作画面呼び出し*/
 void CMainWindow::MenuOnSkeletonSetting()
 {
@@ -720,6 +708,28 @@ void CMainWindow::MenuOnAtlasSetting()
 	{
 		::SetFocus(m_spineAtlasDialogue.GetHwnd());
 	}
+}
+/*ファイル追加*/
+void CMainWindow::MenuOnAddFile()
+{
+	if (!m_dxLibSpinePlayer.HasLoaded() || m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
+
+	std::wstring wstrAtlasFile = win_dialogue::SelectOpenFile(L"atlas file", L"*.atlas;*.atlas.txt", L"Select atlas file to add", m_hWnd, true);
+	if (wstrAtlasFile.empty())return;
+
+	std::wstring wstrSkeletonFile = win_dialogue::SelectOpenFile(L"skeleton file", L"*.skel;*.bin;*.json;*.txt", L"Select skeleton file to add", m_hWnd, true);
+	if (wstrSkeletonFile.empty())return;
+
+	std::string strAtlasFile = win_text::NarrowUtf8(wstrAtlasFile);
+	std::string strSkeletonFile = win_text::NarrowUtf8(wstrSkeletonFile);
+	bool bBinary = m_spineSettingDialogue.IsSkelBinary(wstrSkeletonFile.c_str());
+
+	m_dxLibSpinePlayer.AddSpineFromFile(strAtlasFile.c_str(), strSkeletonFile.c_str(), bBinary);
+}
+
+void CMainWindow::MenuOnExportSetting()
+{
+	m_exportSettingDialogue.Open(::GetModuleHandleA(nullptr), m_hWnd, L"Export setting");
 }
 /*透過*/
 void CMainWindow::MenuOnSeeThroughImage()
@@ -819,14 +829,14 @@ void CMainWindow::MenuOnStartRecording(bool bAsVideo)
 
 	if (bAsVideo)
 	{
-		m_dxLibRecorder.Start(CDxLibRecorder::EOption::kAsVideo, 60);
+		m_dxLibRecorder.Start(CDxLibRecorder::EOption::kAsVideo, m_exportSettingDialogue.GetVideoFps());
 
 		/* Disable manual resizing once video recording has started. */
 		MenuOnAllowManualSizing();
 	}
 	else
 	{
-		m_dxLibRecorder.Start();
+		m_dxLibRecorder.Start(CDxLibRecorder::EOption::kNone, m_exportSettingDialogue.GetImageFps());
 	}
 }
 /*記録終了*/

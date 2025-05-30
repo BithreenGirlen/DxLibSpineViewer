@@ -144,13 +144,32 @@ public:
 	CEdit();
 	~CEdit();
 
-	bool Create(const wchar_t* initialText, HWND hParentWnd);
+	bool Create(const wchar_t* initialText, HWND hParentWnd, bool bReadOnly = false, bool bBorder = true, bool bNumber = false, bool bPassword = false);
 	HWND GetHwnd()const { return m_hWnd; }
 
 	std::wstring GetText();
 	bool SetText(size_t textLength, const wchar_t* text);
 private:
 	HWND m_hWnd = nullptr;
+};
+
+class CSpin
+{
+public:
+	CSpin();
+	~CSpin();
+
+	bool Create(HWND hParentWnd, unsigned short usMin, unsigned short usMax);
+	HWND GetHwnd()const { return m_hWnd; }
+
+	long GetValue() const;
+	void SetValue(long value) const;
+
+	HWND GetBuddyHandle() const;
+	void AdjustPosition(int x, int y, int width, int height);
+private:
+	HWND m_hWnd = nullptr;
+	CEdit m_buddy;
 };
 
 #endif // !DIALOGUE_CONTROLS_H_

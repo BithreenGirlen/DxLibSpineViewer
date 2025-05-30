@@ -12,6 +12,7 @@
 #include "spine_atlas_dialogue.h"
 
 #include "dxlib_recorder.h"
+#include "export_setting_dialogue.h"
 
 class CMainWindow
 {
@@ -20,7 +21,7 @@ public:
 	~CMainWindow();
 	bool Create(HINSTANCE hInstance, const wchar_t* pwzWindowName);
 	int MessageLoop();
-	HWND GetHwnd()const { return m_hWnd;}
+	HWND GetHwnd()const { return m_hWnd; }
 private:
 	const wchar_t* m_swzClassName = L"Dxlib-spine window";
 	const wchar_t* m_swzDefaultWindowName = L"DxLib spine";
@@ -44,19 +45,25 @@ private:
 	LRESULT OnRButtonUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMButtonUp(WPARAM wParam, LPARAM lParam);
 
-	enum Menu
+	struct Menu abstract final
 	{
-		kOpenFolder = 1, kFileSetting, kSelectFiles,
-		kSkeletonSetting, kAtlasSetting, kAddEffectFile,
-		kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
-		kSnapAsPNG, kSnapAsJPG,
-		kStartStoringImages, kStartVideoRecording,
-		kSaveAsGIF, kSaveAsPNGs,
-		kEndVideoRecording
+		enum
+		{
+			kOpenFolder = 1, kFileSetting, kSelectFiles,
+			kSkeletonSetting, kAtlasSetting, kAddEffectFile, kExportSetting,
+			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
+			kSnapAsPNG, kSnapAsJPG,
+			kStartStoringImages, kStartVideoRecording,
+			kSaveAsGIF, kSaveAsPNGs,
+			kEndVideoRecording
+		};
 	};
-	enum MenuBar
+	struct MenuBar abstract final
 	{
-		kFile, kImage, kWindow
+		enum
+		{
+			kFile, kImage, kWindow
+		};
 	};
 
 	POINT m_cursorPos{};
@@ -82,10 +89,11 @@ private:
 	void MenuOnOpenFolder();
 	void MenuOnFileSetting();
 	void MenuOnSelectFiles();
-	void MenuOnAddFile();
 
 	void MenuOnSkeletonSetting();
 	void MenuOnAtlasSetting();
+	void MenuOnAddFile();
+	void MenuOnExportSetting();
 
 	void MenuOnSeeThroughImage();
 	void MenuOnAllowManualSizing();
@@ -117,6 +125,7 @@ private:
 	CSpineAtlasDialogue m_spineAtlasDialogue;
 
 	CDxLibRecorder m_dxLibRecorder;
+	CExportSettingDialogue m_exportSettingDialogue;
 
 	void UpdateWindowResizableAttribute();
 	void ResizeWindow();
