@@ -73,19 +73,34 @@ https://github.com/user-attachments/assets/d6682127-e01f-444d-838d-78b3bddac121
 1. Right click on the window.
 2. Select `Snap as PNG` or `Snap as JPG`.
 
-### Export as multiple images
+### Export as animation
+
+1. Right click on the window.
+2. Select `Export as GIF` or `Export as H264`.
+
+More flexible recording is available by unchecking `Export per anim.` option from `Image->Export setting`.
+
+<details><summary>Note on flexible recording</summary>
+
+| State | Behaviour |
+| ---- | ---- |
+| `Export per anim.` checked | Restarts the animation once recording has started, and ends recording as soon as animation has ended. |
+| `Export per anim.` unchecked | Recording start and end timing can be choosen by user hand. |
+
+#### Export as multiple images
 
 1. Right click on the window.
 2. Select `Start image recording`.
 3. Right click again and select `Save as GIF` or `Save as PNGs`.
 
-### Export as video
+#### Export as video
 
 1. Right click on the window.
 2. Select `Start video recording`.
 3. Right click again and select `End recording`.
 
 </details>
+
 <details><summary>Note on filename</summary>
 
 - The files are saved in the subdirectory of the execution file.
