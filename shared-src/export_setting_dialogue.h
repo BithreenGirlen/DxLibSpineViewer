@@ -57,7 +57,7 @@ private:
 
 	unsigned short m_imageFps = 30;
 	unsigned short m_videoFps = 60;
-	bool m_isToExportPerAnimation = false;
+	bool m_isToExportPerAnimation = true;
 
 	void GetInputs();
 };
