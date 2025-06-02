@@ -145,11 +145,11 @@ LRESULT CExportSettingDialogue::OnCreate(HWND hWnd)
 
 	m_imageFpsStatic.Create(L"Imgae FPS", m_hWnd);
 	m_imageFpsSpin.Create(m_hWnd, 15, 60);
-	m_imageFpsSpin.SetValue(30);
+	m_imageFpsSpin.SetValue(m_imageFps);
 
 	m_videoFpsStatic.Create(L"Video FPS", m_hWnd);
 	m_videoFpsSpin.Create(m_hWnd, 15, 60);
-	m_videoFpsSpin.SetValue(60);
+	m_videoFpsSpin.SetValue(m_videoFps);
 
 	m_exportMethodButton.Create(L"Export per anim.", m_hWnd, reinterpret_cast<HMENU>(Controls::kExportMethod), true);
 	m_exportMethodButton.SetCheckBox(m_isToExportPerAnimation);

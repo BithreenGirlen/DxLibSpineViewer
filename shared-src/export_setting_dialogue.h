@@ -38,7 +38,7 @@ private:
 	{
 		enum
 		{
-			kExportMethod
+			kExportMethod = 1
 		};
 	};
 
