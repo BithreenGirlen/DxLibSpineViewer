@@ -1,14 +1,16 @@
 # DxLibSpineViewer
 
-Spine viewer for Windows based on [Runtime for DxLib](#spine-runtime-for-dxlib) plus official generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`, `4.0`, and `4.1`.
+Spine viewer for Windows based on [Runtime for DxLib](#spine-runtime-for-dxlib) plus official generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`, `4.0`, `4.1` and `4.2`.
 
 ## Feature
-- Multiple rendering
+- Multiple skeletons rendering
 - Runtime manipulation
   - Exclude slot
   - Mix skins
+    - This is available for Spine `3.8` and later.
   - Mix animations
   - Replace attachment
+    - This is available only for slots associated with multiple attachments.
 - Media file export
   - As `PNG`, `GIF`, `JPG`, and `H264`.
 - Transparent/borderless window style
@@ -142,6 +144,8 @@ More flexible recording is available by unchecking `Export per anim.` option fro
 | <kbd>R</kbd> | Toggle draw-order between filename asc/descending order. _Default: ascending order_. | 
 
 - <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when the current spine(s) is/are loaded via `Open folder`.
+- Manual toggling of PMA is available for Spine version `3.8` and older.
+  - For Spine version `4.0` and later, runtime applies pma property read from atlas file.
 
 </details>
 <details><summary>Tip on PMA and blend mode</summary>
@@ -202,8 +206,8 @@ The `CMakeLists.txt` modifies some of the external sources as well as obtains th
 
 - Spine runtime for DxLib provides functionality to (1) load texture and (2) render skeleton.
 - There are two kind of runtimes depending on the official generic runtimes to be used with.
-  - [dxlib_spine.cpp](/DxLibSpineCpp/dxlib_spine.cpp) is to be used with `spine-cpp`. (`3.8` to `4.1`)
-  - [dxlib_spine_c.cpp](/DxLibSpineC/dxlib_spine_c.cpp) is to be used with `spine-c`. (`3.5` to `4.1`)
+  - [dxlib_spine.cpp](/DxLibSpineCpp/dxlib_spine.cpp) is to be used with `spine-cpp`. (`3.8` to `4.2`)
+  - [dxlib_spine_c.cpp](/DxLibSpineC/dxlib_spine_c.cpp) is to be used with `spine-c`. (`3.5` to `4.2`)
     - Class is used because DxLib is C++ library, but STL is avoided.
 
 Besides, there is a runtime for spine `2.1.27` under [projects/DxLibSpineViewerC-2.1](/projects/DxLibSpineViewerC-2.1). But note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.

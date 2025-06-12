@@ -19,8 +19,8 @@ public:
 	CDxLibSpinePlayerC();
 	~CDxLibSpinePlayerC();
 
-	bool LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
-	bool LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
+	bool LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel);
+	bool LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool isBinarySkel);
 
 	bool AddSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool bBinary);
 
@@ -105,7 +105,6 @@ private:
 	void WorkOutDefaultScale();
 
 	void UpdatePosition();
-	void UpdateTimeScale();
 
 	void ClearAnimationTracks();
 

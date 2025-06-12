@@ -14,7 +14,7 @@ CDxLibSpinePlayer::~CDxLibSpinePlayer()
 }
 
 /*ファイル取り込み*/
-bool CDxLibSpinePlayer::LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary)
+bool CDxLibSpinePlayer::LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel)
 {
 	if (atlasPaths.size() != skelPaths.size())return false;
 	ClearDrawables();
@@ -27,7 +27,7 @@ bool CDxLibSpinePlayer::LoadSpineFromFile(const std::vector<std::string>& atlasP
 		std::unique_ptr<spine::Atlas> atlas = std::make_unique<spine::Atlas>(strAtlasPath.c_str(), &m_textureLoader);
 		if (atlas.get() == nullptr)continue;
 
-		std::shared_ptr<spine::SkeletonData> skeletonData = bIsBinary ?
+		std::shared_ptr<spine::SkeletonData> skeletonData = isBinarySkel ?
 			spine_loader::ReadBinarySkeletonFromFile(strSkeletonPath.c_str(), atlas.get(), 1.f) :
 			spine_loader::ReadTextSkeletonFromFile(strSkeletonPath.c_str(), atlas.get(), 1.f);
 		if (skeletonData.get() == nullptr)return false;
@@ -41,7 +41,7 @@ bool CDxLibSpinePlayer::LoadSpineFromFile(const std::vector<std::string>& atlasP
 	return SetupDrawer();
 }
 /*メモリ取り込み*/
-bool CDxLibSpinePlayer::LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary)
+bool CDxLibSpinePlayer::LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool isBinarySkel)
 {
 	if (atlasData.size() != skelData.size() || atlasData.size() != atlasPaths.size())return false;
 	ClearDrawables();
@@ -55,7 +55,7 @@ bool CDxLibSpinePlayer::LoadSpineFromMemory(const std::vector<std::string>& atla
 		std::unique_ptr<spine::Atlas> atlas = std::make_unique<spine::Atlas>(strAtlasDatum.c_str(), static_cast<int>(strAtlasDatum.size()), strAtlasPath.c_str(), &m_textureLoader);
 		if (atlas.get() == nullptr)continue;
 
-		std::shared_ptr<spine::SkeletonData> skeletonData = bIsBinary ?
+		std::shared_ptr<spine::SkeletonData> skeletonData = isBinarySkel ?
 			spine_loader::ReadBinarySkeletonFromMemory(reinterpret_cast<const unsigned char*>(strSkeletonData.data()), static_cast<int>(strSkeletonData.size()), atlas.get(), 1.f) :
 			spine_loader::ReadTextSkeletonFromMemory(strSkeletonData.data(), atlas.get(), 1.f);
 		if (skeletonData.get() == nullptr)return false;
@@ -86,7 +86,6 @@ bool CDxLibSpinePlayer::AddSpineFromFile(const char* szAtlasPath, const char* sz
 
 	m_atlases.push_back(std::move(atlas));
 	m_skeletonData.push_back(std::move(skeletonData));
-	m_drawables.back()->SetPma(false);
 	if (m_bDrawOrderReversed)
 	{
 		std::rotate(m_drawables.rbegin(), m_drawables.rbegin() + 1, m_drawables.rend());
@@ -112,7 +111,7 @@ void CDxLibSpinePlayer::Update(float fDelta)
 {
 	for (const auto& drawable : m_drawables)
 	{
-		drawable->Update(fDelta);
+		drawable->Update(fDelta * m_fTimeScale);
 	}
 }
 /*再描画*/
@@ -179,8 +178,6 @@ void CDxLibSpinePlayer::RescaleTime(bool bHasten)
 		m_fTimeScale -= kfTimeScalePortion;
 	}
 	if (m_fTimeScale < 0.f)m_fTimeScale = 0.f;
-
-	UpdateTimeScale();
 }
 /*速度・尺度・視点初期化*/
 void CDxLibSpinePlayer::ResetScale()
@@ -190,7 +187,6 @@ void CDxLibSpinePlayer::ResetScale()
 	m_fCanvasScale = m_fDefaultScale;
 	m_fOffset = m_fDefaultOffset;
 
-	UpdateTimeScale();
 	UpdatePosition();
 }
 /*位置移動*/
@@ -258,7 +254,7 @@ void CDxLibSpinePlayer::TogglePma()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
-		pDrawable->SetPma(!pDrawable->GetPma());
+		pDrawable->isAlphaPremultiplied ^= true;
 	}
 }
 /*槽溝指定合成方法採択可否*/
@@ -266,7 +262,7 @@ void CDxLibSpinePlayer::ToggleBlendModeAdoption()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
-		pDrawable->SetForceBlendModeNormal(!pDrawable->GetForceBlendModeNormal());
+		pDrawable->isToForceBlendModeNormal ^= true;
 	}
 }
 /*描画順切り替え*/
@@ -548,10 +544,8 @@ bool CDxLibSpinePlayer::AddDrawable(spine::SkeletonData* const pSkeletonData)
 	auto pDrawable = std::make_shared<CDxLibSpineDrawer>(pSkeletonData);
 	if (pDrawable.get() == nullptr)return false;
 
-	pDrawable->timeScale = 1.0f;
 	pDrawable->skeleton->setPosition(m_fBaseSize.u / 2, m_fBaseSize.v / 2);
-	pDrawable->skeleton->setToSetupPose();
-	pDrawable->skeleton->updateWorldTransform();
+	pDrawable->Update(0.f);
 
 	m_drawables.push_back(std::move(pDrawable));
 
@@ -718,14 +712,6 @@ void CDxLibSpinePlayer::UpdatePosition()
 	for (const auto& pDrawable : m_drawables)
 	{
 		pDrawable->skeleton->setPosition(m_fBaseSize.u / 2 - m_fOffset.u, m_fBaseSize.v / 2 - m_fOffset.v);
-	}
-}
-/*速度適用*/
-void CDxLibSpinePlayer::UpdateTimeScale()
-{
-	for (const auto& pDrawable : m_drawables)
-	{
-		pDrawable->timeScale = m_fTimeScale;
 	}
 }
 /*合成動作消去*/

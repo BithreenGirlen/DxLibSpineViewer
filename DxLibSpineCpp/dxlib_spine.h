@@ -17,24 +17,21 @@ public:
 
 	spine::Skeleton* skeleton = nullptr;
 	spine::AnimationState* animationState = nullptr;
-	float timeScale = 1.f;
+
+	/// @brief Whether alpha is premultiplied or not. For Spine 4.0 and later, this property is exported with atlas file,
+	///	       but for Spine 3.8, should be configured based on other means.
+	bool isAlphaPremultiplied = true; 
+	bool isToForceBlendModeNormal = false;
 
 	void Update(float fDelta);
 	void Draw();
 
-	void SetPma(bool bPremultiplied) { m_bAlphaPremultiplied = bPremultiplied; }
-	bool GetPma() const { return m_bAlphaPremultiplied; }
-
-	void SetForceBlendModeNormal(bool bForced) { m_bForceBlendModeNormal = bForced; }
-	bool GetForceBlendModeNormal() const { return m_bForceBlendModeNormal; }
-
+	/// @brief Set slots to be excluded from rendering
 	void SetLeaveOutList(spine::Vector<spine::String> &list);
 
 	DxLib::FLOAT4 GetBoundingBox() const;
 private:
-	bool m_bHasOwnAnimationStateData = false;
-	bool m_bAlphaPremultiplied = true;
-	bool m_bForceBlendModeNormal = false;
+	bool m_hasOwnAnimationStateData = false;
 
 	spine::Vector<float> m_worldVertices;
 	spine::Vector<DxLib::VERTEX2D> m_dxLibVertices;

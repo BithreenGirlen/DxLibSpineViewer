@@ -78,25 +78,18 @@ public:
 
 	spSkeleton* skeleton = nullptr;
 	spAnimationState* animationState = nullptr;
-	float timeScale = 1.f;
+
+	bool isAlphaPremultiplied = true;
+	bool isToForceBlendModeNormal = false;
 
 	void Update(float fDelta);
 	void Draw();
 
-	void SetPma(bool bPremultiplied) { m_bAlphaPremultiplied = bPremultiplied; }
-	bool GetPma() const { return m_bAlphaPremultiplied; }
-
-	void SetForceBlendModeNormal(bool bForced) { m_bForceBlendModeNormal = bForced; }
-	bool GetForceBlendModeNormal() const { return m_bForceBlendModeNormal; }
-
-	void SwitchBlendModeAdoption() { m_bForceBlendModeNormal ^= true; }
 	void SetLeaveOutList(const char** list, int listCount);
 
 	DxLib::FLOAT4 GetBoundingBox() const;
 private:
-	bool m_bHasOwnAnimationStateData = false;
-	bool m_bAlphaPremultiplied = true;
-	bool m_bForceBlendModeNormal = false;
+	bool m_hasOwnAnimationStateData = false;
 
 	spFloatArray* m_worldVertices = nullptr;
 	spDxLibVertexArray* m_dxLibVertices = nullptr;

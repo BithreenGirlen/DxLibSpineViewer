@@ -14,8 +14,8 @@ public:
 	CDxLibSpinePlayer();
 	~CDxLibSpinePlayer();
 
-	bool LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
-	bool LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
+	bool LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel);
+	bool LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool isBinarySkel);
 
 	bool AddSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool bBinary);
 
@@ -59,6 +59,8 @@ public:
 	void MixSkins(const std::vector<std::string>& skinNames);
 	void MixAnimations(const std::vector<std::string>& animationNames);
 
+	/// @brief Searches slots having multiple attachments. If each slot is associated with only single attachment, returns empty.
+	/// @return slot name as key and attachment names as values.
 	std::unordered_map<std::string, std::vector<std::string>> GetSlotNamesWithTheirAttachments();
 	bool ReplaceAttachment(const char* szSlotName, const char* szAttachmentName);
 
@@ -101,7 +103,6 @@ private:
 	void WorkOutDefaultScale();
 
 	void UpdatePosition();
-	void UpdateTimeScale();
 
 	void ClearAnimationTracks();
 

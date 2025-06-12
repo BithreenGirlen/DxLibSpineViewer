@@ -21,7 +21,7 @@ CDxLibSpineDrawer::CDxLibSpineDrawer(spine::SkeletonData* pSkeletonData, spine::
 	if (pAnimationStateData == nullptr)
 	{
 		pAnimationStateData = new spine::AnimationStateData(pSkeletonData);
-		m_bHasOwnAnimationStateData = true;
+		m_hasOwnAnimationStateData = true;
 	}
 	animationState = new spine::AnimationState(pAnimationStateData);
 
@@ -60,7 +60,7 @@ CDxLibSpineDrawer::~CDxLibSpineDrawer()
 {
 	if (animationState != nullptr)
 	{
-		if (m_bHasOwnAnimationStateData)
+		if (m_hasOwnAnimationStateData)
 		{
 			delete animationState->getData();
 		}
@@ -80,9 +80,14 @@ void CDxLibSpineDrawer::Update(float fDelta)
 #ifndef SPINE_4_1_OR_LATER
 		skeleton->update(fDelta);
 #endif
-		animationState->update(fDelta * timeScale);
+		animationState->update(fDelta);
 		animationState->apply(*skeleton);
+#ifdef SPINE_4_2_OR_LATER
+		skeleton->update(fDelta);
+		skeleton->updateWorldTransform(spine::Physics::Physics_Update);
+#else
 		skeleton->updateWorldTransform();
+#endif
 	}
 }
 
@@ -137,15 +142,14 @@ void CDxLibSpineDrawer::Draw()
 			pAttachmentUvs = &pRegionAttachment->getUVs();
 			pIndices = &m_quadIndices;
 
-			/*Fetch texture handle stored in AltasPage*/
 #ifdef SPINE_4_1_OR_LATER
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRegion());
-			m_bAlphaPremultiplied = pAtlasRegion->page->pma;
+			isAlphaPremultiplied = pAtlasRegion->page->pma;
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->rendererObject)));
 #else
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRendererObject());
 #ifdef SPINE_4_0
-			m_bAlphaPremultiplied = pAtlasRegion->page->pma;
+			isAlphaPremultiplied = pAtlasRegion->page->pma;
 #endif
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->page->getRendererObject())));
 #endif // SPINE_4_1_OR_LATER
@@ -167,12 +171,12 @@ void CDxLibSpineDrawer::Draw()
 
 #ifdef SPINE_4_1_OR_LATER
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRegion());
-			m_bAlphaPremultiplied = pAtlasRegion->page->pma;
+			isAlphaPremultiplied = pAtlasRegion->page->pma;
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->rendererObject)));
 #else
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRendererObject());
 #ifdef SPINE_4_0
-			m_bAlphaPremultiplied = pAtlasRegion->page->pma;
+			isAlphaPremultiplied = pAtlasRegion->page->pma;
 #endif
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->page->getRendererObject())));
 #endif // SPINE_4_1_OR_LATER
@@ -204,7 +208,7 @@ void CDxLibSpineDrawer::Draw()
 
 		const spine::Color& skeletonColor = skeleton->getColor();
 		const spine::Color& slotColor = slot.getColor();
-		spine::Color tint
+		const spine::Color tint
 		(
 			skeletonColor.r * slotColor.r * pAttachmentColor->r,
 			skeletonColor.g * slotColor.g * pAttachmentColor->g,
@@ -214,7 +218,7 @@ void CDxLibSpineDrawer::Draw()
 
 		/*Convert to DxLib's structure*/
 		m_dxLibVertices.clear();
-		for (int ii = 0; ii < pVertices->size(); ii +=2)
+		for (int ii = 0; ii < pVertices->size(); ii += 2)
 		{
 			DxLib::VERTEX2D dxLibVertex{};
 			dxLibVertex.pos.x = (*pVertices)[ii];
@@ -236,11 +240,11 @@ void CDxLibSpineDrawer::Draw()
 		}
 
 		int iDxLibBlendMode;
-		spine::BlendMode spineBlendMode = m_bForceBlendModeNormal ? spine::BlendMode::BlendMode_Normal : slot.getData().getBlendMode();
+		spine::BlendMode spineBlendMode = isToForceBlendModeNormal ? spine::BlendMode::BlendMode_Normal : slot.getData().getBlendMode();
 		switch (spineBlendMode)
 		{
 		case spine::BlendMode_Additive:
-			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ADD : DX_BLENDMODE_SPINE_ADDITIVE;
+			iDxLibBlendMode = isAlphaPremultiplied ? DX_BLENDMODE_PMA_ADD : DX_BLENDMODE_SPINE_ADDITIVE;
 			break;
 		case spine::BlendMode_Multiply:
 			iDxLibBlendMode = DX_BLENDMODE_CUSTOM;
@@ -249,7 +253,7 @@ void CDxLibSpineDrawer::Draw()
 			iDxLibBlendMode = DX_BLENDMODE_SPINE_SCREEN;
 			break;
 		default:
-			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
+			iDxLibBlendMode = isAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
 			break;
 		}
 
@@ -270,11 +274,7 @@ void CDxLibSpineDrawer::Draw()
 void CDxLibSpineDrawer::SetLeaveOutList(spine::Vector<spine::String>& list)
 {
 	/*There are some slots having mask or nuisance effect; exclude them from rendering.*/
-	m_leaveOutList.clear();
-	for (size_t i = 0; i < list.size(); ++i)
-	{
-		m_leaveOutList.add(list[i].buffer());
-	}
+	m_leaveOutList.clearAndAddAll(list);
 }
 
 DxLib::FLOAT4 CDxLibSpineDrawer::GetBoundingBox() const
@@ -292,12 +292,7 @@ DxLib::FLOAT4 CDxLibSpineDrawer::GetBoundingBox() const
 
 bool CDxLibSpineDrawer::IsToBeLeftOut(const spine::String& slotName)
 {
-	/*The comparison method depends on what should be excluded; the precise matching or just containing.*/
-	for (size_t i = 0; i < m_leaveOutList.size(); ++i)
-	{
-		if (strcmp(slotName.buffer(), m_leaveOutList[i].buffer()) == 0)return true;
-	}
-	return false;
+	return m_leaveOutList.contains(slotName);
 }
 
 void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path)

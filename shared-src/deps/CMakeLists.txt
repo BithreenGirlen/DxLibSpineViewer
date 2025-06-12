@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.10)
 project(DxLibSpineViewer-deps)
 
 set(DIR_DXLIB ${CMAKE_CURRENT_LIST_DIR}/dxlib)
@@ -49,7 +49,7 @@ set(
 	"3.8:spine-cpp-3.8"
 	"4.0:spine-cpp-4.0"
 	"4.1:spine-cpp-4.1"
-	"4.1:spine-c-4.1"
+	"4.2:spine-cpp-4.2"
 )
 
 function(donwload_spine_runtime BRANCH_NAME FOLDER_PATH)

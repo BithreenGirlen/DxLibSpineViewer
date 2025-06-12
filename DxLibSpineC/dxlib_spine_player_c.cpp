@@ -16,7 +16,7 @@ CDxLibSpinePlayerC::~CDxLibSpinePlayerC()
 }
 
 /*ファイル取り込み*/
-bool CDxLibSpinePlayerC::LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary)
+bool CDxLibSpinePlayerC::LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel)
 {
 	if (atlasPaths.size() != skelPaths.size())return false;
 	ClearDrawables();
@@ -29,7 +29,7 @@ bool CDxLibSpinePlayerC::LoadSpineFromFile(const std::vector<std::string>& atlas
 		std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromFile(strAtlasPath.c_str(), nullptr);
 		if (atlas.get() == nullptr)continue;
 
-		std::shared_ptr<spSkeletonData> skeletonData = bIsBinary ?
+		std::shared_ptr<spSkeletonData> skeletonData = isBinarySkel ?
 			spine_loader_c::ReadBinarySkeletonFromFile(strSkeletonPath.c_str(), atlas.get()) :
 			spine_loader_c::ReadTextSkeletonFromFile(strSkeletonPath.c_str(), atlas.get());
 		if (skeletonData.get() == nullptr)continue;
@@ -43,7 +43,7 @@ bool CDxLibSpinePlayerC::LoadSpineFromFile(const std::vector<std::string>& atlas
 	return SetupDrawer();
 }
 /*メモリ取り込み*/
-bool CDxLibSpinePlayerC::LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary)
+bool CDxLibSpinePlayerC::LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool isBinarySkel)
 {
 	if (atlasData.size() != skelData.size() || atlasData.size() != atlasPaths.size())return false;
 	ClearDrawables();
@@ -57,7 +57,7 @@ bool CDxLibSpinePlayerC::LoadSpineFromMemory(const std::vector<std::string>& atl
 		std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromMemory(strAtlasDatum.c_str(), static_cast<int>(strAtlasDatum.size()), strAtlasPath.c_str(), nullptr);
 		if (atlas.get() == nullptr)continue;
 
-		std::shared_ptr<spSkeletonData> skeletonData = bIsBinary ?
+		std::shared_ptr<spSkeletonData> skeletonData = isBinarySkel ?
 			spine_loader_c::ReadBinarySkeletonFromMemory(reinterpret_cast<const unsigned char*>((strSkeletonData.c_str())), static_cast<int>(strSkeletonData.size()), atlas.get()) :
 			spine_loader_c::ReadTextSkeletonFromMemory(strSkeletonData.c_str(), atlas.get());
 		if (skeletonData.get() == nullptr)continue;
@@ -88,7 +88,6 @@ bool CDxLibSpinePlayerC::AddSpineFromFile(const char* szAtlasPath, const char* s
 
 	m_atlases.push_back(std::move(atlas));
 	m_skeletonData.push_back(std::move(skeletonData));
-	m_drawables.back()->SetPma(false);
 	if (m_bDrawOrderReversed)
 	{
 		std::rotate(m_drawables.rbegin(), m_drawables.rbegin() + 1, m_drawables.rend());
@@ -114,7 +113,7 @@ void CDxLibSpinePlayerC::Update(float fDelta)
 {
 	for (const auto& drawable : m_drawables)
 	{
-		drawable->Update(fDelta);
+		drawable->Update(fDelta * m_fTimeScale);
 	}
 }
 /*再描画*/
@@ -181,8 +180,6 @@ void CDxLibSpinePlayerC::RescaleTime(bool bHasten)
 		m_fTimeScale -= kfTimeScalePortion;
 	}
 	if (m_fTimeScale < 0.f)m_fTimeScale = 0.f;
-
-	UpdateTimeScale();
 }
 
 void CDxLibSpinePlayerC::ResetScale()
@@ -192,7 +189,6 @@ void CDxLibSpinePlayerC::ResetScale()
 	m_fCanvasScale = m_fDefaultScale;
 	m_fOffset = m_fDefaultOffset;
 
-	UpdateTimeScale();
 	UpdatePosition();
 }
 /*位置移動*/
@@ -260,7 +256,7 @@ void CDxLibSpinePlayerC::TogglePma()
 {
 	for (const auto& drawable : m_drawables)
 	{
-		drawable->SetPma(!drawable->GetPma());
+		drawable->isAlphaPremultiplied ^= true;
 	}
 }
 /*槽溝指定合成方法採択可否*/
@@ -268,7 +264,7 @@ void CDxLibSpinePlayerC::ToggleBlendModeAdoption()
 {
 	for (const auto& drawable : m_drawables)
 	{
-		drawable->SetForceBlendModeNormal(!drawable->GetForceBlendModeNormal());
+		drawable->isToForceBlendModeNormal ^= true;
 	}
 }
 /*描画順切り替え*/
@@ -594,11 +590,9 @@ bool CDxLibSpinePlayerC::AddDrawable(spSkeletonData* const pSkeletonData)
 	auto pDrawable = std::make_shared<CDxLibSpineDrawerC>(pSkeletonData);
 	if (pDrawable.get() == nullptr)false;
 
-	pDrawable->timeScale = 1.0f;
 	pDrawable->skeleton->x = m_fBaseSize.u / 2;
 	pDrawable->skeleton->y = m_fBaseSize.v / 2;
-	spSkeleton_setToSetupPose(pDrawable->skeleton);
-	spSkeleton_updateWorldTransform(pDrawable->skeleton);
+	pDrawable->Update(0.f);
 
 	m_drawables.push_back(std::move(pDrawable));
 
@@ -759,14 +753,6 @@ void CDxLibSpinePlayerC::UpdatePosition()
 	{
 		drawable->skeleton->x = m_fBaseSize.u / 2 - m_fOffset.u;
 		drawable->skeleton->y = m_fBaseSize.v / 2 - m_fOffset.v;
-	}
-}
-/*速度適用*/
-void CDxLibSpinePlayerC::UpdateTimeScale()
-{
-	for (const auto& pDrawble : m_drawables)
-	{
-		pDrawble->timeScale = m_fTimeScale;
 	}
 }
 /*合成動作消去*/

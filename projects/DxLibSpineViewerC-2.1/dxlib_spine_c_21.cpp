@@ -84,7 +84,7 @@ char* _spUtil_readFile(const char* path, int* length)
 
 CDxLibSpineDrawerC21::CDxLibSpineDrawerC21(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
 {
-	spBone_setYDown(1);
+	spBone_setYDown(-1);
 
 	m_worldVertices = spFloatArray_create(128);
 	m_dxLibVertices = spDxLibVertexArray_create(128);
@@ -94,7 +94,7 @@ CDxLibSpineDrawerC21::CDxLibSpineDrawerC21(spSkeletonData* pSkeletonData, spAnim
 	if (pAnimationStateData == nullptr)
 	{
 		pAnimationStateData = spAnimationStateData_create(pSkeletonData);
-		m_bHasOwnAnimationStateData = true;
+		m_hasOwnAnimationStateData = true;
 	}
 	animationState = spAnimationState_create(pAnimationStateData);
 }
@@ -116,7 +116,7 @@ CDxLibSpineDrawerC21::~CDxLibSpineDrawerC21()
 
 	if (animationState != nullptr)
 	{
-		if (m_bHasOwnAnimationStateData)
+		if (m_hasOwnAnimationStateData)
 		{
 			spAnimationStateData_dispose(animationState->data);
 		}
@@ -136,7 +136,7 @@ void CDxLibSpineDrawerC21::Update(float fDelta)
 	if (skeleton == nullptr || animationState == nullptr)return;
 
 	spSkeleton_update(skeleton, fDelta);
-	spAnimationState_update(animationState, fDelta * timeScale);
+	spAnimationState_update(animationState, fDelta);
 	spAnimationState_apply(animationState, skeleton);
 	spSkeleton_updateWorldTransform(skeleton);
 }
@@ -259,13 +259,13 @@ void CDxLibSpineDrawerC21::Draw()
 		}
 
 		int iDxLibBlendMode;
-		if (!m_bForceBlendModeNormal && pSlot->data->additiveBlending)
+		if (!isToForceBlendModeNormal && pSlot->data->additiveBlending)
 		{
-			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ADD : DX_BLENDMODE_SPINE_ADDITIVE;
+			iDxLibBlendMode = isAlphaPremultiplied ? DX_BLENDMODE_PMA_ADD : DX_BLENDMODE_SPINE_ADDITIVE;
 		}
 		else
 		{
-			iDxLibBlendMode = m_bAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
+			iDxLibBlendMode = isAlphaPremultiplied ? DX_BLENDMODE_PMA_ALPHA : DX_BLENDMODE_SPINE_NORMAL;
 		}
 
 		DxLib::SetDrawBlendMode(iDxLibBlendMode, 255);
