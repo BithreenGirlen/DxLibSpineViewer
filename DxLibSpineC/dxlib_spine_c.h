@@ -93,7 +93,6 @@ private:
 
 	spFloatArray* m_worldVertices = nullptr;
 	spDxLibVertexArray* m_dxLibVertices = nullptr;
-	spUnsignedShortArray* m_dxLibIndices = nullptr;
 
 	spSkeletonClipping* m_clipper = nullptr;
 

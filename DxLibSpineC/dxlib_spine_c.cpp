@@ -88,7 +88,6 @@ CDxLibSpineDrawerC::CDxLibSpineDrawerC(spSkeletonData* pSkeletonData, spAnimatio
 
 	m_worldVertices = spFloatArray_create(128);
 	m_dxLibVertices = spDxLibVertexArray_create(128);
-	m_dxLibIndices = spUnsignedShortArray_create(128);
 
 	skeleton = spSkeleton_create(pSkeletonData);
 	if (pAnimationStateData == nullptr)
@@ -121,10 +120,6 @@ CDxLibSpineDrawerC::~CDxLibSpineDrawerC()
 	if (m_dxLibVertices != nullptr)
 	{
 		spDxLibVertexArray_dispose(m_dxLibVertices);
-	}
-	if (m_dxLibIndices != nullptr)
-	{
-		spUnsignedShortArray_dispose(m_dxLibIndices);
 	}
 
 	if (animationState != nullptr)
@@ -283,27 +278,23 @@ void CDxLibSpineDrawerC::Draw()
 		tint.b = skeleton->color.b * pSlot->color.b * pAttachmentColor->b;
 		tint.a = skeleton->color.a * pSlot->color.a * pAttachmentColor->a;
 
-		spDxLibVertexArray_clear(m_dxLibVertices);
-		for (int ii = 0; ii < pVertices->size; ii += 2)
+		spDxLibVertexArray_setSize(m_dxLibVertices, pVertices->size / 2);
+		for (int ii = 0, k = 0; ii < pVertices->size; ii += 2, ++k)
 		{
-			DxLib::VERTEX2D dxLibVertex{};
+			DxLib::VERTEX2D& dxLibVertex = m_dxLibVertices->items[k];
+
 			dxLibVertex.pos.x = pVertices->items[ii];
 			dxLibVertex.pos.y = pVertices->items[ii + 1LL];
 			dxLibVertex.pos.z = 0.f;
 			dxLibVertex.rhw = 1.f;
-			dxLibVertex.dif.r = (BYTE)(tint.r * 255.f);
-			dxLibVertex.dif.g = (BYTE)(tint.g * 255.f);
-			dxLibVertex.dif.b = (BYTE)(tint.b * 255.f);
-			dxLibVertex.dif.a = (BYTE)(tint.a * 255.f);
+
+			dxLibVertex.dif.r = static_cast<BYTE>(tint.r * 255.f);
+			dxLibVertex.dif.g = static_cast<BYTE>(tint.g * 255.f);
+			dxLibVertex.dif.b = static_cast<BYTE>(tint.b * 255.f);
+			dxLibVertex.dif.a = static_cast<BYTE>(tint.a * 255.f);
+
 			dxLibVertex.u = pAttachmentUvs[ii];
 			dxLibVertex.v = pAttachmentUvs[ii + 1LL];
-			spDxLibVertexArray_add(m_dxLibVertices, dxLibVertex);
-		}
-
-		spUnsignedShortArray_clear(m_dxLibIndices);
-		for (int ii = 0; ii < indicesCount; ++ii)
-		{
-			spUnsignedShortArray_add(m_dxLibIndices, pIndices[ii]);
 		}
 
 		int iDxLibBlendMode;
@@ -328,8 +319,8 @@ void CDxLibSpineDrawerC::Draw()
 		(
 			m_dxLibVertices->items,
 			m_dxLibVertices->size,
-			m_dxLibIndices->items,
-			m_dxLibIndices->size / 3,
+			pIndices,
+			indicesCount / 3,
 			iDxLibTexture, TRUE
 		);
 

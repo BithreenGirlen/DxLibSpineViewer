@@ -216,27 +216,23 @@ void CDxLibSpineDrawer::Draw()
 			skeletonColor.a * slotColor.a * pAttachmentColor->a
 		);
 
-		/*Convert to DxLib's structure*/
-		m_dxLibVertices.clear();
-		for (int ii = 0; ii < pVertices->size(); ii += 2)
+		m_dxLibVertices.setSize(pVertices->size() / 2, {});
+		for (int ii = 0, k = 0; ii < pVertices->size(); ii += 2, ++k)
 		{
-			DxLib::VERTEX2D dxLibVertex{};
+			DxLib::VERTEX2D& dxLibVertex = m_dxLibVertices[k];
+
 			dxLibVertex.pos.x = (*pVertices)[ii];
 			dxLibVertex.pos.y = (*pVertices)[ii + 1LL];
 			dxLibVertex.pos.z = 0.f;
 			dxLibVertex.rhw = 1.f;
-			dxLibVertex.dif.r = (BYTE)(tint.r * 255.f);
-			dxLibVertex.dif.g = (BYTE)(tint.g * 255.f);
-			dxLibVertex.dif.b = (BYTE)(tint.b * 255.f);
-			dxLibVertex.dif.a = (BYTE)(tint.a * 255.f);
+
+			dxLibVertex.dif.r = static_cast<BYTE>(tint.r * 255.f);
+			dxLibVertex.dif.g = static_cast<BYTE>(tint.g * 255.f);
+			dxLibVertex.dif.b = static_cast<BYTE>(tint.b * 255.f);
+			dxLibVertex.dif.a = static_cast<BYTE>(tint.a * 255.f);
+
 			dxLibVertex.u = (*pAttachmentUvs)[ii];
 			dxLibVertex.v = (*pAttachmentUvs)[ii + 1LL];
-			m_dxLibVertices.add(dxLibVertex);
-		}
-		m_dxLibIndices.clear();
-		for (int ii = 0; ii < pIndices->size(); ++ii)
-		{
-			m_dxLibIndices.add((*pIndices)[ii]);
 		}
 
 		int iDxLibBlendMode;
@@ -262,8 +258,8 @@ void CDxLibSpineDrawer::Draw()
 		(
 			m_dxLibVertices.buffer(),
 			static_cast<int>(m_dxLibVertices.size()),
-			m_dxLibIndices.buffer(),
-			static_cast<int>(m_dxLibIndices.size() / 3),
+			pIndices->buffer(),
+			static_cast<int>(pIndices->size() / 3),
 			iDxLibTexture, TRUE
 		);
 		m_clipper.clipEnd(slot);
