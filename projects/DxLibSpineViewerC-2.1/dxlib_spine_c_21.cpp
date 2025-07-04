@@ -235,27 +235,29 @@ void CDxLibSpineDrawerC21::Draw()
 		tint.b = skeleton->b * pSlot->b * attachmentColour.b;
 		tint.a = skeleton->a * pSlot->a * attachmentColour.a;
 
-		spDxLibVertexArray_clear(m_dxLibVertices);
-		for (int ii = 0; ii < pVertices->size; ii += 2)
+		spDxLibVertexArray_setSize(m_dxLibVertices, pVertices->size / 2);
+		for (int ii = 0, k = 0; ii < pVertices->size; ii += 2, ++k)
 		{
-			DxLib::VERTEX2D dxLibVertex{};
+			DxLib::VERTEX2D& dxLibVertex = m_dxLibVertices->items[k];
+
 			dxLibVertex.pos.x = pVertices->items[ii];
 			dxLibVertex.pos.y = pVertices->items[ii + 1LL];
 			dxLibVertex.pos.z = 0.f;
 			dxLibVertex.rhw = 1.f;
-			dxLibVertex.dif.r = (BYTE)(tint.r * 255.f);
-			dxLibVertex.dif.g = (BYTE)(tint.g * 255.f);
-			dxLibVertex.dif.b = (BYTE)(tint.b * 255.f);
-			dxLibVertex.dif.a = (BYTE)(tint.a * 255.f);
+
+			dxLibVertex.dif.r = static_cast<BYTE>(tint.r * 255.f);
+			dxLibVertex.dif.g = static_cast<BYTE>(tint.g * 255.f);
+			dxLibVertex.dif.b = static_cast<BYTE>(tint.b * 255.f);
+			dxLibVertex.dif.a = static_cast<BYTE>(tint.a * 255.f);
+
 			dxLibVertex.u = pAttachmentUvs[ii];
 			dxLibVertex.v = pAttachmentUvs[ii + 1LL];
-			spDxLibVertexArray_add(m_dxLibVertices, dxLibVertex);
 		}
 
-		spUnsignedShortArray_clear(m_dxLibIndices);
+		spUnsignedShortArray_setSize(m_dxLibIndices, indicesCount);
 		for (int ii = 0; ii < indicesCount; ++ii)
 		{
-			spUnsignedShortArray_add(m_dxLibIndices, pIndices[ii]);
+			m_dxLibIndices->items[ii] = static_cast<unsigned short>(pIndices[ii]);
 		}
 
 		int iDxLibBlendMode;
