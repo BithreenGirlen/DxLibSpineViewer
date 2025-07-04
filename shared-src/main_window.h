@@ -49,7 +49,7 @@ private:
 	{
 		enum
 		{
-			kOpenFolder = 1, kFileSetting, kSelectFiles,
+			kOpenFolder = 1, kFileSetting, kSelectFiles, kImportCocos,
 			kSkeletonSetting, kAtlasSetting, kAddEffectFile, kExportSetting,
 			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
 			kSnapAsPNG, kSnapAsJPG,
@@ -89,6 +89,7 @@ private:
 	void MenuOnOpenFolder();
 	void MenuOnFileSetting();
 	void MenuOnSelectFiles();
+	void MenuOnImportCocos();
 
 	void MenuOnSkeletonSetting();
 	void MenuOnAtlasSetting();

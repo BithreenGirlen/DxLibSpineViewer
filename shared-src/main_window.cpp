@@ -9,6 +9,8 @@
 #include "win_dialogue.h"
 #include "win_text.h"
 #include "dxlib_image_encoder.h"
+#include "json_minimal.h"
+#include "text_utility.h"
 
 CMainWindow::CMainWindow()
 {
@@ -267,6 +269,9 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 			break;
 		case Menu::kSelectFiles:
 			MenuOnSelectFiles();
+			break;
+		case Menu::kImportCocos:
+			MenuOnImportCocos();
 			break;
 		case Menu::kSkeletonSetting:
 			MenuOnSkeletonSetting();
@@ -550,6 +555,8 @@ void CMainWindow::InitialiseMenuBar()
 	if (iRet == 0)goto failed;
 	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kSelectFiles, "Select files");
 	if (iRet == 0)goto failed;
+	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kImportCocos, "Import Cocos");
+	if (iRet == 0)goto failed;
 
 	hMenuImage = ::CreateMenu();
 	if (hMenuImage == nullptr)goto failed;
@@ -689,6 +696,74 @@ void CMainWindow::MenuOnSelectFiles()
 				ChangeWindowTitle(nullptr);
 			}
 		}
+	}
+}
+
+void CMainWindow::MenuOnImportCocos()
+{
+	std::wstring wstrSelectedFilePath = win_dialogue::SelectOpenFile(L"Import file", L"*.json", L"Select Cocos import file", m_hWnd);
+	if (wstrSelectedFilePath.empty())return;
+
+	std::string strFile = win_filesystem::LoadFileAsString(wstrSelectedFilePath.c_str());
+	if (strFile.empty())return;
+
+	size_t nPos = wstrSelectedFilePath.find_last_of(L"\\/");
+	if (nPos == std::wstring::npos)return;
+
+	std::vector<std::string> atlasPaths;
+	atlasPaths.emplace_back(win_text::NarrowUtf8(wstrSelectedFilePath.substr(0, nPos + 1)));
+
+	std::vector<std::string> atlasData;
+	std::vector<std::string> skeletonData;
+
+	constexpr size_t atlasIndices[] = {5, 0, 2};
+	constexpr size_t nAtlasDepth = sizeof(atlasIndices) / sizeof(atlasIndices)[0];
+
+	constexpr size_t skeletonIndices[] = { 5, 0, 4 };
+	constexpr size_t nSkeltonDepth = sizeof(skeletonIndices) / sizeof(skeletonIndices)[0];
+
+	char* p1 = &strFile[0];
+	char* p2 = nullptr;
+	bool bRet = json_minimal::ExtractArrayValueByIndices(p1, atlasIndices, nAtlasDepth, &p2);
+	if (bRet)
+	{
+		atlasData.push_back(p2);
+		free(p2);
+		text_utility::ReplaceAll(atlasData[0], "\\r", "\r");
+		text_utility::ReplaceAll(atlasData[0], "\\n", "\n");
+		text_utility::ReplaceAll(atlasData[0], "\"", "");
+	}
+
+	bool isBinarySkel = false;
+	bRet = json_minimal::ExtractArrayValueByIndices(p1, skeletonIndices, nSkeltonDepth, &p2);
+	if (bRet)
+	{
+		skeletonData.push_back(p2);
+		free(p2);
+	}
+	else
+	{
+		/* This is thought to be combination with binary skelrton file. */
+		std::wstring wstrBinarySkelFilePath = win_dialogue::SelectOpenFile(L"Import file", L"*.bin;*.skel", L"Select binary skel", m_hWnd);
+		if (wstrBinarySkelFilePath.empty())return;
+
+		std::string strBinarySkeletonFile = win_filesystem::LoadFileAsString(wstrBinarySkelFilePath.c_str());
+		if (strBinarySkeletonFile.empty())return;
+
+		skeletonData.push_back(std::move(strBinarySkeletonFile));
+		isBinarySkel = true;
+	}
+
+	bRet = m_dxLibSpinePlayer.LoadSpineFromMemory(atlasData, atlasPaths, skeletonData, isBinarySkel);
+	if (bRet)
+	{
+		ResizeWindow();
+		ChangeWindowTitle(wstrSelectedFilePath.c_str());
+	}
+	else
+	{
+		::MessageBoxW(nullptr, L"Failed to load spine from Cocos import file", L"Error", MB_ICONERROR);
+		ChangeWindowTitle(nullptr);
 	}
 }
 /*骨組み操作画面呼び出し*/

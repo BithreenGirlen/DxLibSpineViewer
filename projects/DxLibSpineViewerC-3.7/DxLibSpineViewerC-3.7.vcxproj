@@ -105,6 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;DXLIB_SPINE_C;SPINE_3_7_OR_LATER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -121,6 +122,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;DXLIB_SPINE_C;SPINE_3_7_OR_LATER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -128,6 +130,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)shared-src\deps\dxlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -144,12 +147,14 @@
     <ClInclude Include="..\..\shared-src\dxlib_recorder.h" />
     <ClInclude Include="..\..\shared-src\export_setting_dialogue.h" />
     <ClInclude Include="..\..\shared-src\framework.h" />
+    <ClInclude Include="..\..\shared-src\json_minimal.h" />
     <ClInclude Include="..\..\shared-src\main_window.h" />
     <ClInclude Include="..\..\shared-src\mf_video_encoder.h" />
     <ClInclude Include="..\..\shared-src\spine_atlas_dialogue.h" />
     <ClInclude Include="..\..\shared-src\spine_manipulator_dialogue.h" />
     <ClInclude Include="..\..\shared-src\spine_player_shared.h" />
     <ClInclude Include="..\..\shared-src\spine_setting_dialogue.h" />
+    <ClInclude Include="..\..\shared-src\text_utility.h" />
     <ClInclude Include="..\..\shared-src\win_dialogue.h" />
     <ClInclude Include="..\..\shared-src\dialogue_template.h" />
     <ClInclude Include="..\..\shared-src\win_filesystem.h" />
@@ -207,6 +212,7 @@
     <ClCompile Include="..\..\shared-src\dxlib_map.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_recorder.cpp" />
     <ClCompile Include="..\..\shared-src\export_setting_dialogue.cpp" />
+    <ClCompile Include="..\..\shared-src\json_minimal.cpp" />
     <ClCompile Include="..\..\shared-src\main.cpp" />
     <ClCompile Include="..\..\shared-src\main_window.cpp" />
     <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp" />

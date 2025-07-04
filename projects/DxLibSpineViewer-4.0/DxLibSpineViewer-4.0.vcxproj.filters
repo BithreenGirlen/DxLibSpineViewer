@@ -99,6 +99,12 @@
     <ClInclude Include="..\..\shared-src\export_setting_dialogue.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\json_minimal.h">
+      <Filter>Header File\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\text_utility.h">
+      <Filter>Header File\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -348,6 +354,9 @@
       <Filter>Source File\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\export_setting_dialogue.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\json_minimal.cpp">
       <Filter>Source File\shared</Filter>
     </ClCompile>
   </ItemGroup>

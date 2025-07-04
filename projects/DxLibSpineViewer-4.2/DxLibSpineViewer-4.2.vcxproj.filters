@@ -104,6 +104,12 @@
     <ClInclude Include="..\..\DxLibSpineCpp\spine_loader.h">
       <Filter>Header File</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\json_minimal.h">
+      <Filter>Header File\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\text_utility.h">
+      <Filter>Header File\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\cpu.cpp">
@@ -372,6 +378,9 @@
     </ClCompile>
     <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.2\src\spine\VertexAttachment.cpp">
       <Filter>Source File\deps\spine-cpp-4.2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\json_minimal.cpp">
+      <Filter>Source File\shared</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
