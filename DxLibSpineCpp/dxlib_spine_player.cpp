@@ -663,7 +663,8 @@ void CDxLibSpinePlayer::WorkOutDefaultSize()
 				{
 					spine::MeshAttachment* pMeshAttachment = (spine::MeshAttachment*)pAttachment;
 
-					float fScale = pMeshAttachment->getWidth() > Constants::kMinAtlas && pMeshAttachment->getHeight() > Constants::kMinAtlas ? 1.f : 2.f;
+					float fScale =::isgreater(pMeshAttachment->getWidth(), Constants::kMinAtlas) &&
+						::isgreater(pMeshAttachment->getHeight(), Constants::kMinAtlas) ? 1.f : 2.f;
 
 					CompareDimention(pMeshAttachment->getWidth() * fScale, pMeshAttachment->getHeight() * fScale);
 				}
