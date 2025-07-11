@@ -82,7 +82,7 @@ char* _spUtil_readFile(const char* path, int* length)
 
 /* ==================== end of implementations for <extension.h> ==================== */
 
-CDxLibSpineDrawerC::CDxLibSpineDrawerC(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
+CDxLibSpineDrawableC::CDxLibSpineDrawableC(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
 {
 	spBone_setYDown(-1);
 
@@ -111,7 +111,7 @@ CDxLibSpineDrawerC::CDxLibSpineDrawerC(spSkeletonData* pSkeletonData, spAnimatio
 	);
 }
 
-CDxLibSpineDrawerC::~CDxLibSpineDrawerC()
+CDxLibSpineDrawableC::~CDxLibSpineDrawableC()
 {
 	if (m_worldVertices != nullptr)
 	{
@@ -143,7 +143,7 @@ CDxLibSpineDrawerC::~CDxLibSpineDrawerC()
 	ClearLeaveOutList();
 }
 
-void CDxLibSpineDrawerC::Update(float fDelta)
+void CDxLibSpineDrawableC::Update(float fDelta)
 {
 	if (skeleton == nullptr || animationState == nullptr)return;
 #ifndef SPINE_4_1_OR_LATER
@@ -159,7 +159,7 @@ void CDxLibSpineDrawerC::Update(float fDelta)
 #endif
 }
 
-void CDxLibSpineDrawerC::Draw()
+void CDxLibSpineDrawableC::Draw()
 {
 	if (m_worldVertices == nullptr || m_clipper == nullptr || skeleton == nullptr || animationState == nullptr)return;
 
@@ -329,7 +329,7 @@ void CDxLibSpineDrawerC::Draw()
 	spSkeletonClipping_clipEnd2(m_clipper);
 }
 
-void CDxLibSpineDrawerC::SetLeaveOutList(const char** list, int listCount)
+void CDxLibSpineDrawableC::SetLeaveOutList(const char** list, int listCount)
 {
 	ClearLeaveOutList();
 
@@ -343,7 +343,7 @@ void CDxLibSpineDrawerC::SetLeaveOutList(const char** list, int listCount)
 	}
 }
 
-DxLib::FLOAT4 CDxLibSpineDrawerC::GetBoundingBox() const
+DxLib::FLOAT4 CDxLibSpineDrawableC::GetBoundingBox() const
 {
 	float fMinX = FLT_MAX;
 	float fMinY = FLT_MAX;
@@ -399,7 +399,7 @@ DxLib::FLOAT4 CDxLibSpineDrawerC::GetBoundingBox() const
 	return DxLib::FLOAT4{ fMinX, fMinY, fMaxX - fMinX, fMaxY - fMinY };
 }
 
-void CDxLibSpineDrawerC::ClearLeaveOutList()
+void CDxLibSpineDrawableC::ClearLeaveOutList()
 {
 	if (m_leaveOutList != nullptr)
 	{
@@ -413,7 +413,7 @@ void CDxLibSpineDrawerC::ClearLeaveOutList()
 	m_leaveOutListCount = 0;
 }
 
-bool CDxLibSpineDrawerC::IsToBeLeftOut(const char* slotName)
+bool CDxLibSpineDrawableC::IsToBeLeftOut(const char* slotName)
 {
 	for (int i = 0; i < m_leaveOutListCount; ++i)
 	{

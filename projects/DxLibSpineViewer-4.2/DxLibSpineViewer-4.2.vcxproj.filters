@@ -116,6 +116,9 @@
     <ClInclude Include="..\..\shared-src\native-ui\spine_setting_dialogue.h">
       <Filter>Header File\shared\native-ui</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\DxLibSpineCpp\spine_player.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\cpu.cpp">
@@ -387,6 +390,9 @@
     </ClCompile>
     <ClCompile Include="..\..\shared-src\native-ui\spine_setting_dialogue.cpp">
       <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DxLibSpineCpp\spine_player.cpp">
+      <Filter>Source File</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -10,7 +10,7 @@ namespace spine
 	}
 }
 
-CDxLibSpineDrawer::CDxLibSpineDrawer(spine::SkeletonData* pSkeletonData, spine::AnimationStateData* pAnimationStateData)
+CDxLibSpineDrawable::CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData, spine::AnimationStateData* pAnimationStateData)
 {
 	spine::Bone::setYDown(true);
 
@@ -56,7 +56,7 @@ CDxLibSpineDrawer::CDxLibSpineDrawer(spine::SkeletonData* pSkeletonData, spine::
 	);
 }
 
-CDxLibSpineDrawer::~CDxLibSpineDrawer()
+CDxLibSpineDrawable::~CDxLibSpineDrawable()
 {
 	if (animationState != nullptr)
 	{
@@ -73,7 +73,7 @@ CDxLibSpineDrawer::~CDxLibSpineDrawer()
 	}
 }
 
-void CDxLibSpineDrawer::Update(float fDelta)
+void CDxLibSpineDrawable::Update(float fDelta)
 {
 	if (skeleton != nullptr && animationState != nullptr)
 	{
@@ -91,7 +91,7 @@ void CDxLibSpineDrawer::Update(float fDelta)
 	}
 }
 
-void CDxLibSpineDrawer::Draw()
+void CDxLibSpineDrawable::Draw()
 {
 	if (skeleton == nullptr || animationState == nullptr)return;
 
@@ -267,13 +267,13 @@ void CDxLibSpineDrawer::Draw()
 	m_clipper.clipEnd();
 }
 
-void CDxLibSpineDrawer::SetLeaveOutList(spine::Vector<spine::String>& list)
+void CDxLibSpineDrawable::SetLeaveOutList(spine::Vector<spine::String>& list)
 {
 	/*There are some slots having mask or nuisance effect; exclude them from rendering.*/
 	m_leaveOutList.clearAndAddAll(list);
 }
 
-DxLib::FLOAT4 CDxLibSpineDrawer::GetBoundingBox() const
+DxLib::FLOAT4 CDxLibSpineDrawable::GetBoundingBox() const
 {
 	DxLib::FLOAT4 boundingBox{};
 
@@ -286,7 +286,7 @@ DxLib::FLOAT4 CDxLibSpineDrawer::GetBoundingBox() const
 	return boundingBox;
 }
 
-bool CDxLibSpineDrawer::IsToBeLeftOut(const spine::String& slotName)
+bool CDxLibSpineDrawable::IsToBeLeftOut(const spine::String& slotName)
 {
 	return m_leaveOutList.contains(slotName);
 }

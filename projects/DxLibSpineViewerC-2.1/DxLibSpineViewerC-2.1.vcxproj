@@ -136,6 +136,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\DxLibSpineC\dxlib_spine_player_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\spine_loader_c.h" />
+    <ClInclude Include="..\..\DxLibSpineC\spine_player_c.h" />
     <ClInclude Include="..\..\shared-src\cpu.h" />
     <ClInclude Include="..\..\shared-src\deps\spine-c-2.1\src\spine\Json.h" />
     <ClInclude Include="..\..\shared-src\dxlib_clock.h" />
@@ -164,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\DxLibSpineC\dxlib_spine_player_c.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\spine_loader_c.cpp" />
+    <ClCompile Include="..\..\DxLibSpineC\spine_player_c.cpp" />
     <ClCompile Include="..\..\shared-src\cpu.cpp" />
     <ClCompile Include="..\..\shared-src\deps\spine-c-2.1\src\spine\Animation.c" />
     <ClCompile Include="..\..\shared-src\deps\spine-c-2.1\src\spine\AnimationState.c" />

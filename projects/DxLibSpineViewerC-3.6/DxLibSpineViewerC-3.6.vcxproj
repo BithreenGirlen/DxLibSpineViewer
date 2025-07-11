@@ -137,6 +137,7 @@
     <ClInclude Include="..\..\DxLibSpineC\dxlib_spine_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\dxlib_spine_player_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\spine_loader_c.h" />
+    <ClInclude Include="..\..\DxLibSpineC\spine_player_c.h" />
     <ClInclude Include="..\..\shared-src\cpu.h" />
     <ClInclude Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Json.h" />
     <ClInclude Include="..\..\shared-src\deps\spine-c-3.6\src\spine\kvec.h" />
@@ -166,6 +167,7 @@
     <ClCompile Include="..\..\DxLibSpineC\dxlib_spine_c.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\dxlib_spine_player_c.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\spine_loader_c.cpp" />
+    <ClCompile Include="..\..\DxLibSpineC\spine_player_c.cpp" />
     <ClCompile Include="..\..\shared-src\cpu.cpp" />
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Animation.c" />
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AnimationState.c" />

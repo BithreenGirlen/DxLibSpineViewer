@@ -82,7 +82,7 @@ char* _spUtil_readFile(const char* path, int* length)
 
 /* ==================== end of implementations for <extension.h> ==================== */
 
-CDxLibSpineDrawerC21::CDxLibSpineDrawerC21(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
+CDxLibSpineDrawableC21::CDxLibSpineDrawableC21(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
 {
 	spBone_setYDown(-1);
 
@@ -99,7 +99,7 @@ CDxLibSpineDrawerC21::CDxLibSpineDrawerC21(spSkeletonData* pSkeletonData, spAnim
 	animationState = spAnimationState_create(pAnimationStateData);
 }
 
-CDxLibSpineDrawerC21::~CDxLibSpineDrawerC21()
+CDxLibSpineDrawableC21::~CDxLibSpineDrawableC21()
 {
 	if (m_worldVertices != nullptr)
 	{
@@ -131,7 +131,7 @@ CDxLibSpineDrawerC21::~CDxLibSpineDrawerC21()
 	ClearLeaveOutList();
 }
 
-void CDxLibSpineDrawerC21::Update(float fDelta)
+void CDxLibSpineDrawableC21::Update(float fDelta)
 {
 	if (skeleton == nullptr || animationState == nullptr)return;
 
@@ -141,7 +141,7 @@ void CDxLibSpineDrawerC21::Update(float fDelta)
 	spSkeleton_updateWorldTransform(skeleton);
 }
 
-void CDxLibSpineDrawerC21::Draw()
+void CDxLibSpineDrawableC21::Draw()
 {
 	if (m_worldVertices == nullptr || skeleton == nullptr || animationState == nullptr)return;
 
@@ -282,7 +282,7 @@ void CDxLibSpineDrawerC21::Draw()
 	}
 }
 
-void CDxLibSpineDrawerC21::SetLeaveOutList(const char** list, int listCount)
+void CDxLibSpineDrawableC21::SetLeaveOutList(const char** list, int listCount)
 {
 	ClearLeaveOutList();
 
@@ -296,7 +296,7 @@ void CDxLibSpineDrawerC21::SetLeaveOutList(const char** list, int listCount)
 	}
 }
 
-DxLib::FLOAT4 CDxLibSpineDrawerC21::GetBoundingBox() const
+DxLib::FLOAT4 CDxLibSpineDrawableC21::GetBoundingBox() const
 {
 	float fMinX = FLT_MAX;
 	float fMinY = FLT_MAX;
@@ -355,7 +355,7 @@ DxLib::FLOAT4 CDxLibSpineDrawerC21::GetBoundingBox() const
 	return DxLib::FLOAT4{ fMinX, fMinY, fMaxX - fMinX, fMaxY - fMinY };
 }
 
-void CDxLibSpineDrawerC21::ClearLeaveOutList()
+void CDxLibSpineDrawableC21::ClearLeaveOutList()
 {
 	if (m_leaveOutList != nullptr)
 	{
@@ -369,7 +369,7 @@ void CDxLibSpineDrawerC21::ClearLeaveOutList()
 	m_leaveOutListCount = 0;
 }
 
-bool CDxLibSpineDrawerC21::IsToBeLeftOut(const char* slotName)
+bool CDxLibSpineDrawableC21::IsToBeLeftOut(const char* slotName)
 {
 	for (int i = 0; i < m_leaveOutListCount; ++i)
 	{

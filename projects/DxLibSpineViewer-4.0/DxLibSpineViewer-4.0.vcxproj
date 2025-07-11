@@ -137,6 +137,7 @@
     <ClInclude Include="..\..\DxLibSpineCpp\dxlib_spine.h" />
     <ClInclude Include="..\..\DxLibSpineCpp\dxlib_spine_player.h" />
     <ClInclude Include="..\..\DxLibSpineCpp\spine_loader.h" />
+    <ClInclude Include="..\..\DxLibSpineCpp\spine_player.h" />
     <ClInclude Include="..\..\shared-src\cpu.h" />
     <ClInclude Include="..\..\shared-src\dxlib_clock.h" />
     <ClInclude Include="..\..\shared-src\dxlib_image_encoder.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="..\..\DxLibSpineCpp\dxlib_spine.cpp" />
     <ClCompile Include="..\..\DxLibSpineCpp\dxlib_spine_player.cpp" />
     <ClCompile Include="..\..\DxLibSpineCpp\spine_loader.cpp" />
+    <ClCompile Include="..\..\DxLibSpineCpp\spine_player.cpp" />
     <ClCompile Include="..\..\shared-src\cpu.cpp" />
     <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.0\src\spine\Animation.cpp" />
     <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.0\src\spine\AnimationState.cpp" />

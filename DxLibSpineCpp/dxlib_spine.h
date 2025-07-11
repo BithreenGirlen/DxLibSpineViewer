@@ -9,11 +9,11 @@
 #define DX_NON_USING_NAMESPACE_DXLIB
 #include <DxLib.h>
 
-class CDxLibSpineDrawer
+class CDxLibSpineDrawable
 {
 public:
-	CDxLibSpineDrawer(spine::SkeletonData* pSkeletonData, spine::AnimationStateData* pAnimationStateData = nullptr);
-	~CDxLibSpineDrawer();
+	CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData, spine::AnimationStateData* pAnimationStateData = nullptr);
+	~CDxLibSpineDrawable();
 
 	spine::Skeleton* skeleton = nullptr;
 	spine::AnimationState* animationState = nullptr;

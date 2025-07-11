@@ -70,11 +70,11 @@
 
 _SP_ARRAY_DECLARE_TYPE(spDxLibVertexArray, DxLib::VERTEX2D)
 
-class CDxLibSpineDrawerC
+class CDxLibSpineDrawableC
 {
 public:
-	CDxLibSpineDrawerC(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData = nullptr);
-	~CDxLibSpineDrawerC();
+	CDxLibSpineDrawableC(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData = nullptr);
+	~CDxLibSpineDrawableC();
 
 	spSkeleton* skeleton = nullptr;
 	spAnimationState* animationState = nullptr;
