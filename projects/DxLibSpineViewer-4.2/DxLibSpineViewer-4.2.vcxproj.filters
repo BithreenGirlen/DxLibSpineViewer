@@ -25,6 +25,12 @@
     <Filter Include="Source File\deps\spine-cpp-4.2">
       <UniqueIdentifier>{bce72041-7800-499e-bd97-26303f0c0f0d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header File\shared\native-ui">
+      <UniqueIdentifier>{09dfc45c-c9a3-4556-a46f-70ae546a3e72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source File\shared\native-ui">
+      <UniqueIdentifier>{afa2126a-b629-436d-a073-4d2609c2d0de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\dpiAwareness.manifest">
@@ -33,12 +39,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared-src\cpu.h">
-      <Filter>Header File\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared-src\dialogue_controls.h">
-      <Filter>Header File\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared-src\dialogue_template.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared-src\dxlib_clock.h">
@@ -59,9 +59,6 @@
     <ClInclude Include="..\..\shared-src\dxlib_recorder.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared-src\export_setting_dialogue.h">
-      <Filter>Header File\shared</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared-src\framework.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
@@ -71,16 +68,7 @@
     <ClInclude Include="..\..\shared-src\mf_video_encoder.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared-src\spine_atlas_dialogue.h">
-      <Filter>Header File\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared-src\spine_manipulator_dialogue.h">
-      <Filter>Header File\shared</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared-src\spine_player_shared.h">
-      <Filter>Header File\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared-src\spine_setting_dialogue.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared-src\win_dialogue.h">
@@ -110,15 +98,27 @@
     <ClInclude Include="..\..\shared-src\text_utility.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\dialogue_controls.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\dialogue_template.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\export_setting_dialogue.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\spine_atlas_dialogue.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\spine_manipulator_dialogue.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\spine_setting_dialogue.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\cpu.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\dialogue_controls.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\dialogue_template.cpp">
       <Filter>Source File\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\dxlib_clock.cpp">
@@ -136,9 +136,6 @@
     <ClCompile Include="..\..\shared-src\dxlib_recorder.cpp">
       <Filter>Source File\shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\shared-src\export_setting_dialogue.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\shared-src\main.cpp">
       <Filter>Source File\shared</Filter>
     </ClCompile>
@@ -146,15 +143,6 @@
       <Filter>Source File\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\spine_atlas_dialogue.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\spine_manipulator_dialogue.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\spine_setting_dialogue.cpp">
       <Filter>Source File\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\win_dialogue.cpp">
@@ -381,6 +369,24 @@
     </ClCompile>
     <ClCompile Include="..\..\shared-src\json_minimal.cpp">
       <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\dialogue_controls.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\dialogue_template.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\export_setting_dialogue.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\spine_atlas_dialogue.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\spine_manipulator_dialogue.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\spine_setting_dialogue.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

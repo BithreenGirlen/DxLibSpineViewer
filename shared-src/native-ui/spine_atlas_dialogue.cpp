@@ -3,7 +3,7 @@
 #include "spine_atlas_dialogue.h"
 
 #include "dialogue_template.h"
-#include "win_text.h"
+#include "../win_text.h"
 
 
 CSpineAtlasDialogue::CSpineAtlasDialogue()

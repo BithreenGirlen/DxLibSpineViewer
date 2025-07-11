@@ -1,19 +1,21 @@
-﻿#ifndef SPINE_MANIPULATOR_DIALOGUE_H_
-#define SPINE_MANIPULATOR_DIALOGUE_H_
+﻿#ifndef SPINE_ATLAS_DIALOGUE_H_
+#define SPINE_ATLAS_DIALOGUE_H_
 
 #include <Windows.h>
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
-#include "spine_player_shared.h"
+#include "../spine_player_shared.h"
 #include "dialogue_controls.h"
 
-class CSpineManipulatorDialogue
+
+class CSpineAtlasDialogue
 {
 public:
-	CSpineManipulatorDialogue();
-	~CSpineManipulatorDialogue();
+	CSpineAtlasDialogue();
+	~CSpineAtlasDialogue();
 	HWND Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer);
 	HWND GetHwnd()const { return m_hWnd; }
 private:
@@ -25,29 +27,31 @@ private:
 	LRESULT OnClose();
 	LRESULT OnSize();
 	LRESULT OnCommand(WPARAM wParam, LPARAM lParam);
-	LRESULT OnLButtonDblClk(WPARAM wParam, LPARAM lParam);
 
 	enum Constants { kFontSize = 16 };
 	enum Controls
 	{
-		kApplyButton = 1, 
+		kReattachButton = 1
 	};
 
 	HFONT m_hFont = nullptr;
 
-	CListView m_slotListView;
-	CListView m_skinListView;
-	CListView m_animationListView;
+	CStatic m_slotStatic;
+	CComboBox m_slotComboBox;
+	CStatic m_attachmentStatic;
+	CComboBox m_attachmentComboBox;
 
-	CButton m_applyButton;
+	CButton m_reattachButton;
 
 	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
 
-	void OnApplyButton();
+	void OnReattachButton();
 
-	LRESULT ResizeControls();
+	void ResizeControls();
+	void OnSlotSelect();
+
+	std::unordered_map<std::string, std::vector<std::string>> m_slotAttachmentMap;
 
 	CDxLibSpinePlayer* m_pDxLibSpinePlayer = nullptr;
 };
-
-#endif // !SPINE_MANIPULATOR_DIALOGUE_H_
+#endif // !SPINE_ATLAS_DIALOGUE_H_

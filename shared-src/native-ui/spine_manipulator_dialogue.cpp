@@ -7,7 +7,7 @@
 
 #include "spine_manipulator_dialogue.h"
 #include "dialogue_template.h"
-#include "win_text.h"
+#include "../win_text.h"
 
 
 CSpineManipulatorDialogue::CSpineManipulatorDialogue()

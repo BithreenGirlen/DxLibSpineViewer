@@ -7,12 +7,12 @@
 #include <vector>
 
 #include "spine_player_shared.h"
-#include "spine_setting_dialogue.h"
-#include "spine_manipulator_dialogue.h"
-#include "spine_atlas_dialogue.h"
+#include "native-ui/spine_setting_dialogue.h"
+#include "native-ui/spine_manipulator_dialogue.h"
+#include "native-ui/spine_atlas_dialogue.h"
 
 #include "dxlib_recorder.h"
-#include "export_setting_dialogue.h"
+#include "native-ui/export_setting_dialogue.h"
 
 class CMainWindow
 {
