@@ -261,14 +261,14 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		/*Menus*/
 		switch (wmId)
 		{
+		case Menu::kOpenFiles:
+			MenuOnOpenFiles();
+			break;
 		case Menu::kOpenFolder:
 			MenuOnOpenFolder();
 			break;
-		case Menu::kFileSetting:
-			MenuOnFileSetting();
-			break;
-		case Menu::kSelectFiles:
-			MenuOnSelectFiles();
+		case Menu::kExtensionSetting:
+			MenuOnExtensionSetting();
 			break;
 		case Menu::kImportCocos:
 			MenuOnImportCocos();
@@ -539,7 +539,7 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 void CMainWindow::InitialiseMenuBar()
 {
 	HMENU hMenuFile = nullptr;
-	HMENU hMenuImage = nullptr;
+	HMENU hMenuTool = nullptr;
 	HMENU hMenuWindow = nullptr;
 	HMENU hMenuBar = nullptr;
 	BOOL iRet = FALSE;
@@ -549,31 +549,35 @@ void CMainWindow::InitialiseMenuBar()
 	hMenuFile = ::CreateMenu();
 	if (hMenuFile == nullptr)goto failed;
 
+	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kOpenFiles, "Open files");
+	if (iRet == 0)goto failed;
+	iRet = ::AppendMenuA(hMenuFile, MF_SEPARATOR, 0, nullptr);
+	if (iRet == 0)goto failed;
 	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kOpenFolder, "Open folder");
 	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kFileSetting, "Load setting");
+	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kExtensionSetting, "Extension setting");
 	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kSelectFiles, "Select files");
+	iRet = ::AppendMenuA(hMenuFile, MF_SEPARATOR, 0, nullptr);
 	if (iRet == 0)goto failed;
 	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kImportCocos, "Import Cocos");
 	if (iRet == 0)goto failed;
 
-	hMenuImage = ::CreateMenu();
-	if (hMenuImage == nullptr)goto failed;
+	hMenuTool = ::CreateMenu();
+	if (hMenuTool == nullptr)goto failed;
 
-	iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kSkeletonSetting, "Manipulation");
+	iRet = ::AppendMenuA(hMenuTool, MF_STRING, Menu::kSkeletonSetting, "Exclude slot/ Mix anim./ Mix skin");
 	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kAtlasSetting, "Re-attachment");
+	iRet = ::AppendMenuA(hMenuTool, MF_STRING, Menu::kAtlasSetting, "Replace attachment");
 	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kAddEffectFile, "Add effect");
+	iRet = ::AppendMenuA(hMenuTool, MF_STRING, Menu::kAddEffectFile, "Add animation effect");
 	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuImage, MF_STRING, Menu::kExportSetting, "Export setting");
+	iRet = ::AppendMenuA(hMenuTool, MF_STRING, Menu::kExportSetting, "Export setting");
 	if (iRet == 0)goto failed;
 
 	hMenuWindow = ::CreateMenu();
 	if (hMenuWindow == nullptr)goto failed;
 
-	iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kSeeThroughImage, "Through-seen");
+	iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kSeeThroughImage, "Make window tranparent");
 	if (iRet == 0)goto failed;
 	iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kAllowManualSizing, "Allow manual sizing");
 	if (iRet == 0)goto failed;
@@ -585,7 +589,7 @@ void CMainWindow::InitialiseMenuBar()
 
 	iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuFile), "File");
 	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuImage), "Image");
+	iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuTool), "Tool");
 	if (iRet == 0)goto failed;
 	iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuWindow), "Window");
 	if (iRet == 0)goto failed;
@@ -604,9 +608,9 @@ failed:
 	{
 		::DestroyMenu(hMenuFile);
 	}
-	if (hMenuImage != nullptr)
+	if (hMenuTool != nullptr)
 	{
-		::DestroyMenu(hMenuImage);
+		::DestroyMenu(hMenuTool);
 	}
 	if (hMenuWindow != nullptr)
 	{
@@ -617,29 +621,8 @@ failed:
 		::DestroyMenu(hMenuBar);
 	}
 }
-/*フォルダ選択*/
-void CMainWindow::MenuOnOpenFolder()
-{
-	if (m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
-
-	std::wstring wstrPickedFolder = win_dialogue::SelectWorkFolder(m_hWnd);
-	if (!wstrPickedFolder.empty())
-	{
-		bool bRet = SetupResources(wstrPickedFolder.c_str());
-		if (bRet)
-		{
-			ClearFolderInfo();
-			win_filesystem::GetFilePathListAndIndex(wstrPickedFolder.c_str(), nullptr, m_folders, &m_nFolderIndex);
-		}
-	}
-}
-/*取り込みファイル設定*/
-void CMainWindow::MenuOnFileSetting()
-{
-	m_spineSettingDialogue.Open(::GetModuleHandleA(nullptr), m_hWnd, L"Extensions");
-}
 /*ファイル選択*/
-void CMainWindow::MenuOnSelectFiles()
+void CMainWindow::MenuOnOpenFiles()
 {
 	if (m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
 
@@ -697,6 +680,27 @@ void CMainWindow::MenuOnSelectFiles()
 			}
 		}
 	}
+}
+/*フォルダ選択*/
+void CMainWindow::MenuOnOpenFolder()
+{
+	if (m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
+
+	std::wstring wstrPickedFolder = win_dialogue::SelectWorkFolder(m_hWnd);
+	if (!wstrPickedFolder.empty())
+	{
+		bool bRet = SetupResources(wstrPickedFolder.c_str());
+		if (bRet)
+		{
+			ClearFolderInfo();
+			win_filesystem::GetFilePathListAndIndex(wstrPickedFolder.c_str(), nullptr, m_folders, &m_nFolderIndex);
+		}
+	}
+}
+/*取り込みファイル設定*/
+void CMainWindow::MenuOnExtensionSetting()
+{
+	m_spineSettingDialogue.Open(::GetModuleHandleA(nullptr), m_hWnd, L"Extensions");
 }
 
 void CMainWindow::MenuOnImportCocos()

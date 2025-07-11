@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "spine_player_shared.h"
+#include "dxlib_recorder.h"
+
 #include "native-ui/spine_setting_dialogue.h"
 #include "native-ui/spine_manipulator_dialogue.h"
 #include "native-ui/spine_atlas_dialogue.h"
-
-#include "dxlib_recorder.h"
 #include "native-ui/export_setting_dialogue.h"
 
 class CMainWindow
@@ -19,8 +19,10 @@ class CMainWindow
 public:
 	CMainWindow();
 	~CMainWindow();
+
 	bool Create(HINSTANCE hInstance, const wchar_t* pwzWindowName);
 	int MessageLoop();
+
 	HWND GetHwnd()const { return m_hWnd; }
 private:
 	const wchar_t* m_swzClassName = L"Dxlib-spine window";
@@ -49,7 +51,7 @@ private:
 	{
 		enum
 		{
-			kOpenFolder = 1, kFileSetting, kSelectFiles, kImportCocos,
+			kOpenFiles = 1, kOpenFolder,  kExtensionSetting, kImportCocos,
 			kSkeletonSetting, kAtlasSetting, kAddEffectFile, kExportSetting,
 			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
 			kSnapAsPNG, kSnapAsJPG,
@@ -62,7 +64,7 @@ private:
 	{
 		enum
 		{
-			kFile, kImage, kWindow
+			kFile, kTool, kWindow
 		};
 	};
 
@@ -86,9 +88,9 @@ private:
 
 	void InitialiseMenuBar();
 
+	void MenuOnOpenFiles();
 	void MenuOnOpenFolder();
-	void MenuOnFileSetting();
-	void MenuOnSelectFiles();
+	void MenuOnExtensionSetting();
 	void MenuOnImportCocos();
 
 	void MenuOnSkeletonSetting();
