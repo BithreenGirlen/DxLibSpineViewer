@@ -1,74 +1,176 @@
 # DxLibSpineViewer
 
-Spine viewer for Windows based on [Runtime for DxLib](#spine-runtime-for-dxlib) plus official generic runtime `2.1`, `3.5`, `3.6`, `3.7`, `3.8`, `4.0`, `4.1` and `4.2`.
+Spine viewer for Windows based on [Runtime for DxLib](#spine-runtime-for-dxlib) (`2.1`, `3.5` to `4.2`).
 
-## Feature
-- Multiple skeletons rendering
+### Feature
+- Multiple rendering
 - Runtime manipulation
   - Exclude slot
   - Mix skins
-    - This is available for Spine `3.8` and later.
   - Mix animations
   - Replace attachment
-    - This is available only for slots associated with multiple attachments.
-- Media file export
-  - As `PNG`, `GIF`, `JPG`, and `H264`.
+- Media export
 - Transparent/borderless window style
 
 ## Demonstration
 
-<details><summary>Multiple rendering</summary>
+<details><summary>Multiple rendering-1 (via selecting multiple files)</summary>
  
-https://github.com/user-attachments/assets/c1b44202-94f8-4a8b-befa-5ee2b4abbf70
+https://github.com/user-attachments/assets/8ca281a2-9fe5-4d4d-a888-f636e06f0608
 
+</details>
+
+<details><summary>Multiple rendering-2 (via opening folder)</summary>
+
+https://github.com/user-attachments/assets/6787f39b-3dd2-47f6-8941-8809ddec6b03
+ 
 </details>
 
 <details><summary>Mix animations</summary>
 
-https://github.com/user-attachments/assets/4a3abb0e-63d7-4402-b929-4f9c2671c94d
- 
+https://github.com/user-attachments/assets/47ef9037-94d4-4354-8397-b04081dc6697
+
 </details>
 
 <details><summary>Exclude slot</summary>
 
-https://github.com/user-attachments/assets/f3db7d40-4912-416c-8a39-03b38923d63f
+https://github.com/user-attachments/assets/96f44b4b-1054-4aaf-83a6-1a604160cae4
 
 </details>
 
 <details><summary>Replace attachment</summary>
  
-https://github.com/user-attachments/assets/36c40c5c-8314-410c-9905-77255fa96a17
+https://github.com/user-attachments/assets/009406d5-71d2-4012-9095-0adc198850d0
 
 </details>
 
 <details><summary>Media export</summary>
 
-https://github.com/user-attachments/assets/4498830d-8fc4-4333-a3d9-2a506777ec7d
+https://github.com/user-attachments/assets/fbfa7fb7-6ebf-4660-8d88-d29cf8d16840
 
 </details>
 <details><summary>Transparent window</summary>
 
-https://github.com/user-attachments/assets/b73a0010-d21b-4386-9d1b-084ee2dd29c0
+https://github.com/user-attachments/assets/b67e6ead-7b2b-4035-b1d3-894274bdfafb
 
 </details>
 
 <details><summary>Add effect</summary>
 
-https://github.com/user-attachments/assets/d6682127-e01f-444d-838d-78b3bddac121
+https://github.com/user-attachments/assets/5cd49bca-2fe5-4cd9-9404-6a7381b5364a
 
 </details>
 
+<details><summary>Import Cocos-1 (including both atlas and skeleton)</summary>
+
+https://github.com/user-attachments/assets/d85f0677-d16b-454b-b8e6-8c47af28cb3b
+
+</details>
+
+<details><summary>Import Cocos-2 (including only atlas and requiring separate skeleton)</summary>
+
+https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
+
+</details>
+
+
 ## How to load
 
-### Load via `Open folder` 
-1. From `File->Setting`, specify atlas and skeleton extensions.
-2. From `File->Open folder`, select a folder containing atlas/skel(s) with specified extensions.
+### Load via `Open files`
 
-### Load via `Select files`
-1. From `File->Select files`, first select atlas file(s) to load. 
+1. First select atlas file(s) to load. 
 2. Then select skel file(s) which is/are pair(s) of atlas.
 
-## How to export
+### Load via `Open folder` 
+
+1. From `File->Extension setting`, specify atlas and skeleton extensions.
+2. From `File->Open folder`, select a folder containing atlas/skel(s) with specified extensions.
+
+- `Open folder` is to load all the Spine files in the directory render them at the same time.
+- Do not try to open folder including Spine files which cannot be managed simultaneously.
+
+<details><summary>Appropriate example</summary>
+
+<pre>
+221491
+├ odin_S1.atlas.txt
+├ odin_S1.png
+├ odin_S1.txt
+├ odin_S2.atlas.txt
+├ odin_S2.png
+├ odin_S2.txt
+└ ...
+</pre>
+
+</details>
+
+<details><summary>Inappropriate exmaple</summary>
+
+<pre>
+spinechar20
+├ 1200.atlas
+├ 1200.json
+├ 1200.png
+├ 1201.atlas
+├ 1201.json
+├ 1201.png
+└ ...
+</pre>
+
+</details>
+
+### Load via `Import Cocos`
+
+- This is to load json:
+  - which contains atlas at `[5][0][2]`, and skeleton at `[5][0][4]`.
+  - or that which contains atlas at `[5][0][2]` and at the same time requires binary format skeleton separately. 
+- This may serve as an exmaple to load Spine from memory.
+
+## Mouse functions
+
+| Input | Action |
+| ---- | ---- |
+| Wheel scroll | Scale up/down. Combinating with `Ctrl` to retain window size. |
+| Left pressed + wheel scroll | Speed up/down the animation. |
+| Left click | Switch the animation. |
+| Left drag | Move view-point. |
+| Middle click | Reset scale, animation speed, and view-point to default. |
+| Right pressed + wheel scroll | Switch the skin. |
+
+<details><summary>Tip on transparent window</summary>
+
+1. Check menu item `Window->Through-seen` to make window transparent.
+2. `Right pressed + middle click` to make window borderless.
+3. `Right pressed + left click` to move borderless window.
+
+</details>
+
+## Keyboard functions
+
+| Input | Action |
+| --- | --- |
+| <kbd>Esc</kbd> | Close the application. |
+| <kbd>Up</kbd> | Open the previpus folder. |
+| <kbd>Down</kbd> | Open the next folder. |
+| <kbd>A</kbd> | Enable/disable premultiplied alpha. _Default: enabled_. | 
+| <kbd>B</kbd> | Prefer/ignore blned-mode specified by slots. _Default: preferred_. | 
+| <kbd>R</kbd> | Toggle draw-order between filename asc/descending order. _Default: ascending order_. | 
+
+- <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when the current spine(s) is/are loaded via `Open folder`.
+- Manual toggling of PMA is available for Spine version `3.8` and older.
+  - For Spine version `4.0` and later, runtime applies pma property read from atlas file.
+
+</details>
+<details><summary>Tip on PMA and blend mode</summary>
+  
+- Disable `PMA` with <kbd>A</kbd> if it is too bright, and enable if darkish.
+- Force `normal` blend mode with <kbd>B</kbd> if `multiply` is not well represented.
+  
+</details>
+
+## Context menu functions
+
+- Context menu appears only when file is loaded.
 
 ### Export as single image
 
@@ -112,48 +214,6 @@ More flexible recording is available by unchecking `Export per anim.` option fro
 - `H264` file will be named like `fp.mp4` where `fp` is animation name.
 
 </details>
-
-## Mouse functions
-
-| Input | Action |
-| ---- | ---- |
-| Wheel scroll | Scale up/down. Combinating with `Ctrl` to retain window size. |
-| Left pressed + wheel scroll | Speed up/down the animation. |
-| Left click | Switch the animation. |
-| Left drag | Move view-point. |
-| Middle click | Reset scale, animation speed, and view-point to default. |
-| Right pressed + wheel scroll | Switch the skin. |
-
-<details><summary>Tip on transparent window</summary>
-
-1. Check menu item `Window->Through-seen` to make window transparent.
-2. `Right pressed + middle click` to make window borderless.
-3. `Right pressed + left click` to move borderless window.
-
-</details>
-
-## Keyboard functions
-
-| Input | Action |
-| --- | --- |
-| <kbd>Esc</kbd> | Close the application. |
-| <kbd>Up</kbd> | Open the previpus folder. |
-| <kbd>Down</kbd> | Open the next folder. |
-| <kbd>A</kbd> | Enable/disable premultiplied alpha. _Default: enabled_. | 
-| <kbd>B</kbd> | Prefer/ignore blned-mode specified by slots. _Default: preferred_. | 
-| <kbd>R</kbd> | Toggle draw-order between filename asc/descending order. _Default: ascending order_. | 
-
-- <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when the current spine(s) is/are loaded via `Open folder`.
-- Manual toggling of PMA is available for Spine version `3.8` and older.
-  - For Spine version `4.0` and later, runtime applies pma property read from atlas file.
-
-</details>
-<details><summary>Tip on PMA and blend mode</summary>
-  
-- Disable `PMA` with <kbd>A</kbd> if it is too bright, and enable if darkish.
-- Force `normal` blend mode with <kbd>B</kbd> if `multiply` is not well represented.
-  
-</details>
  
 ## External libraries
 
@@ -161,9 +221,17 @@ More flexible recording is available by unchecking `Export per anim.` option fro
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
 ## Build
-1. Run `shared-src/deps/CMakeLists.txt`.
-2. Open `DxLibSpineViewer.sln` with Visual Studio.
-3. Select `Build Solution` on menu item.
+
+Visual Studio is required.
+1. Open `shared-src/deps` directory with file explorer.
+2. Type `cmd` in the directory path box.
+    - Command prompt will start up.
+3. Type `start devenv .` in the command prompt.
+     - `Visual Studio` will start up and configure CMake.
+4. Wait for the CMake configuration to be finished.
+5. Configuration having done, open `DxLibSpineViewer.sln` with Visual Studio.
+6. Select `Build Solution` on menu item.
+7. Build having succeeded, delete `out` and `.vs` folders in `shared-src/deps`.
 
 The `CMakeLists.txt` modifies some of the external sources as well as obtains them.
 - For spine-c `3.5`, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `3.6` and later.
@@ -204,10 +272,17 @@ The `CMakeLists.txt` modifies some of the external sources as well as obtains th
 
 ## Spine runtime for DxLib
 
-- Spine runtime for DxLib provides functionality to (1) load texture and (2) render skeleton.
-- There are two kind of runtimes depending on the official generic runtimes to be used with.
+- For minimal integration, only `dxlib_spine.cpp/h` or `dxlib_spine_c.cpp` are suffice.
   - [dxlib_spine.cpp](/DxLibSpineCpp/dxlib_spine.cpp) is to be used with `spine-cpp`. (`3.8` to `4.2`)
   - [dxlib_spine_c.cpp](/DxLibSpineC/dxlib_spine_c.cpp) is to be used with `spine-c`. (`3.5` to `4.2`)
     - Class is used because DxLib is C++ library, but STL is avoided.
+  - There is a runtime for spine `2.1.27` under [projects/DxLibSpineViewerC-2.1](/projects/DxLibSpineViewerC-2.1). But note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
+- For more functionalities, use all the files under `DxLibSpineCpp` or `DxLibSpineC`.
+  - The functionalities are as follows:
 
-Besides, there is a runtime for spine `2.1.27` under [projects/DxLibSpineViewerC-2.1](/projects/DxLibSpineViewerC-2.1). But note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
+| File | Functionality |
+| --- | --- |
+| dxlib_spine.cpp/h | Load texture and render skeleton based on DxLib's API。 |
+| dxlib_spine_player.cpp/h | Adjust Spine scaling and translation based on DxLib's matrices. |
+| spine_loader.cpp/h | Load atlas or skeleton file. |
+| spine_player.cpp/h | Manage Spine resources and manipulation. |
