@@ -115,6 +115,7 @@ private:
 	std::wstring GetWindowTitle();
 	void ToggleWindowBorderStyle();
 	bool SetMenuCheckState(unsigned int uiMenuIndex, unsigned int uiItemIndex, bool checked) const;
+	void UpdateMenuItemState();
 
 	bool SetupResources(const wchar_t* pwzFolderPath);
 	void ClearFolderInfo();

@@ -161,6 +161,7 @@ LRESULT CMainWindow::OnCreate(HWND hWnd)
 	m_hWnd = hWnd;
 
 	InitialiseMenuBar();
+	UpdateMenuItemState();
 
 	UpdateDrawingInterval();
 
@@ -678,6 +679,7 @@ void CMainWindow::MenuOnOpenFiles()
 				::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
 				ChangeWindowTitle(nullptr);
 			}
+			UpdateMenuItemState();
 		}
 	}
 }
@@ -695,6 +697,7 @@ void CMainWindow::MenuOnOpenFolder()
 			ClearFolderInfo();
 			win_filesystem::GetFilePathListAndIndex(wstrPickedFolder.c_str(), nullptr, m_folders, &m_nFolderIndex);
 		}
+		UpdateMenuItemState();
 	}
 }
 /*取り込みファイル設定*/
@@ -769,6 +772,7 @@ void CMainWindow::MenuOnImportCocos()
 		::MessageBoxW(nullptr, L"Failed to load spine from Cocos import file", L"Error", MB_ICONERROR);
 		ChangeWindowTitle(nullptr);
 	}
+	UpdateMenuItemState();
 }
 /*骨組み操作画面呼び出し*/
 void CMainWindow::MenuOnSkeletonSetting()
@@ -801,7 +805,7 @@ void CMainWindow::MenuOnAtlasSetting()
 /*ファイル追加*/
 void CMainWindow::MenuOnAddFile()
 {
-	if (!m_dxLibSpinePlayer.HasSpineBeenLoaded() || m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
+	if (m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
 
 	std::wstring wstrAtlasFile = win_dialogue::SelectOpenFile(L"atlas file", L"*.atlas;*.atlas.txt", L"Select atlas file to add", m_hWnd, true);
 	if (wstrAtlasFile.empty())return;
@@ -825,8 +829,6 @@ void CMainWindow::MenuOnExportSetting()
 /*透過*/
 void CMainWindow::MenuOnSeeThroughImage()
 {
-	if (!m_dxLibSpinePlayer.HasSpineBeenLoaded())return;
-
 	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kSeeThroughImage, !m_bTransparent);
 	if (result)
 	{
@@ -850,7 +852,7 @@ void CMainWindow::MenuOnSeeThroughImage()
 /*手動寸法変更許可切り替え*/
 void CMainWindow::MenuOnAllowManualSizing()
 {
-	bool bAllowed = m_dxLibSpinePlayer.HasSpineBeenLoaded() && !m_bManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
+	bool bAllowed = !m_bManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
 	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kAllowManualSizing, bAllowed);
 	if (result)
 	{
@@ -1032,6 +1034,37 @@ bool CMainWindow::SetMenuCheckState(unsigned int uiMenuIndex, unsigned int uiIte
 	}
 
 	return false;
+}
+
+void CMainWindow::UpdateMenuItemState()
+{
+	/* Temporal measure. */
+	constexpr const unsigned int toolMenuIndices[] = { Menu::kSkeletonSetting, Menu::kAtlasSetting, Menu::kAddEffectFile, Menu::kExportSetting };
+	constexpr const unsigned int windowIndices[] = { Menu::kSeeThroughImage, Menu::kAllowManualSizing, Menu::kReverseZoomDirection };
+
+	UINT uiState = m_dxLibSpinePlayer.HasSpineBeenLoaded() ? MF_ENABLED : MF_GRAYED;
+
+	HMENU hMenuBar = ::GetMenu(m_hWnd);
+	if (hMenuBar != nullptr)
+	{
+		HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kTool);
+		if (hMenu != nullptr)
+		{
+			for (unsigned int i = 0; i < sizeof(toolMenuIndices) / sizeof(toolMenuIndices[0]); ++i)
+			{
+				::EnableMenuItem(hMenu, toolMenuIndices[i], uiState);
+			}
+		}
+
+		hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
+		if (hMenu != nullptr)
+		{
+			for (unsigned int i = 0; i < sizeof(windowIndices) / sizeof(windowIndices[0]); ++i)
+			{
+				::EnableMenuItem(hMenu, windowIndices[i], uiState);
+			}
+		}
+	}
 }
 /*描画素材設定*/
 bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
