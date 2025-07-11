@@ -145,7 +145,7 @@ void CDxLibSpineDrawer::Draw()
 #ifdef SPINE_4_1_OR_LATER
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRegion());
 			isAlphaPremultiplied = pAtlasRegion->page->pma;
-			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->rendererObject)));
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->page->texture)));
 #else
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRendererObject());
 #ifdef SPINE_4_0
@@ -172,7 +172,7 @@ void CDxLibSpineDrawer::Draw()
 #ifdef SPINE_4_1_OR_LATER
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRegion());
 			isAlphaPremultiplied = pAtlasRegion->page->pma;
-			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->rendererObject)));
+			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->page->texture)));
 #else
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRendererObject());
 #ifdef SPINE_4_0
