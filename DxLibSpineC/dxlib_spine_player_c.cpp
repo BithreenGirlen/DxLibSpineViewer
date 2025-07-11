@@ -655,7 +655,15 @@ DxLib::FLOAT4 CDxLibSpinePlayerC::GetBoundingBox()
 		fMaxHeight = (std::max)(fMaxHeight, rect.w);
 	}
 
-	return DxLib::FLOAT4{ fMinX, fMinY, fMaxWidth, fMaxHeight };
+	DxLib::FLOAT4 bounds =
+	{
+		fMinX == FLT_MAX ? 0 : fMinX,
+		fMinY == FLT_MAX ? 0 : fMinY,
+		fMaxWidth == -FLT_MAX ? 0 : fMaxWidth,
+		fMaxHeight == -FLT_MAX ? 0 : fMaxHeight,
+	};
+
+	return bounds;
 }
 /*標準寸法算出*/
 void CDxLibSpinePlayerC::WorkOutDefaultSize()
