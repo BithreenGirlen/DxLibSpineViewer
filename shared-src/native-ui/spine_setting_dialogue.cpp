@@ -318,7 +318,7 @@ bool CSpineSettingDialogue::IsLikelyBinary(const std::wstring& wstrFileName) con
 		L".skel", L".bin", L".bytes"
 	};
 
-	size_t nPos = wstrFileName.rfind(L"\\/");
+	size_t nPos = wstrFileName.find_last_of(L"\\/");
 	nPos = nPos == std::wstring::npos ? 0 : nPos + 1;
 
 	for (size_t i = 0; i < sizeof(binaryCandidates) / sizeof(binaryCandidates[0]); ++i)
