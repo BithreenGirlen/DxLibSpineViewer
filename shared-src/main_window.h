@@ -68,18 +68,20 @@ private:
 		};
 	};
 
-	POINT m_cursorPos{};
-	bool m_bLeftCombinated = false;
-	bool m_bLeftDowned = false;
-	bool m_bLeftDragged = false;
-	bool m_bRightCombinated = false;
+	POINT m_lastCursorPos{};
+
+	bool m_wasLeftCombinated = false;
+	bool m_wasLeftPressed = false;
+	bool m_hasLeftBeenDragged = false;
+	bool m_wasRightCombinated = false;
 
 	HMENU m_hMenuBar = nullptr;
-	bool m_bBarHidden = false;
 
-	bool m_bTransparent = false;
-	bool m_bManuallyResizable = false;
-	bool m_bZoomReversed = false;
+	bool m_isFramelessWindow = false;
+	bool m_isTransparentWindow = false;
+	bool m_isManuallyResizable = false;
+
+	bool m_isZoomDirectionReversed = false;
 
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
@@ -98,7 +100,7 @@ private:
 	void MenuOnAddFile();
 	void MenuOnExportSetting();
 
-	void MenuOnSeeThroughImage();
+	void MenuOnMakeWindowTransparent();
 	void MenuOnAllowManualSizing();
 	void MenuOnReverseZoomDirection();
 
@@ -113,15 +115,17 @@ private:
 
 	void ChangeWindowTitle(const wchar_t* pwzTitle);
 	std::wstring GetWindowTitle();
-	void ToggleWindowBorderStyle();
+
+	void ToggleWindowFrameStyle();
 	bool SetMenuCheckState(unsigned int uiMenuIndex, unsigned int uiItemIndex, bool checked) const;
 	void UpdateMenuItemState();
 
-	bool SetupResources(const wchar_t* pwzFolderPath);
-	void ClearFolderInfo();
+	bool LoadSpineFilesInFolder(const wchar_t* folderPath);
+	bool LoadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName);
+	void ClearFolderPathList();
 
 	void UpdateDrawingInterval();
-	void StepOnRecording();
+	void StepUpRecording();
 
 	CDxLibSpinePlayer m_dxLibSpinePlayer;
 	CSpineSettingDialogue m_spineSettingDialogue;

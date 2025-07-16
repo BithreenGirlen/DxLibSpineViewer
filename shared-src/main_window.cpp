@@ -195,7 +195,7 @@ LRESULT CMainWindow::OnPaint()
 		m_dxLibSpinePlayer.Update(m_fDelta);
 		m_dxLibSpinePlayer.Redraw();
 
-		StepOnRecording();
+		StepUpRecording();
 
 		DxLib::ScreenFlip();
 
@@ -287,7 +287,7 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 			MenuOnExportSetting();
 			break;
 		case Menu::kSeeThroughImage:
-			MenuOnSeeThroughImage();
+			MenuOnMakeWindowTransparent();
 			break;
 		case Menu::kAllowManualSizing:
 			MenuOnAllowManualSizing();
@@ -331,20 +331,20 @@ LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 	WORD usKey = LOWORD(wParam);
 	if (usKey == MK_LBUTTON)
 	{
-		if (m_bLeftCombinated)return 0;
+		if (m_wasLeftCombinated)return 0;
 
 		POINT pt{};
 		::GetCursorPos(&pt);
-		int iX = m_cursorPos.x - pt.x;
-		int iY = m_cursorPos.y - pt.y;
+		int iX = m_lastCursorPos.x - pt.x;
+		int iY = m_lastCursorPos.y - pt.y;
 
-		if (m_bLeftDragged)
+		if (m_hasLeftBeenDragged)
 		{
 			m_dxLibSpinePlayer.MoveViewPoint(iX, iY);
 		}
 
-		m_cursorPos = pt;
-		m_bLeftDragged = true;
+		m_lastCursorPos = pt;
+		m_hasLeftBeenDragged = true;
 	}
 
 	return 0;
@@ -359,55 +359,56 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 	{
 		m_dxLibSpinePlayer.RescaleTime(iScroll > 0);
 
-		m_bLeftCombinated = true;
+		m_wasLeftCombinated = true;
 	}
 	else if (usKey == MK_RBUTTON)
 	{
 		m_dxLibSpinePlayer.ShiftSkin();
 
-		m_bRightCombinated = true;
+		m_wasRightCombinated = true;
 	}
 	else
 	{
 		if (m_dxLibSpinePlayer.HasSpineBeenLoaded())
 		{
-			m_dxLibSpinePlayer.RescaleSkeleton((iScroll > 0) ^ m_bZoomReversed);
+			m_dxLibSpinePlayer.RescaleSkeleton((iScroll > 0) ^ m_isZoomDirectionReversed);
 
 			bool bWindowToBeResized = !(usKey & MK_CONTROL) && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
 			if (bWindowToBeResized)
 			{
-				m_dxLibSpinePlayer.RescaleCanvas((iScroll > 0) ^ m_bZoomReversed);
+				m_dxLibSpinePlayer.RescaleCanvas((iScroll > 0) ^ m_isZoomDirectionReversed);
 				ResizeWindow();
 			}
 		}
 	}
+
 
 	return 0;
 }
 /*WM_LBUTTONDOWN*/
 LRESULT CMainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 {
-	::GetCursorPos(&m_cursorPos);
+	::GetCursorPos(&m_lastCursorPos);
 
-	m_bLeftDowned = true;
+	m_wasLeftPressed = true;
 
 	return 0;
 }
 /*WM_LBUTTONUP*/
 LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
-	if (m_bLeftCombinated || m_bLeftDragged)
+	if (m_wasLeftCombinated || m_hasLeftBeenDragged)
 	{
-		m_bLeftDragged = false;
-		m_bLeftCombinated = false;
-		m_bLeftDowned = false;
+		m_hasLeftBeenDragged = false;
+		m_wasLeftCombinated = false;
+		m_wasLeftPressed = false;
 
 		return 0;
 	}
 
 	WORD usKey = LOWORD(wParam);
 
-	if (usKey == MK_RBUTTON && m_bBarHidden)
+	if (usKey == MK_RBUTTON && m_isFramelessWindow)
 	{
 		::PostMessage(m_hWnd, WM_SYSCOMMAND, SC_MOVE, 0);
 		INPUT input{};
@@ -415,36 +416,32 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 		input.ki.wVk = VK_DOWN;
 		::SendInput(1, &input, sizeof(input));
 
-		m_bRightCombinated = true;
+		m_wasRightCombinated = true;
 	}
 
-	if (usKey == 0 && m_bLeftDowned)
+	if (usKey == 0 && m_wasLeftPressed)
 	{
 		POINT pt{};
 		::GetCursorPos(&pt);
-		int iX = m_cursorPos.x - pt.x;
-		int iY = m_cursorPos.y - pt.y;
+		int iX = m_lastCursorPos.x - pt.x;
+		int iY = m_lastCursorPos.y - pt.y;
 
 		if (iX == 0 && iY == 0)
 		{
 			m_dxLibSpinePlayer.ShiftAnimation();
 		}
-		else
-		{
-
-		}
 	}
 
-	m_bLeftDowned = false;
+	m_wasLeftPressed = false;
 
 	return 0;
 }
 /*WM_RBUTTONUP*/
 LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 {
-	if (m_bRightCombinated)
+	if (m_wasRightCombinated)
 	{
-		m_bRightCombinated = false;
+		m_wasRightCombinated = false;
 		return 0;
 	}
 
@@ -531,9 +528,9 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 	}
 	else if (usKey == MK_RBUTTON)
 	{
-		ToggleWindowBorderStyle();
+		ToggleWindowFrameStyle();
 
-		m_bRightCombinated = true;
+		m_wasRightCombinated = true;
 	}
 
 	return 0;
@@ -641,10 +638,11 @@ void CMainWindow::MenuOnOpenFiles()
 				return;
 			}
 
+			ClearFolderPathList();
+
 			std::sort(wstrAtlasFiles.begin(), wstrAtlasFiles.end());
 			std::sort(wstrSkelFiles.begin(), wstrSkelFiles.end());
 
-			ClearFolderInfo();
 			std::vector<std::string> atlasPaths;
 			std::vector<std::string> skelPaths;
 
@@ -658,30 +656,21 @@ void CMainWindow::MenuOnOpenFiles()
 				skelPaths.emplace_back(win_text::NarrowUtf8(skel));
 			}
 
-			bool hasLoaded = m_dxLibSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, m_spineSettingDialogue.IsSkelBinary(wstrSkelFiles[0].c_str()));
-			if (hasLoaded)
-			{
-				ResizeWindow();
-				const auto ExtractFileName = [&wstrAtlasFiles]()
-					-> std::wstring
-					{
-						const std::wstring& wstrFilePath = wstrAtlasFiles[0];
-						size_t nPos = wstrFilePath.find_last_of(L"\\/");
-						nPos = nPos == std::string::npos ? 0 : nPos + 1;
+			const auto ExtractFileName = [](const std::wstring& wstrFilePath)
+				-> std::wstring
+				{
+					size_t nPos = wstrFilePath.find_last_of(L"\\/");
+					nPos = nPos == std::string::npos ? 0 : nPos + 1;
 
-						size_t nPos2 = wstrFilePath.find(L".", nPos);
-						if (nPos2 == std::wstring::npos)nPos2 = wstrFilePath.size();
+					size_t nPos2 = wstrFilePath.find(L".", nPos);
+					if (nPos2 == std::wstring::npos)nPos2 = wstrFilePath.size();
 
-						return wstrFilePath.substr(nPos, nPos2 - nPos);
-					};
-				ChangeWindowTitle(ExtractFileName().c_str());
-			}
-			else
-			{
-				::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
-				ChangeWindowTitle(nullptr);
-			}
-			UpdateMenuItemState();
+					return wstrFilePath.substr(nPos, nPos2 - nPos);
+				};
+
+			bool isBinarySkel = m_spineSettingDialogue.IsSkelBinary(wstrSkelFiles[0].c_str());
+			const auto& atlasFileName = ExtractFileName(wstrSkelFiles[0]);
+			LoadSpineFiles(atlasPaths, skelPaths, isBinarySkel, atlasFileName.c_str());
 		}
 	}
 }
@@ -690,16 +679,15 @@ void CMainWindow::MenuOnOpenFolder()
 {
 	if (m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
 
-	std::wstring wstrPickedFolder = win_dialogue::SelectWorkFolder(m_hWnd);
-	if (!wstrPickedFolder.empty())
+	std::wstring wstrPickedupFolderPath = win_dialogue::SelectWorkFolder(m_hWnd);
+	if (!wstrPickedupFolderPath.empty())
 	{
-		bool bRet = SetupResources(wstrPickedFolder.c_str());
+		bool bRet = LoadSpineFilesInFolder(wstrPickedupFolderPath.c_str());
 		if (bRet)
 		{
-			ClearFolderInfo();
-			win_filesystem::GetFilePathListAndIndex(wstrPickedFolder.c_str(), nullptr, m_folders, &m_nFolderIndex);
+			ClearFolderPathList();
+			win_filesystem::GetFilePathListAndIndex(wstrPickedupFolderPath.c_str(), nullptr, m_folders, &m_nFolderIndex);
 		}
-		UpdateMenuItemState();
 	}
 }
 /*取り込みファイル設定*/
@@ -719,13 +707,13 @@ void CMainWindow::MenuOnImportCocos()
 	size_t nPos = wstrSelectedFilePath.find_last_of(L"\\/");
 	if (nPos == std::wstring::npos)return;
 
-	std::vector<std::string> atlasPaths;
-	atlasPaths.emplace_back(win_text::NarrowUtf8(wstrSelectedFilePath.substr(0, nPos + 1)));
+	std::vector<std::string> textureDirectories;
+	textureDirectories.emplace_back(win_text::NarrowUtf8(wstrSelectedFilePath.substr(0, nPos + 1)));
 
 	std::vector<std::string> atlasData;
 	std::vector<std::string> skeletonData;
 
-	constexpr size_t atlasIndices[] = {5, 0, 2};
+	constexpr size_t atlasIndices[] = { 5, 0, 2 };
 	constexpr size_t nAtlasDepth = sizeof(atlasIndices) / sizeof(atlasIndices)[0];
 
 	constexpr size_t skeletonIndices[] = { 5, 0, 4 };
@@ -752,7 +740,7 @@ void CMainWindow::MenuOnImportCocos()
 	}
 	else
 	{
-		/* This is thought to be combination with binary skelrton file. */
+		/* This is thought to be combination with binary skeleton file. */
 		std::wstring wstrBinarySkelFilePath = win_dialogue::SelectOpenFile(L"Import file", L"*.bin;*.skel", L"Select binary skel", m_hWnd);
 		if (wstrBinarySkelFilePath.empty())return;
 
@@ -763,7 +751,8 @@ void CMainWindow::MenuOnImportCocos()
 		isBinarySkel = true;
 	}
 
-	bRet = m_dxLibSpinePlayer.LoadSpineFromMemory(atlasData, atlasPaths, skeletonData, isBinarySkel);
+	bool bLastState = m_dxLibSpinePlayer.HasSpineBeenLoaded();
+	bRet = m_dxLibSpinePlayer.LoadSpineFromMemory(atlasData, textureDirectories, skeletonData, isBinarySkel);
 	if (bRet)
 	{
 		ResizeWindow();
@@ -774,7 +763,7 @@ void CMainWindow::MenuOnImportCocos()
 		::MessageBoxW(nullptr, L"Failed to load spine from Cocos import file", L"Error", MB_ICONERROR);
 		ChangeWindowTitle(nullptr);
 	}
-	UpdateMenuItemState();
+	if (bLastState != bRet)UpdateMenuItemState();
 }
 /*骨組み操作画面呼び出し*/
 void CMainWindow::MenuOnSkeletonSetting()
@@ -829,15 +818,15 @@ void CMainWindow::MenuOnExportSetting()
 	m_exportSettingDialogue.Open(::GetModuleHandleA(nullptr), m_hWnd, L"Export setting");
 }
 /*透過*/
-void CMainWindow::MenuOnSeeThroughImage()
+void CMainWindow::MenuOnMakeWindowTransparent()
 {
-	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kSeeThroughImage, !m_bTransparent);
+	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kSeeThroughImage, !m_isTransparentWindow);
 	if (result)
 	{
-		m_bTransparent ^= true;
+		m_isTransparentWindow ^= true;
 		LONG lStyleEx = ::GetWindowLong(m_hWnd, GWL_EXSTYLE);
 
-		if (m_bTransparent)
+		if (m_isTransparentWindow)
 		{
 			::SetWindowLong(m_hWnd, GWL_EXSTYLE, lStyleEx | WS_EX_LAYERED);
 			::SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), 255, LWA_COLORKEY);
@@ -854,21 +843,21 @@ void CMainWindow::MenuOnSeeThroughImage()
 /*手動寸法変更許可切り替え*/
 void CMainWindow::MenuOnAllowManualSizing()
 {
-	bool bAllowed = !m_bManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
-	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kAllowManualSizing, bAllowed);
+	bool isResizingAllowed = !m_isManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
+	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kAllowManualSizing, isResizingAllowed);
 	if (result)
 	{
-		m_bManuallyResizable = bAllowed;
+		m_isManuallyResizable = isResizingAllowed;
 		UpdateWindowResizableAttribute();
 	}
 }
 /*拡縮方向反転*/
 void CMainWindow::MenuOnReverseZoomDirection()
 {
-	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kReverseZoomDirection, !m_bZoomReversed);
+	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kReverseZoomDirection, !m_isZoomDirectionReversed);
 	if (result)
 	{
-		m_bZoomReversed ^= true;
+		m_isZoomDirectionReversed ^= true;
 	}
 }
 /*次のフォルダに移動*/
@@ -878,7 +867,7 @@ void CMainWindow::KeyUpOnNextFolder()
 
 	++m_nFolderIndex;
 	if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = 0;
-	SetupResources(m_folders[m_nFolderIndex].c_str());
+	LoadSpineFilesInFolder(m_folders[m_nFolderIndex].c_str());
 }
 /*前のフォルダに移動*/
 void CMainWindow::KeyUpOnForeFolder()
@@ -887,7 +876,7 @@ void CMainWindow::KeyUpOnForeFolder()
 
 	--m_nFolderIndex;
 	if (m_nFolderIndex >= m_folders.size())m_nFolderIndex = m_folders.size() - 1;
-	SetupResources(m_folders[m_nFolderIndex].c_str());
+	LoadSpineFilesInFolder(m_folders[m_nFolderIndex].c_str());
 }
 /*JPGとして保存*/
 void CMainWindow::MenuOnSaveAsJpg()
@@ -997,7 +986,7 @@ std::wstring CMainWindow::GetWindowTitle()
 	return std::wstring();
 }
 /*表示形式変更*/
-void CMainWindow::ToggleWindowBorderStyle()
+void CMainWindow::ToggleWindowFrameStyle()
 {
 	if (!m_dxLibSpinePlayer.HasSpineBeenLoaded() || m_dxLibRecorder.GetState() == CDxLibRecorder::EState::RecordingVideo)return;
 
@@ -1005,9 +994,9 @@ void CMainWindow::ToggleWindowBorderStyle()
 	::GetWindowRect(m_hWnd, &rect);
 	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
 
-	m_bBarHidden ^= true;
+	m_isFramelessWindow ^= true;
 
-	if (m_bBarHidden)
+	if (m_isFramelessWindow)
 	{
 		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle & ~WS_CAPTION & ~WS_SYSMENU & ~WS_THICKFRAME);
 		::SetWindowPos(m_hWnd, nullptr, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER);
@@ -1069,7 +1058,7 @@ void CMainWindow::UpdateMenuItemState()
 	}
 }
 /*描画素材設定*/
-bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
+bool CMainWindow::LoadSpineFilesInFolder(const wchar_t* pwzFolderPath)
 {
 	if (pwzFolderPath == nullptr)return false;
 
@@ -1078,15 +1067,15 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 
 	const std::wstring& wstrAtlasExt = m_spineSettingDialogue.GetAtlasExtension();
 	const std::wstring& wstrSkelExt = m_spineSettingDialogue.GetSkelExtension();
-	bool bIsBinary = m_spineSettingDialogue.IsSkelBinary();
+	bool isBinarySkel = m_spineSettingDialogue.IsSkelBinary();
 
-	bool bAtlasLonger = wstrAtlasExt.size() > wstrSkelExt.size();
+	bool isAtlasLonger = wstrAtlasExt.size() > wstrSkelExt.size();
 
-	const std::wstring& wstrLongerExtesion = bAtlasLonger ? wstrAtlasExt : wstrSkelExt;
-	const std::wstring& wstrShorterExtension = bAtlasLonger ? wstrSkelExt : wstrAtlasExt;
+	const std::wstring& wstrLongerExtesion = isAtlasLonger ? wstrAtlasExt : wstrSkelExt;
+	const std::wstring& wstrShorterExtension = isAtlasLonger ? wstrSkelExt : wstrAtlasExt;
 
-	std::vector<std::string>& strLongerPaths = bAtlasLonger ? atlasPaths : skelPaths;
-	std::vector<std::string>& strShorterPaths = bAtlasLonger ? skelPaths : atlasPaths;
+	std::vector<std::string>& strLongerPaths = isAtlasLonger ? atlasPaths : skelPaths;
+	std::vector<std::string>& strShorterPaths = isAtlasLonger ? skelPaths : atlasPaths;
 
 	std::vector<std::wstring> wstrFilePaths;
 	win_filesystem::CreateFilePathList(pwzFolderPath, L"*", wstrFilePaths);
@@ -1110,22 +1099,29 @@ bool CMainWindow::SetupResources(const wchar_t* pwzFolderPath)
 		}
 	}
 
-	bool hasLoaded = m_dxLibSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, bIsBinary);
-	if (hasLoaded)
+	return LoadSpineFiles(atlasPaths, skelPaths, isBinarySkel, pwzFolderPath);
+}
+/* ファイル取り込み */
+bool CMainWindow::LoadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName)
+{
+	bool bLastState = m_dxLibSpinePlayer.HasSpineBeenLoaded();
+	bool bRet = m_dxLibSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
+	if (bRet)
 	{
 		ResizeWindow();
-		ChangeWindowTitle(pwzFolderPath);
+		ChangeWindowTitle(windowName);
 	}
 	else
 	{
 		::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
 		ChangeWindowTitle(nullptr);
 	}
+	if (bLastState != bRet)UpdateMenuItemState();
 
-	return hasLoaded;
+	return bRet;
 }
-/*階層構成情報消去*/
-void CMainWindow::ClearFolderInfo()
+/*階層情報消去*/
+void CMainWindow::ClearFolderPathList()
 {
 	m_folders.clear();
 	m_nFolderIndex = 0;
@@ -1138,7 +1134,7 @@ void CMainWindow::UpdateDrawingInterval()
 	m_fDelta = 1 / static_cast<float>(sDevMode.dmDisplayFrequency);
 }
 /*記録逓進*/
-void CMainWindow::StepOnRecording()
+void CMainWindow::StepUpRecording()
 {
 	const auto& recorderState = m_dxLibRecorder.GetState();
 
@@ -1186,7 +1182,7 @@ void CMainWindow::StepOnRecording()
 void CMainWindow::UpdateWindowResizableAttribute()
 {
 	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
-	::SetWindowLong(m_hWnd, GWL_STYLE, (m_dxLibSpinePlayer.HasSpineBeenLoaded() && m_bManuallyResizable) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
+	::SetWindowLong(m_hWnd, GWL_STYLE, (m_dxLibSpinePlayer.HasSpineBeenLoaded() && m_isManuallyResizable) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
 }
 /*窓寸法変更*/
 void CMainWindow::ResizeWindow()
