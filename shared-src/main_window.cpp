@@ -338,7 +338,10 @@ LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 		int iX = m_cursorPos.x - pt.x;
 		int iY = m_cursorPos.y - pt.y;
 
-		m_dxLibSpinePlayer.MoveViewPoint(iX, iY);
+		if (m_bLeftDragged)
+		{
+			m_dxLibSpinePlayer.MoveViewPoint(iX, iY);
+		}
 
 		m_cursorPos = pt;
 		m_bLeftDragged = true;
@@ -444,19 +447,18 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 		m_bRightCombinated = false;
 		return 0;
 	}
-	WORD usKey = LOWORD(wParam);
 
-	if (usKey == 0 && m_dxLibSpinePlayer.HasSpineBeenLoaded())
+	if (!m_dxLibSpinePlayer.HasSpineBeenLoaded())return 0;
+
+	WORD usKey = LOWORD(wParam);
+	if (usKey == 0)
 	{
 		const auto PreparePupupMenu = [this](HMENU* hMenu)
 			-> bool
 			{
 				if (hMenu == nullptr)return false;
+				HMENU hPopupMenu = *hMenu;
 
-				HMENU hPopupMenu = ::CreatePopupMenu();
-				if (hPopupMenu == nullptr)return false;
-
-				*hMenu = hPopupMenu;
 				const auto& recorderState = m_dxLibRecorder.GetState();
 				if (recorderState == CDxLibRecorder::EState::Idle)
 				{
@@ -497,10 +499,10 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 				return true;
 			};
 
-		HMENU hPopupMenu = nullptr;
-		bool bRet = PreparePupupMenu(&hPopupMenu);
+		HMENU hPopupMenu = ::CreatePopupMenu();
 		if (hPopupMenu != nullptr)
 		{
+			bool bRet = PreparePupupMenu(&hPopupMenu);
 			if (bRet)
 			{
 				POINT point{};
