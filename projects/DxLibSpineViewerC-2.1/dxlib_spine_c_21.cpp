@@ -8,6 +8,7 @@
 
 _SP_ARRAY_IMPLEMENT_TYPE_NO_CONTAINS(spDxLibVertexArray, DxLib::VERTEX2D)
 
+#if	defined(_WIN32) && defined(_UNICODE)
 static wchar_t* WidenPath(const char* path)
 {
 	int iCharCode = DxLib::GetUseCharCodeFormat();
@@ -16,7 +17,7 @@ static wchar_t* WidenPath(const char* path)
 	size_t nLen = strlen(path);
 	wchar_t* pResult = static_cast<wchar_t*>(malloc((nLen + 1LL) * sizeof(wchar_t)));
 	if (pResult == nullptr)return nullptr;
-	wmemset(pResult, L'\0', nLen);
+	memset(pResult, L'\0', nLen * sizeof(wchar_t));
 
 	int iLen = DxLib::ConvertStringCharCodeFormat
 	(
@@ -39,6 +40,7 @@ static wchar_t* WidenPath(const char* path)
 
 	return pResult;
 }
+#endif
 
 /* ==================== Implementations for <extension.h> ==================== */
 
