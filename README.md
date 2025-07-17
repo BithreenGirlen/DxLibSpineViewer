@@ -86,8 +86,9 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 1. From `File->Extension setting`, specify atlas and skeleton extensions.
 2. From `File->Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
-- `Open folder` is to load all the Spine files in the directory render them at the same time.
-- Do not try to open folder including Spine files which cannot be managed simultaneously.
+- `Open folder` is to load all the Spine files in that folder and render them at the same time.
+  - Do not try to open folder containing Spine files which cannot be managed simultaneously.
+  - Of cource it is permitted to open folder containing only one set of Spine files. 
 
 <details><summary>Appropriate example</summary>
 
@@ -123,7 +124,7 @@ spinechar20
 
 - This is to load json:
   - which contains atlas at `[5][0][2]`, and skeleton at `[5][0][4]`.
-  - or that which contains atlas at `[5][0][2]` and at the same time requires binary format skeleton separately. 
+  - or that which contains atlas at `[5][0][2]` and requires binary skeleton separately. 
 - This may serve as an exmaple to load Spine from memory.
 
 ## Mouse functions
@@ -131,19 +132,14 @@ spinechar20
 | Input | Action |
 | ---- | ---- |
 | Wheel scroll | Scale up/down. Combinating with `Ctrl` to retain window size. |
-| Left pressed + wheel scroll | Speed up/down the animation. |
-| Left click | Switch the animation. |
-| Left drag | Move view-point. |
-| Middle click | Reset scale, animation speed, and view-point to default. |
-| Right pressed + wheel scroll | Switch the skin. |
+| L-pressed + wheel scroll | Speed up/down the animation. |
+| L-click | Switch the animation. |
+| L-drag | Move view-point. |
+| M-click | Reset scale, animation speed, and view-point to default. |
+| R-pressed + wheel scroll | Switch the skin. |
+| R-pressed + M-click | Make window borderless. |
+| R-pressed + L-click | Start moving borderless window. L-click again to end. |
 
-<details><summary>Tip on transparent window</summary>
-
-1. Check menu item `Window->Through-seen` to make window transparent.
-2. `Right pressed + middle click` to make window borderless.
-3. `Right pressed + left click` to move borderless window.
-
-</details>
 
 ## Keyboard functions
 
@@ -156,54 +152,27 @@ spinechar20
 | <kbd>B</kbd> | Prefer/ignore blned-mode specified by slots. _Default: preferred_. | 
 | <kbd>R</kbd> | Toggle draw-order between filename asc/descending order. _Default: ascending order_. | 
 
-- <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when the current spine(s) is/are loaded via `Open folder`.
-- Manual toggling of PMA is available for Spine version `3.8` and older.
+- <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when files are loaded via `Open folder`.
+- `PMA` toggling is permitted only for Spine version `3.8` and older.
   - For Spine version `4.0` and later, runtime applies pma property read from atlas file.
+  - Disable `PMA` if it seems too bright, and enable if darkish.
+- Force `normal` blend mode if `multiply` is not well represented.
 
-</details>
-<details><summary>Tip on PMA and blend mode</summary>
-  
-- Disable `PMA` with <kbd>A</kbd> if it is too bright, and enable if darkish.
-- Force `normal` blend mode with <kbd>B</kbd> if `multiply` is not well represented.
-  
-</details>
 
 ## Context menu functions
 
-- Context menu appears only when file is loaded.
-
-### Export as single image
-
-1. Right click on the window.
-2. Select `Snap as PNG` or `Snap as JPG`.
-
-### Export as animation
-
-1. Right click on the window.
-2. Select `Export as GIF` or `Export as H264`.
-
-More flexible recording is available by unchecking `Export per anim.` option from `Image->Export setting`.
-
-<details><summary>Note on flexible recording</summary>
-
-| State | Behaviour |
+| Menu item | Action |
 | ---- | ---- |
-| `Export per anim.` checked | Restarts the animation once recording has started, and ends recording as soon as animation has ended. |
-| `Export per anim.` unchecked | Recording start and end timing can be choosen by user hand. |
+| Snap as PNG | Save the current screen as `PNG`. |
+| Snap as JPG | Save the current screen as `JPG`. |
+| Export as GIF | Restart the current animation and export as `GIF`. |
+| Export as H264 | Restart the current animation and export as `MP4`. |
 
-#### Export as multiple images
-
-1. Right click on the window.
-2. Select `Start image recording`.
-3. Right click again and select `Save as GIF` or `Save as PNGs`.
-
-#### Export as video
-
-1. Right click on the window.
-2. Select `Start video recording`.
-3. Right click again and select `End recording`.
-
-</details>
+- Context menu appears only when Spine is loaded.
+- By unchecking `Export per anim.` option from `Tool->Export setting`, export behaviour changes as follows:
+  - The start and end timing of recording is delegated to user.
+  - It is allowed to zoom or switch animation while recording.
+  - It is allowed to export as multiple PNGs.
 
 <details><summary>Note on filename</summary>
 
@@ -214,7 +183,7 @@ More flexible recording is available by unchecking `Export per anim.` option fro
 - `H264` file will be named like `fp.mp4` where `fp` is animation name.
 
 </details>
- 
+
 ## External libraries
 
 - [DxLib](https://dxlib.xsrv.jp/)
@@ -228,47 +197,14 @@ Visual Studio is required.
     - Command prompt will start up.
 3. Type `start devenv .` in the command prompt.
      - `Visual Studio` will start up and configure CMake.
-4. Wait for the CMake configuration to be finished.
-5. Configuration having done, open `DxLibSpineViewer.sln` with Visual Studio.
+4. Wait for the CMake configuration to be done.
+5. Open `DxLibSpineViewer.sln`.
 6. Select `Build Solution` on menu item.
-7. Build having succeeded, delete `out` and `.vs` folders in `shared-src/deps`.
+    - Build having succeeded, delete `out` and `.vs` folders in `shared-src/deps`.
 
 The `CMakeLists.txt` modifies some of the external sources as well as obtains them.
 - For spine-c `3.5`, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `3.6` and later.
 - For spine-c `2.1`, supplies binary skeleton reader which is lacking in official `2.1.25` runtime, and overwrites some of the files with those from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
-
-<details><summary>deps directory will be as follows:</summary>
-
-<pre>
-...
-├ DxLibSpineC
-│  └ ...
-├ DxLibSpineCpp
-│  └ ...
-├ projects
-│  └ ...
-├ shared-src
-│  ├ deps
-│  │  ├ dxlib // static libraries and headers of DxLib for VC
-│  │  │  └ ...
-│  │  ├ spine-c-x.x // Spine C generic runtime for version x.x
-│  │  │  ├ include
-│  │  │  │  └ ...
-│  │  │  └ src
-│  │  │     └ ...
-│  │  ├ ...
-│  │  ├ spine-cpp-x.x // Spine C++ generic runtime for version x.x
-│  │  │  ├ include
-│  │  │  │  └ ...
-│  │  │  └ src
-│  │  │     └ ...
-│  │  └ ...
-│  └ ...
-├ DxLibSpineViewer.sln
-└ ...
-</pre>
-
- </details>
 
 ## Spine runtime for DxLib
 
@@ -282,7 +218,7 @@ The `CMakeLists.txt` modifies some of the external sources as well as obtains th
 
 | File | Functionality |
 | --- | --- |
-| dxlib_spine.cpp/h | Load texture and render skeleton based on DxLib's API。 |
-| dxlib_spine_player.cpp/h | Adjust Spine scaling and translation based on DxLib's matrices. |
+| dxlib_spine.cpp/h | Load texture and render skeleton based on API of DxLib. |
+| dxlib_spine_player.cpp/h | Adjust scale and translation using matrix of DxLib. |
 | spine_loader.cpp/h | Load atlas or skeleton file. |
 | spine_player.cpp/h | Manage Spine resources and manipulation. |
