@@ -14,8 +14,12 @@ class CSpineManipulatorDialogue
 public:
 	CSpineManipulatorDialogue();
 	~CSpineManipulatorDialogue();
+
 	HWND Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer);
 	HWND GetHwnd()const { return m_hWnd; }
+
+	bool HasSlotExclusionFilter() const;
+	bool (*GetSlotExcludeCallback() const)(const char*, size_t);
 private:
 	HWND m_hWnd = nullptr;
 
@@ -35,6 +39,7 @@ private:
 
 	HFONT m_hFont = nullptr;
 
+	CEdit m_slotEdit;
 	CListView m_slotListView;
 	CListView m_skinListView;
 	CListView m_animationListView;

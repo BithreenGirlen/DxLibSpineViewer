@@ -4,11 +4,26 @@
 #include <CommCtrl.h>
 
 #include <algorithm>
+/* Not inclied to use this heavy STL */
+//#include <regex>
 
 #include "spine_manipulator_dialogue.h"
 #include "dialogue_template.h"
 #include "../win_text.h"
 
+/// @brief global data for slot exclusion.
+namespace slot_exclusion
+{
+	static std::string s_filter;
+	static bool IsSlotToBeExcluded(const char* szSlotName, size_t nSlotNameLength)
+	{
+		if (s_filter.empty())return false;
+
+		const char* pEnd = szSlotName + nSlotNameLength;
+		return std::search(szSlotName, pEnd, s_filter.begin(), s_filter.end()) != pEnd;
+		//return std::regex_search(szSlotName, pEnd, std::regex(s_filter));
+	}
+};
 
 CSpineManipulatorDialogue::CSpineManipulatorDialogue()
 {
@@ -27,7 +42,7 @@ CSpineManipulatorDialogue::~CSpineManipulatorDialogue()
 HWND CSpineManipulatorDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer)
 {
 	CDialogueTemplate sWinDialogueTemplate;
-	sWinDialogueTemplate.SetWindowSize(128, 280);
+	sWinDialogueTemplate.SetWindowSize(128, 320);
 	sWinDialogueTemplate.MakeWindowResizable(true);
 	std::vector<unsigned char> dialogueTemplate = sWinDialogueTemplate.Generate(pwzWindowName);
 
@@ -35,6 +50,17 @@ HWND CSpineManipulatorDialogue::Create(HINSTANCE hInstance, HWND hWndParent, con
 
 	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.data(), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
+
+bool CSpineManipulatorDialogue::HasSlotExclusionFilter() const
+{
+	return !slot_exclusion::s_filter.empty();
+}
+
+bool(*CSpineManipulatorDialogue::GetSlotExcludeCallback() const)(const char*, size_t)
+{
+	return &slot_exclusion::IsSlotToBeExcluded;
+}
+
 /*C CALLBACK*/
 LRESULT CSpineManipulatorDialogue::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -74,6 +100,9 @@ LRESULT CSpineManipulatorDialogue::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wP
 LRESULT CSpineManipulatorDialogue::OnInit(HWND hWnd)
 {
 	m_hWnd = hWnd;
+
+	m_slotEdit.Create(win_text::WidenUtf8(slot_exclusion::s_filter).c_str(), m_hWnd);
+	m_slotEdit.SetHint(L"Partial slot name to exclude");
 
 	const std::vector<std::wstring> slotColumnNames = { L"Slots to exclude" };
 	const std::vector<std::wstring> skinColumnNames = { L"Skins to mix" };
@@ -196,9 +225,20 @@ void CSpineManipulatorDialogue::OnApplyButton()
 				}
 			};
 
-		wstrCheckedItems = m_slotListView.PickupCheckedItems();
-		ConvertCheckedItems();
-		m_pDxLibSpinePlayer->SetSlotsToExclude(strCheckedItems);
+		const std::wstring wstrSlotExclusionRegex =  m_slotEdit.GetText();
+		slot_exclusion::s_filter = win_text::NarrowUtf8(wstrSlotExclusionRegex);
+		if (!slot_exclusion::s_filter.empty())
+		{
+			m_pDxLibSpinePlayer->SetSlotExcludeCallback(&slot_exclusion::IsSlotToBeExcluded);
+		}
+		else
+		{
+			m_pDxLibSpinePlayer->SetSlotExcludeCallback(nullptr);
+
+			wstrCheckedItems = m_slotListView.PickupCheckedItems();
+			ConvertCheckedItems();
+			m_pDxLibSpinePlayer->SetSlotsToExclude(strCheckedItems);
+		}
 
 		wstrCheckedItems = m_skinListView.PickupCheckedItems();
 		ConvertCheckedItems();
@@ -224,27 +264,31 @@ LRESULT CSpineManipulatorDialogue::ResizeControls()
 	long spaceX = clientWidth / 96;
 	long spaceY = clientHeight / 96;
 
+	long fontHeight = static_cast<long>(Constants::kFontSize * ::GetDpiForWindow(m_hWnd) / 96.f);
+
 	long x = spaceX;
 	long y = spaceY;
 	long w = clientWidth - spaceX * 2;
-	long h = clientHeight * 3 / 10;
+	long h = fontHeight + spaceY;
 
+	::MoveWindow(m_slotEdit.GetHwnd(), x, y, w, h, TRUE);
+
+	y += h + spaceY;
+	h = clientHeight * 11 / 40;
 	::MoveWindow(m_slotListView.GetHwnd(), x, y, w, h, TRUE);
 	m_slotListView.AdjustWidth();
 
 	y += h + spaceY;
-	h = clientHeight * 3 / 10;
 	::MoveWindow(m_skinListView.GetHwnd(), x, y, w, h, TRUE);
 	m_skinListView.AdjustWidth();
 
 	y += h + spaceY;
-	h = clientHeight * 3 / 10;
 	::MoveWindow(m_animationListView.GetHwnd(), x, y, w, h, TRUE);
 	m_animationListView.AdjustWidth();
 
 	y += h + spaceY;
-	h = clientHeight / 16;
 	w = clientWidth / 4;
+	h = clientHeight / 16;
 	::MoveWindow(m_applyButton.GetHwnd(), x, y, w, h, TRUE);
 
 	return 0;

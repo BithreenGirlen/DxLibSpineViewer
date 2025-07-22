@@ -18,7 +18,7 @@ public:
 
 	void AdjustWidth();
 	bool Add(const std::vector<std::wstring>& columns, bool ToBottom = true);
-	void Clear();
+	void Clear() const;
 
 	void CreateSingleList(const std::vector<std::wstring>& names);
 
@@ -26,9 +26,9 @@ public:
 private:
 	HWND m_hWnd = nullptr;
 
-	int GetColumnCount();
-	int GetItemCount();
-	std::wstring GetItemText(int iRow, int iColumn);
+	int GetColumnCount() const;
+	int GetItemCount() const;
+	std::wstring GetItemText(int iRow, int iColumn) const;
 };
 
 class CListBox
@@ -40,13 +40,13 @@ public:
 	bool Create(HWND hParentWnd);
 	HWND GetHwnd()const { return m_hWnd; }
 
-	void Add(const wchar_t* szText, bool ToBottom = true);
-	void Clear();
+	void Add(const wchar_t* szText, bool ToBottom = true) const;
+	void Clear() const;
 	std::wstring GetSelectedItemName();
 private:
 	HWND m_hWnd = nullptr;
 
-	long long GetSelectedItemIndex();
+	long long GetSelectedItemIndex() const;
 };
 
 class CComboBox
@@ -60,15 +60,15 @@ public:
 
 	void Setup(const std::vector<std::wstring>& itemTexts);
 
-	int GetSelectedItemIndex();
-	std::wstring GetSelectedItemText();
+	int GetSelectedItemIndex() const;
+	std::wstring GetSelectedItemText() const;
 
-	int FindIndex(const wchar_t* szName);
-	bool SetSelectedItem(int iIndex);
+	int FindIndex(const wchar_t* szName) const;
+	bool SetSelectedItem(int iIndex) const;
 private:
 	HWND m_hWnd = nullptr;
 
-	void Clear();
+	void Clear() const;
 };
 
 class CButton
@@ -80,8 +80,8 @@ public:
 	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool bHasCheckBox = false);
 	HWND GetHwnd()const { return m_hWnd; }
 
-	void SetCheckBox(bool bToBeChecked);
-	bool IsChecked();
+	void SetCheckBox(bool bToBeChecked) const;
+	bool IsChecked() const;
 private:
 	HWND m_hWnd = nullptr;
 };
@@ -98,7 +98,7 @@ public:
 	long long GetPosition() const;
 	void SetPosition(long long llPos) const;
 
-	HWND GetToolTipHandle();
+	HWND GetToolTipHandle() const;
 private:
 	HWND m_hWnd = nullptr;
 };
@@ -115,8 +115,8 @@ public:
 	float GetPosition() const;
 	void SetPosition(float fPos) const;
 
-	HWND GetToolTipHandle();
-	void OnToolTipNeedText(LPNMTTDISPINFOW pNmtTextDispInfo);
+	HWND GetToolTipHandle() const;
+	void OnToolTipNeedText(LPNMTTDISPINFOW pNmtTextDispInfo) const;
 
 	unsigned int GetRatio()const { return m_uiRatio; }
 private:
@@ -147,8 +147,10 @@ public:
 	bool Create(const wchar_t* initialText, HWND hParentWnd, bool bReadOnly = false, bool bBorder = true, bool bNumber = false, bool bPassword = false);
 	HWND GetHwnd()const { return m_hWnd; }
 
-	std::wstring GetText();
-	bool SetText(size_t textLength, const wchar_t* text);
+	std::wstring GetText() const;
+	bool SetText(size_t textLength, const wchar_t* text) const;
+	
+	bool SetHint(const wchar_t* text, bool bToBeHidden = true) const;
 private:
 	HWND m_hWnd = nullptr;
 };
