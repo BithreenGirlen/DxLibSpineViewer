@@ -26,8 +26,8 @@ public:
 
 	bool AddSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool isBinarySkel);
 
-	size_t GetNumberOfSpines() const;
-	bool HasSpineBeenLoaded() const;
+	size_t GetNumberOfSpines() const noexcept;
+	bool HasSpineBeenLoaded() const noexcept;
 
 	void Update(float fDelta);
 	virtual void Redraw() = 0;
@@ -58,7 +58,7 @@ public:
 	/// @return current state. If it were out of range, return false.
 	bool IsAlphaPremultiplied(size_t nDrawableIndex = 0);
 	bool IsBlendModeNormalForced(size_t nDrawableIndex = 0);
-	bool IsDrawOrderReversed() const;
+	bool IsDrawOrderReversed() const noexcept;
 
 	/// @return false if it were out of range.
 	bool PremultiplyAlpha(bool isToBePremultiplied, size_t nDrawableIndex = 0);
@@ -73,29 +73,31 @@ public:
 	/// @param fEnd timeline end position.
 	void GetCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd);
 
-	const std::vector<std::string>& GetSlotNames() const;
-	const std::vector<std::string>& GetSkinNames() const;
-	const std::vector<std::string>& GetAnimationNames() const;
+	const std::vector<std::string>& GetSlotNames() const noexcept;
+	const std::vector<std::string>& GetSkinNames() const noexcept;
+	const std::vector<std::string>& GetAnimationNames() const noexcept;
 
 	void SetSlotsToExclude(const std::vector<std::string>& slotNames);
 	void MixSkins(const std::vector<std::string>& skinNames);
 	void MixAnimations(const std::vector<std::string>& animationNames, bool loop = false);
+
+	void SetSlotExcludeCallback(bool (*pFunc)(const char*, size_t));
 
 	/// @brief Searches slots having multiple attachments. If each slot is associated with only single attachment, returns empty.
 	/// @return slot name as key and attachment names as values.
 	std::unordered_map<std::string, std::vector<std::string>> GetSlotNamesWithTheirAttachments();
 	bool ReplaceAttachment(const char* szSlotName, const char* szAttachmentName);
 
-	FPoint2 GetBaseSize() const;
-	FPoint2 GetOffset() const;
+	FPoint2 GetBaseSize() const noexcept;
+	FPoint2 GetOffset() const noexcept;
 
-	float GetSkeletonScale() const;
+	float GetSkeletonScale() const noexcept;
 	void SetSkeletonScale(float fScale);
 
-	float GetCanvasScale() const;
+	float GetCanvasScale() const noexcept;
 	void SetCanvasScale(float fScale);
 
-	float GetTimeScale() const;
+	float GetTimeScale() const noexcept;
 	void SetTimeScale(float fTimeScale);
 protected:
 	static constexpr float kfScalePortion = 0.025f;

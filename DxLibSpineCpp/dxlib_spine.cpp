@@ -288,7 +288,14 @@ DxLib::FLOAT4 CDxLibSpineDrawable::GetBoundingBox() const
 
 bool CDxLibSpineDrawable::IsToBeLeftOut(const spine::String& slotName)
 {
-	return m_leaveOutList.contains(slotName);
+	if (m_pLeaveOutCallback != nullptr)
+	{
+		return m_pLeaveOutCallback(slotName.buffer(), slotName.length());
+	}
+	else
+	{
+		return m_leaveOutList.contains(slotName);
+	}
 }
 
 void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path)

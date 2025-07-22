@@ -96,12 +96,12 @@ bool CSpinePlayer::AddSpineFromFile(const char* szAtlasPath, const char* szSkelP
 	return true;
 }
 
-size_t CSpinePlayer::GetNumberOfSpines() const
+size_t CSpinePlayer::GetNumberOfSpines() const noexcept
 {
 	return m_drawables.size();
 }
 
-bool CSpinePlayer::HasSpineBeenLoaded() const
+bool CSpinePlayer::HasSpineBeenLoaded() const noexcept
 {
 	return !m_drawables.empty();
 }
@@ -302,7 +302,7 @@ bool CSpinePlayer::IsBlendModeNormalForced(size_t nDrawableIndex)
 	return false;
 }
 
-bool CSpinePlayer::IsDrawOrderReversed() const
+bool CSpinePlayer::IsDrawOrderReversed() const noexcept
 {
 	return m_isDrawOrderReversed;
 }
@@ -373,17 +373,17 @@ void CSpinePlayer::GetCurrentAnimationTime(float* fTrack, float* fLast, float* f
 	}
 }
 /*槽溝名称引き渡し*/
-const std::vector<std::string>& CSpinePlayer::GetSlotNames() const
+const std::vector<std::string>& CSpinePlayer::GetSlotNames() const noexcept
 {
 	return m_slotNames;
 }
 /*装い名称引き渡し*/
-const std::vector<std::string>& CSpinePlayer::GetSkinNames() const
+const std::vector<std::string>& CSpinePlayer::GetSkinNames() const noexcept
 {
 	return m_skinNames;
 }
 /*動作名称引き渡し*/
-const std::vector<std::string>& CSpinePlayer::GetAnimationNames() const
+const std::vector<std::string>& CSpinePlayer::GetAnimationNames() const noexcept
 {
 	return m_animationNames;
 }
@@ -452,6 +452,14 @@ void CSpinePlayer::MixAnimations(const std::vector<std::string>& animationNames,
 				}
 			}
 		}
+	}
+}
+
+void CSpinePlayer::SetSlotExcludeCallback(bool(*pFunc)(const char*, size_t))
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->SetLeaveOutCallback(pFunc);
 	}
 }
 
@@ -565,17 +573,17 @@ bool CSpinePlayer::ReplaceAttachment(const char* szSlotName, const char* szAttac
 	return true;
 }
 /*寸法受け渡し*/
-FPoint2 CSpinePlayer::GetBaseSize() const
+FPoint2 CSpinePlayer::GetBaseSize() const noexcept
 {
 	return m_fBaseSize;
 }
 
-FPoint2 CSpinePlayer::GetOffset() const
+FPoint2 CSpinePlayer::GetOffset() const noexcept
 {
 	return m_fOffset;
 }
 
-float CSpinePlayer::GetSkeletonScale() const
+float CSpinePlayer::GetSkeletonScale() const noexcept
 {
 	return m_fSkeletonScale;
 }
@@ -585,7 +593,7 @@ void CSpinePlayer::SetSkeletonScale(float fScale)
 	m_fSkeletonScale = fScale;
 }
 
-float CSpinePlayer::GetCanvasScale() const
+float CSpinePlayer::GetCanvasScale() const noexcept
 {
 	return m_fCanvasScale;
 }
@@ -594,7 +602,7 @@ void CSpinePlayer::SetCanvasScale(float fScale)
 	m_fCanvasScale = fScale;
 }
 
-float CSpinePlayer::GetTimeScale() const
+float CSpinePlayer::GetTimeScale() const noexcept
 {
 	return m_fTimeScale;
 }

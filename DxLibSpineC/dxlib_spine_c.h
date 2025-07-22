@@ -86,6 +86,7 @@ public:
 	void Draw();
 
 	void SetLeaveOutList(const char** list, int listCount);
+	void SetLeaveOutCallback(bool (*pFunc)(const char*, size_t)) { m_pLeaveOutCallback = pFunc; }
 
 	DxLib::FLOAT4 GetBoundingBox() const;
 private:
@@ -98,6 +99,7 @@ private:
 
 	char** m_leaveOutList = nullptr;
 	int m_leaveOutListCount = 0;
+	bool (*m_pLeaveOutCallback)(const char*, size_t) = nullptr;
 
 	void ClearLeaveOutList();
 	bool IsToBeLeftOut(const char* slotName);

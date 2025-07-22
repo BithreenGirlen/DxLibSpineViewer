@@ -373,9 +373,17 @@ void CDxLibSpineDrawableC21::ClearLeaveOutList()
 
 bool CDxLibSpineDrawableC21::IsToBeLeftOut(const char* slotName)
 {
-	for (int i = 0; i < m_leaveOutListCount; ++i)
+	if (m_pLeaveOutCallback != nullptr)
 	{
-		if (strcmp(slotName, m_leaveOutList[i]) == 0)return true;
+		return m_pLeaveOutCallback(slotName, strlen(slotName));
 	}
+	else
+	{
+		for (int i = 0; i < m_leaveOutListCount; ++i)
+		{
+			if (strcmp(slotName, m_leaveOutList[i]) == 0)return true;
+		}
+	}
+
 	return false;
 }

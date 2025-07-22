@@ -28,6 +28,7 @@ public:
 
 	/// @brief Set slots to be excluded from rendering
 	void SetLeaveOutList(spine::Vector<spine::String> &list);
+	void SetLeaveOutCallback(bool (*pFunc)(const char*, size_t)) { m_pLeaveOutCallback = pFunc; }
 
 	DxLib::FLOAT4 GetBoundingBox() const;
 private:
@@ -41,6 +42,7 @@ private:
 	spine::SkeletonClipping m_clipper;
 
 	spine::Vector<spine::String> m_leaveOutList;
+	bool (*m_pLeaveOutCallback)(const char*, size_t) = nullptr;
 
 	bool IsToBeLeftOut(const spine::String& slotName);
 };
