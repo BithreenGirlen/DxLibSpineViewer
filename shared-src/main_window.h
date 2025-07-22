@@ -55,9 +55,8 @@ private:
 			kSkeletonSetting, kAtlasSetting, kAddEffectFile, kExportSetting,
 			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
 			kSnapAsPNG, kSnapAsJPG,
-			kStartStoringImages, kStartVideoRecording,
-			kSaveAsGIF, kSaveAsPNGs,
-			kEndVideoRecording
+			kExportAsGif, kExportAsVideo, kExportAsPngs,
+			kEndRecording
 		};
 	};
 	struct MenuBar abstract final
@@ -110,11 +109,11 @@ private:
 	void MenuOnSaveAsJpg();
 	void MenuOnSaveAsPng();
 
-	void MenuOnStartRecording(bool bAsVideo);
-	void MenuOnEndRecording(bool bAsGif = true);
+	void MenuOnStartRecording(int menuKind);
+	void MenuOnEndRecording();
 
 	void ChangeWindowTitle(const wchar_t* pwzTitle);
-	std::wstring GetWindowTitle();
+	std::wstring GetWindowTitle() const;
 
 	void ToggleWindowFrameStyle();
 	bool SetMenuCheckState(unsigned int uiMenuIndex, unsigned int uiItemIndex, bool checked) const;

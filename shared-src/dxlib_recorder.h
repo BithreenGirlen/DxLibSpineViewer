@@ -7,32 +7,28 @@ public:
 	CDxLibRecorder();
 	~CDxLibRecorder();
 
-	enum class EOption
+	enum class EOutputType
 	{
-		kNone,
-		kAsVideo
+		Unknown,
+		Pngs,
+		Gif,
+		Video,
 	};
-	bool Start(EOption eOption = EOption::kNone, unsigned int fps = kDefaultFps);
+	bool Start(EOutputType outputType, unsigned int fps = kDefaultFps);
+	EOutputType GetOutputType() const;
 
 	enum class EState
 	{
 		Idle,
-		StoringImages,
+		UnderRecording,
 		InitialisingVideoStream,
-		RecordingVideo
 	};
 	EState GetState() const;
 
 	bool HasTimePassed() const;
 	bool CaptureFrame(const wchar_t* pwzFileName = nullptr);
 
-	enum class EOutputType
-	{
-		kPngs,
-		kGif,
-		kVideo,
-	};
-	bool End(EOutputType eOutputType, const wchar_t* pwzFilePath);
+	bool End(const wchar_t* pwzFilePath);
 private:
 	static constexpr unsigned int kDefaultFps = 30;
 

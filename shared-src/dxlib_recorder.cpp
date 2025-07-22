@@ -30,20 +30,21 @@ public:
 		Clear();
 	}
 
-	bool Start(bool isToBeVideo, unsigned int fps);
+	bool Start(EOutputType outputType, unsigned int fps);
 	EState GetState() const { return m_recorderState; }
+	EOutputType GetoutputType() const { return m_outputType; }
 
 	bool HasTimePassed();
 	bool Capture(const wchar_t* filePath);
 
-	bool End(EOutputType eOutputType, const wchar_t* filePath);
+	bool End(const wchar_t* filePath);
 private:
 	std::vector<DxLibImageHandle> m_images;
 	std::vector<std::wstring> m_imageFilePaths;
 
 	bool m_isAmdCpu = false;
-	bool m_isToBeVideo = false;
 
+	EOutputType m_outputType = EOutputType::Video;
 	EState m_recorderState = EState::Idle;
 
 	CDxLibClock m_clock;
@@ -52,16 +53,14 @@ private:
 	void Clear();
 };
 
-bool CDxLibRecorder::Impl::Start(bool isToBeVideo, unsigned int fps)
+bool CDxLibRecorder::Impl::Start(EOutputType outputType, unsigned int fps)
 {
 	Clear();
 
-	m_isToBeVideo = isToBeVideo;
 	m_fps = fps;
 
-	m_recorderState = isToBeVideo ?
-		EState::RecordingVideo :
-		EState::StoringImages;
+	m_outputType = outputType;
+	m_recorderState = EState::UnderRecording;
 
 	m_clock.Restart();
 
@@ -90,7 +89,7 @@ bool CDxLibRecorder::Impl::Capture(const wchar_t* filePath)
 			* Truncate video dimension to be multiple of 4 to prevent AMD CPU from hanging on final output
 			* in spite of successful return values of mediatype setup and sample delivering.
 			*/
-			if (m_isAmdCpu && m_isToBeVideo)
+			if (m_isAmdCpu && m_outputType == EOutputType::Video)
 			{
 				iGraphWidth &= 0xfffffffc;
 				iGraphHeight &= 0xfffffffc;
@@ -114,7 +113,7 @@ bool CDxLibRecorder::Impl::Capture(const wchar_t* filePath)
 	return false;
 }
 
-bool CDxLibRecorder::Impl::End(EOutputType eOutputType, const wchar_t* filePath)
+bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 {
 	if (filePath == nullptr)
 	{
@@ -122,7 +121,7 @@ bool CDxLibRecorder::Impl::End(EOutputType eOutputType, const wchar_t* filePath)
 		return false;
 	}
 
-	if (eOutputType == EOutputType::kPngs)
+	if (m_outputType == EOutputType::Pngs)
 	{
 		for (size_t i = 0; i < m_images.size() && i < m_imageFilePaths.size(); ++i)
 		{
@@ -137,7 +136,7 @@ bool CDxLibRecorder::Impl::End(EOutputType eOutputType, const wchar_t* filePath)
 			image.Reset();
 		}
 	}
-	else if (eOutputType == EOutputType::kGif)
+	else if (m_outputType == EOutputType::Gif)
 	{
 		win_image::CWicGifEncoder wicGifEncoder;
 		bool bRet = wicGifEncoder.Initialise(filePath);
@@ -155,7 +154,7 @@ bool CDxLibRecorder::Impl::End(EOutputType eOutputType, const wchar_t* filePath)
 			wicGifEncoder.Finalise();
 		}
 	}
-	else if (eOutputType == EOutputType::kVideo)
+	else if (m_outputType == EOutputType::Video)
 	{
 		CMfVideoEncoder mfVideoEncoder;
 		int iVideoWidth = 0;
@@ -191,7 +190,7 @@ void CDxLibRecorder::Impl::Clear()
 	m_images.clear();
 	m_imageFilePaths.clear();
 
-	m_isToBeVideo = false;
+	m_outputType = EOutputType::Video;
 	m_recorderState = EState::Idle;
 }
 
@@ -207,9 +206,13 @@ CDxLibRecorder::~CDxLibRecorder()
 	delete m_impl;
 }
 
-bool CDxLibRecorder::Start(EOption eOption, unsigned int fps)
+bool CDxLibRecorder::Start(EOutputType outputType, unsigned int fps)
 {
-	return m_impl->Start(eOption == EOption::kAsVideo, fps);
+	return m_impl->Start(outputType, fps);
+}
+CDxLibRecorder::EOutputType CDxLibRecorder::GetOutputType() const
+{
+	return m_impl->GetoutputType();
 }
 CDxLibRecorder::EState CDxLibRecorder::GetState() const
 {
@@ -223,7 +226,7 @@ bool CDxLibRecorder::CaptureFrame(const wchar_t* pwzFileName)
 {
 	return m_impl->Capture(pwzFileName);
 }
-bool CDxLibRecorder::End(EOutputType eOutputFormat, const wchar_t* pwzFilePath)
+bool CDxLibRecorder::End(const wchar_t* pwzFilePath)
 {
-	return m_impl->End(eOutputFormat, pwzFilePath);
+	return m_impl->End(pwzFilePath);
 }

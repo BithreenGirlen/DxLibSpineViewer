@@ -301,19 +301,12 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kSnapAsJPG:
 			MenuOnSaveAsJpg();
 			break;
-		case Menu::kStartStoringImages:
-			MenuOnStartRecording(false);
+		case Menu::kExportAsGif:
+		case Menu::kExportAsVideo:
+		case Menu::kExportAsPngs:
+			MenuOnStartRecording(wmId);
 			break;
-		case Menu::kStartVideoRecording:
-			MenuOnStartRecording(true);
-			break;
-		case Menu::kSaveAsGIF:
-			MenuOnEndRecording();
-			break;
-		case Menu::kSaveAsPNGs:
-			MenuOnEndRecording(false);
-			break;
-		case Menu::kEndVideoRecording:
+		case Menu::kEndRecording:
 			MenuOnEndRecording();
 			break;
 		}
@@ -373,7 +366,7 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 		{
 			m_dxLibSpinePlayer.RescaleSkeleton((iScroll > 0) ^ m_isZoomDirectionReversed);
 
-			bool bWindowToBeResized = !(usKey & MK_CONTROL) && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
+			bool bWindowToBeResized = !(usKey & MK_CONTROL) && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording;
 			if (bWindowToBeResized)
 			{
 				m_dxLibSpinePlayer.RescaleCanvas((iScroll > 0) ^ m_isZoomDirectionReversed);
@@ -381,7 +374,6 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 			}
 		}
 	}
-
 
 	return 0;
 }
@@ -428,7 +420,11 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 
 		if (iX == 0 && iY == 0)
 		{
-			m_dxLibSpinePlayer.ShiftAnimation();
+			const auto& recorderState = m_dxLibRecorder.GetState();
+			if (recorderState == CDxLibRecorder::EState::Idle || !m_exportSettingDialogue.IsToExportPerAnimation())
+			{
+				m_dxLibSpinePlayer.ShiftAnimation();
+			}
 		}
 	}
 
@@ -459,37 +455,26 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 				const auto& recorderState = m_dxLibRecorder.GetState();
 				if (recorderState == CDxLibRecorder::EState::Idle)
 				{
-					int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSnapAsPNG, L"Snap as PNG");
+					int iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kSnapAsPNG, L"Snap as PNG");
 					if (iRet == 0)return false;
-					iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSnapAsJPG, L"Snap as JPG");
+					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kSnapAsJPG, L"Snap as JPG");
 					if (iRet == 0)return false;
-					iRet = ::AppendMenu(hPopupMenu, MF_SEPARATOR, 0, nullptr);
+					iRet = ::AppendMenuW(hPopupMenu, MF_SEPARATOR, 0, nullptr);
 					if (iRet == 0)return false;
-					if (m_exportSettingDialogue.IsToExportPerAnimation())
-					{
-						iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kStartStoringImages, L"Export as GIF");
-						if (iRet == 0)return false;
-						iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kStartVideoRecording, L"Export as H264");
-						if (iRet == 0)return false;
-					}
-					else
-					{
-						iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kStartStoringImages, L"Start image recording");
-						if (iRet == 0)return false;
-						iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kStartVideoRecording, L"Start video recording");
-						if (iRet == 0)return false;
-					}
-				}
-				else if (recorderState == CDxLibRecorder::EState::StoringImages)
-				{
-					int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSaveAsGIF, L"Save as GIF");
+
+					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsGif, L"Export as GIF");
 					if (iRet == 0)return false;
-					iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kSaveAsPNGs, L"Save as PNGs");
+					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsVideo, L"Export as H264");
+					if (iRet == 0)return false;
+					iRet = ::AppendMenuW(hPopupMenu, MF_SEPARATOR, 0, nullptr);
+					if (iRet == 0)return false;
+
+					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsPngs, L"Export as PNGs");
 					if (iRet == 0)return false;
 				}
-				else if (recorderState == CDxLibRecorder::EState::RecordingVideo)
+				else if (recorderState == CDxLibRecorder::EState::UnderRecording)
 				{
-					int iRet = ::AppendMenu(hPopupMenu, MF_STRING, Menu::kEndVideoRecording, L"End recording");
+					int iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kEndRecording, L"End recording");
 					if (iRet == 0)return false;
 				}
 
@@ -519,10 +504,9 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 
 	if (usKey == 0)
 	{
-		if (m_dxLibSpinePlayer.HasSpineBeenLoaded() && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo)
+		if (m_dxLibSpinePlayer.HasSpineBeenLoaded() && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording)
 		{
 			m_dxLibSpinePlayer.ResetScale();
-
 			ResizeWindow();
 		}
 	}
@@ -843,7 +827,7 @@ void CMainWindow::MenuOnMakeWindowTransparent()
 /*手動寸法変更許可切り替え*/
 void CMainWindow::MenuOnAllowManualSizing()
 {
-	bool isResizingAllowed = !m_isManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::RecordingVideo;
+	bool isResizingAllowed = !m_isManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording;
 	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kAllowManualSizing, isResizingAllowed);
 	if (result)
 	{
@@ -907,21 +891,37 @@ void CMainWindow::MenuOnSaveAsPng()
 	CDxLibImageEncoder::SaveScreenAsPng(wstrFilePath.c_str());
 }
 /*記録開始*/
-void CMainWindow::MenuOnStartRecording(bool bAsVideo)
+void CMainWindow::MenuOnStartRecording(int menuKind)
 {
 	if (!m_dxLibSpinePlayer.HasSpineBeenLoaded())return;
 
-	if (bAsVideo)
+	CDxLibRecorder::EOutputType outputType = CDxLibRecorder::EOutputType::Unknown;
+	switch (menuKind)
 	{
-		m_dxLibRecorder.Start(CDxLibRecorder::EOption::kAsVideo, m_exportSettingDialogue.GetVideoFps());
+	case Menu::kExportAsGif: 
+		outputType = CDxLibRecorder::EOutputType::Gif;
+		break;
+	case Menu::kExportAsVideo: 
+		outputType = CDxLibRecorder::EOutputType::Video;
+		break;
+	case Menu::kExportAsPngs: 
+		outputType = CDxLibRecorder::EOutputType::Pngs;
+		break;
+	default:
+		break;
+	}
 
-		/* Disable manual resizing once video recording has started. */
-		MenuOnAllowManualSizing();
-	}
-	else
-	{
-		m_dxLibRecorder.Start(CDxLibRecorder::EOption::kNone, m_exportSettingDialogue.GetImageFps());
-	}
+	if (outputType == CDxLibRecorder::EOutputType::Unknown)return;
+
+	unsigned short fps = menuKind == Menu::kExportAsVideo ?
+		m_exportSettingDialogue.GetVideoFps() :
+		m_exportSettingDialogue.GetImageFps();
+
+	bool bRet = m_dxLibRecorder.Start(outputType, fps);
+	if (!bRet)return;
+
+	/* Disable manual resizing once video recording has started. */
+	MenuOnAllowManualSizing();
 
 	if (m_exportSettingDialogue.IsToExportPerAnimation())
 	{
@@ -929,31 +929,27 @@ void CMainWindow::MenuOnStartRecording(bool bAsVideo)
 	}
 }
 /*記録終了*/
-void CMainWindow::MenuOnEndRecording(bool bAsGif)
+void CMainWindow::MenuOnEndRecording()
 {
-	if (m_dxLibRecorder.GetState() == CDxLibRecorder::EState::RecordingVideo)
+	if (m_dxLibRecorder.GetState() == CDxLibRecorder::EState::UnderRecording)
 	{
 		std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
 		wstrFilePath += win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
-		wstrFilePath += L".mp4";
 
-		m_dxLibRecorder.End(CDxLibRecorder::EOutputType::kVideo, wstrFilePath.c_str());
-	}
-	else
-	{
-		if (bAsGif)
+		const auto &outputType = m_dxLibRecorder.GetOutputType();
+		switch (outputType)
 		{
-			std::wstring wstrFilePath = win_filesystem::CreateWorkFolder(GetWindowTitle());
-			wstrFilePath += win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
+		case CDxLibRecorder::EOutputType::Gif: 
 			wstrFilePath += L".gif";
+			break;
+		case CDxLibRecorder::EOutputType::Video: 
+			wstrFilePath += L".mp4";
+			break;
+		default:
+			break;
+		}
 
-			m_dxLibRecorder.End(CDxLibRecorder::EOutputType::kGif, wstrFilePath.c_str());
-		}
-		else
-		{
-			std::wstring wstrFolderPath = win_filesystem::CreateWorkFolder(GetWindowTitle());
-			m_dxLibRecorder.End(CDxLibRecorder::EOutputType::kPngs, wstrFolderPath.c_str());
-		}
+		m_dxLibRecorder.End(wstrFilePath.c_str());
 	}
 
 	::InvalidateRect(m_hWnd, nullptr, FALSE);
@@ -972,7 +968,7 @@ void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
 	::SetWindowTextW(m_hWnd, wstr.empty() ? m_swzDefaultWindowName : wstr.c_str());
 }
 /*表題取得*/
-std::wstring CMainWindow::GetWindowTitle()
+std::wstring CMainWindow::GetWindowTitle() const
 {
 	for (int iSize = 256; iSize <= 1024; iSize *= 2)
 	{
@@ -988,7 +984,7 @@ std::wstring CMainWindow::GetWindowTitle()
 /*表示形式変更*/
 void CMainWindow::ToggleWindowFrameStyle()
 {
-	if (!m_dxLibSpinePlayer.HasSpineBeenLoaded() || m_dxLibRecorder.GetState() == CDxLibRecorder::EState::RecordingVideo)return;
+	if (!m_dxLibSpinePlayer.HasSpineBeenLoaded() || m_dxLibRecorder.GetState() == CDxLibRecorder::EState::UnderRecording)return;
 
 	RECT rect;
 	::GetWindowRect(m_hWnd, &rect);
@@ -1110,6 +1106,11 @@ bool CMainWindow::LoadSpineFiles(const std::vector<std::string>& atlasPaths, con
 	{
 		ResizeWindow();
 		ChangeWindowTitle(windowName);
+
+		if (m_spineManipulatorDialogue.HasSlotExclusionFilter())
+		{
+			m_dxLibSpinePlayer.SetSlotExcludeCallback(m_spineManipulatorDialogue.GetSlotExcludeCallback());
+		}
 	}
 	else
 	{
@@ -1137,39 +1138,28 @@ void CMainWindow::UpdateDrawingInterval()
 void CMainWindow::StepUpRecording()
 {
 	const auto& recorderState = m_dxLibRecorder.GetState();
-
-	if (recorderState == CDxLibRecorder::EState::StoringImages)
+	if (recorderState == CDxLibRecorder::EState::UnderRecording)
 	{
 		if (m_dxLibRecorder.HasTimePassed())
 		{
 			float fTrack = 0.f;
 			float fEnd = 0.f;
 			m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrack, nullptr, nullptr, &fEnd);
-			std::wstring wstrFrameName = win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
-			wstrFrameName += L"_" + std::to_wstring(fTrack);
 
-			m_dxLibRecorder.CaptureFrame(wstrFrameName.c_str());
-
-			if (m_exportSettingDialogue.IsToExportPerAnimation())
+			if (m_dxLibRecorder.GetOutputType() == CDxLibRecorder::EOutputType::Pngs)
 			{
-				if (::isgreaterequal(fTrack, fEnd))
-				{
-					MenuOnEndRecording(true);
-				}
+				std::wstring wstrFrameName = win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
+				wstrFrameName += L"_" + std::to_wstring(fTrack);
+
+				m_dxLibRecorder.CaptureFrame(wstrFrameName.c_str());
 			}
-		}
-	}
-	else if (recorderState == CDxLibRecorder::EState::RecordingVideo)
-	{
-		if (m_dxLibRecorder.HasTimePassed())
-		{
-			m_dxLibRecorder.CaptureFrame();
+			else
+			{
+				m_dxLibRecorder.CaptureFrame();
+			}
 
 			if (m_exportSettingDialogue.IsToExportPerAnimation())
 			{
-				float fTrack = 0.f;
-				float fEnd = 0.f;
-				m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrack, nullptr, nullptr, &fEnd);
 				if (::isgreaterequal(fTrack, fEnd))
 				{
 					MenuOnEndRecording();

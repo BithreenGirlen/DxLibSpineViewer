@@ -86,12 +86,13 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 1. From `File->Extension setting`, specify atlas and skeleton extensions.
 2. From `File->Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
-- `Open folder` is to load all the Spine files in that folder and render them at the same time.
+- `Open folder` is to load all the Spine files in a folder and render them at the same time.
   - Do not try to open folder containing Spine files which cannot be managed simultaneously.
   - Of cource it is permitted to open folder containing only one set of Spine files. 
 
 <details><summary>Appropriate example</summary>
 
+1. Spines of which animations have syncronised timelines.
 <pre>
 221491
 ├ odin_S1.atlas.txt
@@ -103,10 +104,25 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 └ ...
 </pre>
 
+2. A folder which contains only one set of Spine Files.
+<pre>
+...
+├ cha0001-h1
+│  ├ rev0001_01.png
+│  ├ rev0001_01-pma.atlas
+│  └ rev0001_01-pro.skel
+├ cha0001-h2
+│  ├ rev0001_02.png
+│  ├ rev0001_02-pma.atlas
+│  └ rev0001_02-pro.skel
+└ ...
+</pre>
+
 </details>
 
 <details><summary>Inappropriate exmaple</summary>
 
+- Spines of which animations do not share timelines.
 <pre>
 spinechar20
 ├ 1200.atlas
@@ -153,7 +169,7 @@ spinechar20
 | <kbd>R</kbd> | Toggle draw-order between filename asc/descending order. _Default: ascending order_. | 
 
 - <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when files are loaded via `Open folder`.
-- `PMA` toggling is permitted only for Spine version `3.8` and older.
+- Toggling `PMA` is permitted only for Spine version `3.8` and older.
   - For Spine version `4.0` and later, runtime applies pma property read from atlas file.
   - Disable `PMA` if it seems too bright, and enable if darkish.
 - Force `normal` blend mode if `multiply` is not well represented.
@@ -167,12 +183,10 @@ spinechar20
 | Snap as JPG | Save the current screen as `JPG`. |
 | Export as GIF | Restart the current animation and export as `GIF`. |
 | Export as H264 | Restart the current animation and export as `MP4`. |
+| Export as PNGs | Restart the current animation and export as separate `PNG`s. |
 
 - Context menu appears only when Spine is loaded.
-- By unchecking `Export per anim.` option from `Tool->Export setting`, export behaviour changes as follows:
-  - The start and end timing of recording is delegated to user.
-  - It is allowed to zoom or switch animation while recording.
-  - It is allowed to export as multiple PNGs.
+- By unchecking `Export per anim.` option from `Tool->Export setting`, the start and end timing of recording will be delegated to user.
 
 <details><summary>Note on filename</summary>
 
