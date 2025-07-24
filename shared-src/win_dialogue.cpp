@@ -184,3 +184,11 @@ void win_dialogue::ShowMessageBox(const char* pzTitle, const char* pzMessage)
 {
     ::MessageBoxA(nullptr, pzMessage, pzTitle, MB_ICONERROR);
 }
+
+void win_dialogue::ShowErrorMessageValidatingOwnerWindow(const wchar_t* pwzMessage, void* pOwnerWindow)
+{
+    HWND hWnd = static_cast<HWND>(pOwnerWindow);
+    ::ValidateRect(hWnd, nullptr);
+    ::MessageBoxW(hWnd, pwzMessage, L"Error", MB_ICONERROR);
+    ::InvalidateRect(hWnd, nullptr, FALSE);
+}

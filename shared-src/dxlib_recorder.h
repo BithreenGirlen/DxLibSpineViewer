@@ -16,6 +16,7 @@ public:
 	};
 	bool Start(EOutputType outputType, unsigned int fps = kDefaultFps);
 	EOutputType GetOutputType() const;
+	int GetFps() const;
 
 	enum class EState
 	{
@@ -25,7 +26,6 @@ public:
 	};
 	EState GetState() const;
 
-	bool HasTimePassed() const;
 	bool CaptureFrame(const wchar_t* pwzFileName = nullptr);
 
 	bool End(const wchar_t* pwzFilePath);

@@ -75,9 +75,6 @@
     <ClInclude Include="..\..\shared-src\dxlib_recorder.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared-src\dxlib_clock.h">
-      <Filter>Header File\shared</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared-src\dxlib_map.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
@@ -110,6 +107,9 @@
     </ClInclude>
     <ClInclude Include="..\..\DxLibSpineCpp\spine_player.h">
       <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\win_clock.h">
+      <Filter>Header File\shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -341,9 +341,6 @@
     <ClCompile Include="..\..\shared-src\dxlib_recorder.cpp">
       <Filter>Source File\shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\shared-src\dxlib_clock.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\shared-src\dxlib_map.cpp">
       <Filter>Source File\shared</Filter>
     </ClCompile>
@@ -370,6 +367,9 @@
     </ClCompile>
     <ClCompile Include="..\..\DxLibSpineCpp\spine_player.cpp">
       <Filter>Source File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\win_clock.cpp">
+      <Filter>Source File\shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -142,7 +142,6 @@
     <ClInclude Include="..\..\DxLibSpineCpp\spine_loader.h" />
     <ClInclude Include="..\..\DxLibSpineCpp\spine_player.h" />
     <ClInclude Include="..\..\shared-src\cpu.h" />
-    <ClInclude Include="..\..\shared-src\dxlib_clock.h" />
     <ClInclude Include="..\..\shared-src\dxlib_handle.h" />
     <ClInclude Include="..\..\shared-src\dxlib_image_encoder.h" />
     <ClInclude Include="..\..\shared-src\dxlib_init.h" />
@@ -160,6 +159,7 @@
     <ClInclude Include="..\..\shared-src\native-ui\spine_setting_dialogue.h" />
     <ClInclude Include="..\..\shared-src\spine_player_shared.h" />
     <ClInclude Include="..\..\shared-src\text_utility.h" />
+    <ClInclude Include="..\..\shared-src\win_clock.h" />
     <ClInclude Include="..\..\shared-src\win_dialogue.h" />
     <ClInclude Include="..\..\shared-src\win_filesystem.h" />
     <ClInclude Include="..\..\shared-src\win_image.h" />
@@ -238,7 +238,6 @@
     <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.2\src\spine\Triangulator.cpp" />
     <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.2\src\spine\Updatable.cpp" />
     <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.2\src\spine\VertexAttachment.cpp" />
-    <ClCompile Include="..\..\shared-src\dxlib_clock.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_init.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_map.cpp" />
@@ -253,6 +252,7 @@
     <ClCompile Include="..\..\shared-src\native-ui\spine_atlas_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\native-ui\spine_manipulator_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\native-ui\spine_setting_dialogue.cpp" />
+    <ClCompile Include="..\..\shared-src\win_clock.cpp" />
     <ClCompile Include="..\..\shared-src\win_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\win_filesystem.cpp" />
     <ClCompile Include="..\..\shared-src\win_image.cpp" />

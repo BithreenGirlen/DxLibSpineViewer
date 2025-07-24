@@ -12,6 +12,7 @@
 #include "json_minimal.h"
 #include "text_utility.h"
 
+
 CMainWindow::CMainWindow()
 {
 
@@ -74,28 +75,26 @@ int CMainWindow::MessageLoop()
 {
 	MSG msg{};
 
-	for (;;)
+	m_winclock.Restart();
+	for (; msg.message != WM_QUIT;)
 	{
-		BOOL iRet = ::GetMessageW(&msg, 0, 0, 0);
-		if (iRet > 0)
+		BOOL iRet = ::PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE);
+		if (iRet)
 		{
 			::TranslateMessage(&msg);
 			::DispatchMessageW(&msg);
 		}
-		else if (iRet == 0)
+
+		if (m_hasProcessedWmPaint)
 		{
-			/*ループ終了*/
-			return static_cast<int>(msg.wParam);
+			m_hasProcessedWmPaint = false;
+			continue;
 		}
-		else
-		{
-			/*ループ異常*/
-			std::wstring wstrMessage = L"GetMessageW failed; code: " + std::to_wstring(::GetLastError());
-			::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
-			return -1;
-		}
+
+		Tick();
 	}
-	return 0;
+
+	return static_cast<int>(msg.wParam);
 }
 /*C CALLBACK*/
 LRESULT CMainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -163,8 +162,6 @@ LRESULT CMainWindow::OnCreate(HWND hWnd)
 	InitialiseMenuBar();
 	UpdateMenuItemState();
 
-	UpdateDrawingInterval();
-
 	return 0;
 }
 /*WM_DESTROY*/
@@ -185,27 +182,8 @@ LRESULT CMainWindow::OnClose()
 /*WM_PAINT*/
 LRESULT CMainWindow::OnPaint()
 {
-	PAINTSTRUCT ps;
-	HDC hdc = ::BeginPaint(m_hWnd, &ps);
-
-	if (m_dxLibSpinePlayer.HasSpineBeenLoaded() && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::InitialisingVideoStream)
-	{
-		DxLib::ClearDrawScreen();
-
-		m_dxLibSpinePlayer.Update(m_fDelta);
-		m_dxLibSpinePlayer.Redraw();
-
-		StepUpRecording();
-
-		DxLib::ScreenFlip();
-
-		if (m_hWnd != nullptr)
-		{
-			::InvalidateRect(m_hWnd, nullptr, FALSE);
-		}
-	}
-
-	::EndPaint(m_hWnd, &ps);
+	Tick();
+	m_hasProcessedWmPaint = true;
 
 	return 0;
 }
@@ -519,6 +497,27 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
+
+void CMainWindow::Tick()
+{
+	const auto& recorderState = m_dxLibRecorder.GetState();
+	if (m_dxLibSpinePlayer.HasSpineBeenLoaded() && recorderState != CDxLibRecorder::EState::InitialisingVideoStream)
+	{
+		DxLib::ClearDrawScreen();
+
+		float fDelta = recorderState == CDxLibRecorder::EState::UnderRecording ?
+			1.f / m_dxLibRecorder.GetFps() : m_winclock.GetElapsedTime();
+
+		m_dxLibSpinePlayer.Update(fDelta);
+		m_dxLibSpinePlayer.Redraw();
+
+		StepUpRecording();
+
+		m_winclock.Restart();
+
+		DxLib::ScreenFlip();
+	}
+}
 /*操作欄作成*/
 void CMainWindow::InitialiseMenuBar()
 {
@@ -587,7 +586,8 @@ void CMainWindow::InitialiseMenuBar()
 
 failed:
 	std::wstring wstrMessage = L"Failed to create menu; code: " + std::to_wstring(::GetLastError());
-	::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
+	win_dialogue::ShowErrorMessageValidatingOwnerWindow(wstrMessage.c_str(), m_hWnd);
+
 	if (hMenuFile != nullptr)
 	{
 		::DestroyMenu(hMenuFile);
@@ -618,7 +618,7 @@ void CMainWindow::MenuOnOpenFiles()
 		{
 			if (wstrAtlasFiles.size() != wstrSkelFiles.size())
 			{
-				::MessageBoxW(nullptr, L"The number of atlas and skeleton files should be the same.", L"Error", MB_ICONERROR);
+				win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"The number of atlas and skeleton files should be the same.", m_hWnd);
 				return;
 			}
 
@@ -744,7 +744,7 @@ void CMainWindow::MenuOnImportCocos()
 	}
 	else
 	{
-		::MessageBoxW(nullptr, L"Failed to load spine from Cocos import file", L"Error", MB_ICONERROR);
+		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"Failed to load spine from Cocos import file", m_hWnd);
 		ChangeWindowTitle(nullptr);
 	}
 	if (bLastState != bRet)UpdateMenuItemState();
@@ -951,8 +951,6 @@ void CMainWindow::MenuOnEndRecording()
 
 		m_dxLibRecorder.End(wstrFilePath.c_str());
 	}
-
-	::InvalidateRect(m_hWnd, nullptr, FALSE);
 }
 /*表題変更*/
 void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
@@ -1111,10 +1109,11 @@ bool CMainWindow::LoadSpineFiles(const std::vector<std::string>& atlasPaths, con
 		{
 			m_dxLibSpinePlayer.SetSlotExcludeCallback(m_spineManipulatorDialogue.GetSlotExcludeCallback());
 		}
+		m_winclock.Restart();
 	}
 	else
 	{
-		::MessageBoxW(nullptr, L"Failed to load spine(s)", L"Error", MB_ICONERROR);
+		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"Failed to load spine(s)", m_hWnd);
 		ChangeWindowTitle(nullptr);
 	}
 	if (bLastState != bRet)UpdateMenuItemState();
@@ -1127,43 +1126,33 @@ void CMainWindow::ClearFolderPathList()
 	m_folders.clear();
 	m_nFolderIndex = 0;
 }
-/*描画間隔更新*/
-void CMainWindow::UpdateDrawingInterval()
-{
-	DEVMODE sDevMode{};
-	::EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &sDevMode);
-	m_fDelta = 1 / static_cast<float>(sDevMode.dmDisplayFrequency);
-}
 /*記録逓進*/
 void CMainWindow::StepUpRecording()
 {
 	const auto& recorderState = m_dxLibRecorder.GetState();
 	if (recorderState == CDxLibRecorder::EState::UnderRecording)
 	{
-		if (m_dxLibRecorder.HasTimePassed())
+		float fTrack = 0.f;
+		float fEnd = 0.f;
+		m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrack, nullptr, nullptr, &fEnd);
+
+		if (m_dxLibRecorder.GetOutputType() == CDxLibRecorder::EOutputType::Pngs)
 		{
-			float fTrack = 0.f;
-			float fEnd = 0.f;
-			m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrack, nullptr, nullptr, &fEnd);
+			std::wstring wstrFrameName = win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
+			wstrFrameName += L"_" + std::to_wstring(fTrack);
 
-			if (m_dxLibRecorder.GetOutputType() == CDxLibRecorder::EOutputType::Pngs)
-			{
-				std::wstring wstrFrameName = win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
-				wstrFrameName += L"_" + std::to_wstring(fTrack);
+			m_dxLibRecorder.CaptureFrame(wstrFrameName.c_str());
+		}
+		else
+		{
+			m_dxLibRecorder.CaptureFrame();
+		}
 
-				m_dxLibRecorder.CaptureFrame(wstrFrameName.c_str());
-			}
-			else
+		if (m_exportSettingDialogue.IsToExportPerAnimation())
+		{
+			if (::isgreaterequal(fTrack, fEnd))
 			{
-				m_dxLibRecorder.CaptureFrame();
-			}
-
-			if (m_exportSettingDialogue.IsToExportPerAnimation())
-			{
-				if (::isgreaterequal(fTrack, fEnd))
-				{
-					MenuOnEndRecording();
-				}
+				MenuOnEndRecording();
 			}
 		}
 	}

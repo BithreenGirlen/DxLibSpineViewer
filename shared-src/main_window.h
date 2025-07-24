@@ -8,6 +8,7 @@
 
 #include "spine_player_shared.h"
 #include "dxlib_recorder.h"
+#include "win_clock.h"
 
 #include "native-ui/spine_setting_dialogue.h"
 #include "native-ui/spine_manipulator_dialogue.h"
@@ -85,7 +86,10 @@ private:
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
 
-	float m_fDelta = 1 / 60.f;
+	bool m_hasProcessedWmPaint = false;
+	CWinClock m_winclock;
+
+	void Tick();
 
 	void InitialiseMenuBar();
 
@@ -123,7 +127,6 @@ private:
 	bool LoadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName);
 	void ClearFolderPathList();
 
-	void UpdateDrawingInterval();
 	void StepUpRecording();
 
 	CDxLibSpinePlayer m_dxLibSpinePlayer;

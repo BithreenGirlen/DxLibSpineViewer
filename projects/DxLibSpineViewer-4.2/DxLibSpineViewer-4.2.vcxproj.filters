@@ -41,9 +41,6 @@
     <ClInclude Include="..\..\shared-src\cpu.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared-src\dxlib_clock.h">
-      <Filter>Header File\shared</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared-src\dxlib_handle.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
@@ -119,12 +116,12 @@
     <ClInclude Include="..\..\DxLibSpineCpp\spine_player.h">
       <Filter>Header File</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\win_clock.h">
+      <Filter>Header File\shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\cpu.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\dxlib_clock.cpp">
       <Filter>Source File\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -393,6 +390,9 @@
     </ClCompile>
     <ClCompile Include="..\..\DxLibSpineCpp\spine_player.cpp">
       <Filter>Source File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\win_clock.cpp">
+      <Filter>Source File\shared</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

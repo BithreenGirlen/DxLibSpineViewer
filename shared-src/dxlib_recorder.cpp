@@ -4,7 +4,6 @@
 
 #include "dxlib_handle.h"
 #include "dxlib_recorder.h"
-#include "dxlib_clock.h"
 #include "dxlib_map.h"
 
 /* WIC and MF as encoder */
@@ -31,10 +30,11 @@ public:
 	}
 
 	bool Start(EOutputType outputType, unsigned int fps);
-	EState GetState() const { return m_recorderState; }
 	EOutputType GetoutputType() const { return m_outputType; }
+	int GetFps() const { return m_fps; }
 
-	bool HasTimePassed();
+	EState GetState() const { return m_recorderState; }
+
 	bool Capture(const wchar_t* filePath);
 
 	bool End(const wchar_t* filePath);
@@ -47,7 +47,6 @@ private:
 	EOutputType m_outputType = EOutputType::Video;
 	EState m_recorderState = EState::Idle;
 
-	CDxLibClock m_clock;
 	int m_fps = kDefaultFps;
 
 	void Clear();
@@ -62,52 +61,37 @@ bool CDxLibRecorder::Impl::Start(EOutputType outputType, unsigned int fps)
 	m_outputType = outputType;
 	m_recorderState = EState::UnderRecording;
 
-	m_clock.Restart();
-
 	return true;
-}
-
-bool CDxLibRecorder::Impl::HasTimePassed()
-{
-	float elapsedTime = m_clock.GetElapsedTime();
-	float timeToWait = 1.f / m_fps;
-
-	return ::isgreaterequal(elapsedTime, timeToWait);
 }
 
 bool CDxLibRecorder::Impl::Capture(const wchar_t* filePath)
 {
 	if (m_recorderState != EState::Idle && m_recorderState != EState::InitialisingVideoStream)
 	{
-		if (HasTimePassed())
+		int iGraphWidth = 0;
+		int iGraphHeight = 0;
+		DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
+
+		/*
+		* Truncate video dimension to be multiple of 4 to prevent AMD CPU from hanging on final output
+		* in spite of successful return values of mediatype setup and sample delivering.
+		*/
+		if (m_isAmdCpu && m_outputType == EOutputType::Video)
 		{
-			int iGraphWidth = 0;
-			int iGraphHeight = 0;
-			DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
-
-			/*
-			* Truncate video dimension to be multiple of 4 to prevent AMD CPU from hanging on final output
-			* in spite of successful return values of mediatype setup and sample delivering.
-			*/
-			if (m_isAmdCpu && m_outputType == EOutputType::Video)
-			{
-				iGraphWidth &= 0xfffffffc;
-				iGraphHeight &= 0xfffffffc;
-			}
-
-			DxLibImageHandle dxLibGraphHandle(DxLib::MakeGraph(iGraphWidth, iGraphHeight));
-			if (dxLibGraphHandle.Get() == -1)return false;
-
-			int iRet = DxLib::GetDrawScreenGraph(0, 0, iGraphWidth, iGraphHeight, dxLibGraphHandle.Get());
-			if (iRet == -1)return false;
-
-			m_images.push_back(std::move(dxLibGraphHandle));
-			if (filePath != nullptr)m_imageFilePaths.push_back(filePath);
-
-			m_clock.Restart();
-
-			return true;
+			iGraphWidth &= 0xfffffffc;
+			iGraphHeight &= 0xfffffffc;
 		}
+
+		DxLibImageHandle dxLibGraphHandle(DxLib::MakeGraph(iGraphWidth, iGraphHeight));
+		if (dxLibGraphHandle.Get() == -1)return false;
+
+		int iRet = DxLib::GetDrawScreenGraph(0, 0, iGraphWidth, iGraphHeight, dxLibGraphHandle.Get());
+		if (iRet == -1)return false;
+
+		m_images.push_back(std::move(dxLibGraphHandle));
+		if (filePath != nullptr)m_imageFilePaths.push_back(filePath);
+
+		return true;
 	}
 
 	return false;
@@ -214,13 +198,13 @@ CDxLibRecorder::EOutputType CDxLibRecorder::GetOutputType() const
 {
 	return m_impl->GetoutputType();
 }
+int CDxLibRecorder::GetFps() const
+{
+	return m_impl->GetFps();
+}
 CDxLibRecorder::EState CDxLibRecorder::GetState() const
 {
 	return m_impl->GetState();
-}
-bool CDxLibRecorder::HasTimePassed() const
-{
-	return m_impl->HasTimePassed();
 }
 bool CDxLibRecorder::CaptureFrame(const wchar_t* pwzFileName)
 {
