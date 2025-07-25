@@ -86,62 +86,15 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 1. From `File->Extension setting`, specify atlas and skeleton extensions.
 2. From `File->Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
-- `Open folder` is to load all the Spine files in a folder and render them at the same time.
-  - Do not try to open folder containing Spine files which cannot be managed simultaneously.
+- `Open folder` is __to load all the Spine files in a folder and render them synchronically.__
   - Of cource it is permitted to open folder containing only one set of Spine files. 
-
-<details><summary>Appropriate example</summary>
-
-1. Spines of which animations have syncronised timelines.
-<pre>
-221491
-├ odin_S1.atlas.txt
-├ odin_S1.png
-├ odin_S1.txt
-├ odin_S2.atlas.txt
-├ odin_S2.png
-├ odin_S2.txt
-└ ...
-</pre>
-
-2. A folder which contains only one set of Spine Files.
-<pre>
-...
-├ cha0001-h1
-│  ├ rev0001_01.png
-│  ├ rev0001_01-pma.atlas
-│  └ rev0001_01-pro.skel
-├ cha0001-h2
-│  ├ rev0001_02.png
-│  ├ rev0001_02-pma.atlas
-│  └ rev0001_02-pro.skel
-└ ...
-</pre>
-
-</details>
-
-<details><summary>Inappropriate exmaple</summary>
-
-- Spines of which animations do not share timelines.
-<pre>
-spinechar20
-├ 1200.atlas
-├ 1200.json
-├ 1200.png
-├ 1201.atlas
-├ 1201.json
-├ 1201.png
-└ ...
-</pre>
-
-</details>
+  - But do not try to open folder containing Spine files of which animations do not have synchronised timelines.
 
 ### Load via `Import Cocos`
 
 - This is to load json:
   - which contains atlas at `[5][0][2]`, and skeleton at `[5][0][4]`.
   - or that which contains atlas at `[5][0][2]` and requires binary skeleton separately. 
-- This may serve as an exmaple to load Spine from memory.
 
 ## Mouse functions
 
@@ -186,13 +139,13 @@ spinechar20
 | Export as PNGs | Restart the current animation and export as separate `PNG`s. |
 
 - Context menu appears only when Spine is loaded.
-- By unchecking `Export per anim.` option from `Tool->Export setting`, the start and end timing of recording will be delegated to user.
+- By unchecking `Export per anim.` option from `Tool->Export setting`, when to start and end recording will be delegated to user.
 
 <details><summary>Note on filename</summary>
 
 - The files are saved in the subdirectory of the execution file.
   -  The folder is named after folder-name when loaded via `Open folder`, and the first atlas filename when via `Select files`.
-- `PNG` and `JPG` file will be named like `home_4.475018.png` where `home` is animation name, and `4.475018` is animation frame when saved.
+- `PNG` and `JPG` file will be named like `home_4.475.png` where `home` is animation name, and `4.475` is animation time.
 - `GIF` file will be named like `wait.gif` where `wait` is animation name.
 - `H264` file will be named like `fp.mp4` where `fp` is animation name.
 
@@ -210,7 +163,7 @@ Visual Studio is required.
 2. Type `cmd` in the directory path box.
     - Command prompt will start up.
 3. Type `start devenv .` in the command prompt.
-     - `Visual Studio` will start up and configure CMake.
+     - Visual Studio will start up and configure CMake.
 4. Wait for the CMake configuration to be done.
 5. Open `DxLibSpineViewer.sln`.
 6. Select `Build Solution` on menu item.
@@ -232,7 +185,7 @@ The `CMakeLists.txt` modifies some of the external sources as well as obtains th
 
 | File | Functionality |
 | --- | --- |
-| dxlib_spine.cpp/h | Load texture and render skeleton based on API of DxLib. |
-| dxlib_spine_player.cpp/h | Adjust scale and translation using matrix of DxLib. |
-| spine_loader.cpp/h | Load atlas or skeleton file. |
-| spine_player.cpp/h | Manage Spine resources and manipulation. |
+| [dxlib_spine.cpp/h](/DxLibSpineCpp/dxlib_spine.h) | Load texture and render skeleton based on API of DxLib. |
+| [dxlib_spine_player.cpp/h](/DxLibSpineCpp/dxlib_spine_player.h) | Adjust scale and translation using matrix of DxLib. |
+| [spine_loader.cpp/h](/DxLibSpineCpp/spine_loader.h) | Load atlas or skeleton file. |
+| [spine_player.cpp/h](/DxLibSpineCpp/spine_player.h) | Manage Spine resources and manipulation. |
