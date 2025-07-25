@@ -127,6 +127,8 @@ private:
 	bool LoadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName);
 	void ClearFolderPathList();
 
+	std::wstring BuildExportFilePath();
+	std::wstring FormatAnimationTime(float fAnimationTime);
 	void StepUpRecording();
 
 	CDxLibSpinePlayer m_dxLibSpinePlayer;
