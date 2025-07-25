@@ -1163,9 +1163,7 @@ void CMainWindow::StepUpRecording()
 
 		if (m_dxLibRecorder.GetOutputType() == CDxLibRecorder::EOutputType::Pngs)
 		{
-			std::wstring wstrFrameName = win_text::WidenUtf8(m_dxLibSpinePlayer.GetCurrentAnimationName());
-			wstrFrameName += FormatAnimationTime(fTrack);
-
+			std::wstring wstrFrameName = FormatAnimationTime(fTrack);
 			m_dxLibRecorder.CaptureFrame(wstrFrameName.c_str());
 		}
 		else
