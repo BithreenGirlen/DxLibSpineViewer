@@ -27,6 +27,7 @@ public:
 	EState GetState() const;
 
 	bool CaptureFrame(const wchar_t* pwzFileName = nullptr);
+	bool HasFrames() const;
 
 	bool End(const wchar_t* pwzFilePath);
 private:

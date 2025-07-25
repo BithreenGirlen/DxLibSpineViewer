@@ -36,6 +36,7 @@ public:
 	EState GetState() const { return m_recorderState; }
 
 	bool Capture(const wchar_t* filePath);
+	bool HasFrames() const { return !m_images.empty(); }
 
 	bool End(const wchar_t* filePath);
 private:
@@ -209,6 +210,10 @@ CDxLibRecorder::EState CDxLibRecorder::GetState() const
 bool CDxLibRecorder::CaptureFrame(const wchar_t* pwzFileName)
 {
 	return m_impl->Capture(pwzFileName);
+}
+bool CDxLibRecorder::HasFrames() const
+{
+	return m_impl->HasFrames();
 }
 bool CDxLibRecorder::End(const wchar_t* pwzFilePath)
 {
