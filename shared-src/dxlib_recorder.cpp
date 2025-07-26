@@ -35,13 +35,13 @@ public:
 
 	EState GetState() const { return m_recorderState; }
 
-	bool Capture(const wchar_t* filePath);
+	bool Capture(const wchar_t* imageName);
 	bool HasFrames() const { return !m_images.empty(); }
 
 	bool End(const wchar_t* filePath);
 private:
 	std::vector<DxLibImageHandle> m_images;
-	std::vector<std::wstring> m_imageFilePaths;
+	std::vector<std::wstring> m_imageNames;
 
 	bool m_isAmdCpu = false;
 
@@ -65,7 +65,7 @@ bool CDxLibRecorder::Impl::Start(EOutputType outputType, unsigned int fps)
 	return true;
 }
 
-bool CDxLibRecorder::Impl::Capture(const wchar_t* filePath)
+bool CDxLibRecorder::Impl::Capture(const wchar_t* imageName)
 {
 	if (m_recorderState != EState::Idle && m_recorderState != EState::InitialisingVideoStream)
 	{
@@ -90,7 +90,7 @@ bool CDxLibRecorder::Impl::Capture(const wchar_t* filePath)
 		if (iRet == -1)return false;
 
 		m_images.push_back(std::move(dxLibGraphHandle));
-		if (filePath != nullptr)m_imageFilePaths.push_back(filePath);
+		if (imageName != nullptr)m_imageNames.push_back(imageName);
 
 		return true;
 	}
@@ -106,22 +106,9 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 		return false;
 	}
 
-	if (m_outputType == EOutputType::Pngs)
+	switch (m_outputType)
 	{
-		for (size_t i = 0; i < m_images.size() && i < m_imageFilePaths.size(); ++i)
-		{
-			auto& image = m_images[i];
-
-			CDxLibMap s(image.Get());
-			if (s.IsAccessible())
-			{
-				std::wstring wstrFilePath = filePath + m_imageFilePaths[i] + L".png";
-				win_image::SaveImageAsPng(wstrFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
-			}
-			image.Reset();
-		}
-	}
-	else if (m_outputType == EOutputType::Gif)
+	case EOutputType::Gif:
 	{
 		win_image::CWicGifEncoder wicGifEncoder;
 		bool bRet = wicGifEncoder.Initialise(filePath);
@@ -139,7 +126,8 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 			wicGifEncoder.Finalise();
 		}
 	}
-	else if (m_outputType == EOutputType::Video)
+	break;
+	case EOutputType::Video:
 	{
 		CMfVideoEncoder mfVideoEncoder;
 		int iVideoWidth = 0;
@@ -157,12 +145,46 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 			for (auto& image : m_images)
 			{
 				CDxLibMap s(image.Get());
-				mfVideoEncoder.AddCpuFrame(s.pPixels, static_cast<unsigned long>(s.stride * s.height), true);
+				if (s.IsAccessible())
+				{
+					mfVideoEncoder.AddCpuFrame(s.pPixels, static_cast<unsigned long>(s.stride * s.height), true);
+				}
 				image.Reset();
 			}
 
 			mfVideoEncoder.End();
 		}
+	}
+	break;
+	case EOutputType::Pngs:
+	case EOutputType::Jpgs:
+	{
+		size_t nSize = (std::min)(m_images.size(), m_imageNames.size());
+		for (size_t i = 0; i < nSize; ++i)
+		{
+			auto& image = m_images[i];
+
+			CDxLibMap s(image.Get());
+			if (s.IsAccessible())
+			{
+				std::wstring wstrFilePath = filePath + m_imageNames[i];
+				if (m_outputType == EOutputType::Pngs)
+				{
+					wstrFilePath += L".png";
+					win_image::SaveImageAsPng(wstrFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
+				}
+				else if (m_outputType == EOutputType::Jpgs)
+				{
+					wstrFilePath += L".jpg";
+					win_image::SaveImageAsJpg(wstrFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
+				}
+			}
+			image.Reset();
+		}
+	}
+	break;
+	default:
+		break;
 	}
 
 	Clear();
@@ -173,7 +195,7 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 void CDxLibRecorder::Impl::Clear()
 {
 	m_images.clear();
-	m_imageFilePaths.clear();
+	m_imageNames.clear();
 
 	m_outputType = EOutputType::Video;
 	m_recorderState = EState::Idle;
@@ -207,9 +229,9 @@ CDxLibRecorder::EState CDxLibRecorder::GetState() const
 {
 	return m_impl->GetState();
 }
-bool CDxLibRecorder::CaptureFrame(const wchar_t* pwzFileName)
+bool CDxLibRecorder::CaptureFrame(const wchar_t* imageName)
 {
-	return m_impl->Capture(pwzFileName);
+	return m_impl->Capture(imageName);
 }
 bool CDxLibRecorder::HasFrames() const
 {

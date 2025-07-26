@@ -10,9 +10,10 @@ public:
 	enum class EOutputType
 	{
 		Unknown,
-		Pngs,
 		Gif,
 		Video,
+		Pngs,
+		Jpgs,
 	};
 	bool Start(EOutputType outputType, unsigned int fps = kDefaultFps);
 	EOutputType GetOutputType() const;
@@ -26,7 +27,7 @@ public:
 	};
 	EState GetState() const;
 
-	bool CaptureFrame(const wchar_t* pwzFileName = nullptr);
+	bool CaptureFrame(const wchar_t* imageName = nullptr);
 	bool HasFrames() const;
 
 	bool End(const wchar_t* pwzFilePath);
