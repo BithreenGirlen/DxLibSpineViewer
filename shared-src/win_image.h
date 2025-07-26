@@ -21,6 +21,7 @@ namespace win_image
 	bool SkimImageSize(const wchar_t* filePath, unsigned int* width, unsigned int* height);
 
 	bool SaveImageAsPng(const wchar_t* filePath, unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha);
+	bool SaveImageAsJpg(const wchar_t* filePath, unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha);
 
 	class CWicGifEncoder
 	{

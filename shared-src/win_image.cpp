@@ -6,6 +6,87 @@
 
 #pragma comment (lib,"Windowscodecs.lib")
 
+namespace win_image
+{
+	enum class EOutputType
+	{
+		Png,
+		Jpg
+	};
+
+	static GUID ToWicGuid(EOutputType eOutputType)
+	{
+		switch (eOutputType)
+		{
+		case EOutputType::Png: return GUID_ContainerFormatPng;
+		case EOutputType::Jpg: return GUID_ContainerFormatJpeg;
+		default:break;
+		}
+
+		return {};
+	}
+
+	static bool SaveRgb32ImageWithoutExplicitMetadata(
+		const wchar_t* filePath,
+		unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels,
+		bool hasAlpha, EOutputType eOutputType)
+	{
+		if (pixels == nullptr)return false;
+
+		CComPtr<IWICImagingFactory> pWicImagingFactory;
+		HRESULT hr = ::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pWicImagingFactory));
+		if (FAILED(hr))return false;
+
+		CComPtr<IWICBitmapEncoder> pWicBitmapEncoder;
+		hr = pWicImagingFactory->CreateEncoder(ToWicGuid(eOutputType), nullptr, &pWicBitmapEncoder);
+		if (FAILED(hr))return false;
+
+		CComPtr<IWICStream> pWicStream;
+		hr = pWicImagingFactory->CreateStream(&pWicStream);
+		if (FAILED(hr))return false;
+
+		hr = pWicStream->InitializeFromFilename(filePath, GENERIC_WRITE);
+		if (FAILED(hr))return false;
+
+		hr = pWicBitmapEncoder->Initialize(pWicStream, WICBitmapEncoderCacheOption::WICBitmapEncoderNoCache);
+		if (FAILED(hr))return false;
+
+		CComPtr<IWICBitmapFrameEncode> pWicBitmapFrameEncode;
+		CComPtr<IPropertyBag2> pPropertyBag;
+		hr = pWicBitmapEncoder->CreateNewFrame(&pWicBitmapFrameEncode, &pPropertyBag);
+		if (FAILED(hr))return false;
+
+		hr = pWicBitmapFrameEncode->Initialize(pPropertyBag);
+		if (FAILED(hr))return false;
+
+		hr = pWicBitmapFrameEncode->SetSize(width, height);
+		if (FAILED(hr))return false;
+
+		CComPtr<IWICBitmap> pWicBitmap;
+		hr = pWicImagingFactory->CreateBitmapFromMemory
+		(
+			width,
+			height,
+			hasAlpha ? GUID_WICPixelFormat32bppRGBA : GUID_WICPixelFormat32bppRGB,
+			stride,
+			stride * height,
+			pixels,
+			&pWicBitmap
+		);
+		if (FAILED(hr))return false;
+
+		hr = pWicBitmapFrameEncode->WriteSource(pWicBitmap, nullptr);
+		if (FAILED(hr))return false;
+
+		hr = pWicBitmapFrameEncode->Commit();
+		if (FAILED(hr))return false;
+
+		hr = pWicBitmapEncoder->Commit();
+
+		return SUCCEEDED(hr);
+	}
+}
+
 bool win_image::LoadImageToMemory(const wchar_t* filePath, SImageFrame* pImageFrame, float fScale, ERotation rotation)
 {
 	if (pImageFrame == nullptr)return false;
@@ -121,59 +202,12 @@ bool win_image::SkimImageSize(const wchar_t* filePath, unsigned int* width, unsi
 
 bool win_image::SaveImageAsPng(const wchar_t* filePath, unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha)
 {
-	if (pixels == nullptr)return false;
+	return SaveRgb32ImageWithoutExplicitMetadata(filePath, width, height, stride, pixels, hasAlpha, EOutputType::Png);
+}
 
-	CComPtr<IWICImagingFactory> pWicImagingFactory;
-	HRESULT hr = ::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pWicImagingFactory));
-	if (FAILED(hr))return false;
-
-	CComPtr<IWICBitmapEncoder> pWicBitmapEncoder;
-	hr = pWicImagingFactory->CreateEncoder(GUID_ContainerFormatPng, nullptr, &pWicBitmapEncoder);
-	if (FAILED(hr))return false;
-
-	CComPtr<IWICStream> pWicStream;
-	hr = pWicImagingFactory->CreateStream(&pWicStream);
-	if (FAILED(hr))return false;
-
-	hr = pWicStream->InitializeFromFilename(filePath, GENERIC_WRITE);
-	if (FAILED(hr))return false;
-
-	hr = pWicBitmapEncoder->Initialize(pWicStream, WICBitmapEncoderCacheOption::WICBitmapEncoderNoCache);
-	if (FAILED(hr))return false;
-
-	CComPtr<IWICBitmapFrameEncode> pWicBitmapFrameEncode;
-	CComPtr<IPropertyBag2> pPropertyBag;
-	hr = pWicBitmapEncoder->CreateNewFrame(&pWicBitmapFrameEncode, &pPropertyBag);
-	if (FAILED(hr))return false;
-
-	hr = pWicBitmapFrameEncode->Initialize(pPropertyBag);
-	if (FAILED(hr))return false;
-
-	hr = pWicBitmapFrameEncode->SetSize(width, height);
-	if (FAILED(hr))return false;
-
-	CComPtr<IWICBitmap> pWicBitmap;
-	hr = pWicImagingFactory->CreateBitmapFromMemory
-	(
-		width,
-		height,
-		hasAlpha ? GUID_WICPixelFormat32bppRGBA : GUID_WICPixelFormat32bppRGB,
-		stride,
-		stride * height,
-		pixels,
-		&pWicBitmap
-	);
-	if (FAILED(hr))return false;
-
-	hr = pWicBitmapFrameEncode->WriteSource(pWicBitmap, nullptr);
-	if (FAILED(hr))return false;
-
-	hr = pWicBitmapFrameEncode->Commit();
-	if (FAILED(hr))return false;
-
-	hr = pWicBitmapEncoder->Commit();
-
-	return SUCCEEDED(hr);
+bool win_image::SaveImageAsJpg(const wchar_t* filePath, unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha)
+{
+	return SaveRgb32ImageWithoutExplicitMetadata(filePath, width, height, stride, pixels, hasAlpha, EOutputType::Jpg);
 }
 
 
