@@ -282,6 +282,7 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kExportAsGif:
 		case Menu::kExportAsVideo:
 		case Menu::kExportAsPngs:
+		case Menu::kExportAsJpgs:
 			MenuOnStartRecording(wmId);
 			break;
 		case Menu::kEndRecording:
@@ -450,6 +451,8 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 						iRet = ::AppendMenuW(hPopupMenu, MF_SEPARATOR, 0, nullptr);
 						if (iRet == 0)return false;
 						iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsPngs, L"Export as PNGs");
+						if (iRet == 0)return false;
+						iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsJpgs, L"Export as JPGs");
 						if (iRet == 0)return false;
 					}
 				}
@@ -909,6 +912,8 @@ void CMainWindow::MenuOnStartRecording(int menuKind)
 	case Menu::kExportAsPngs:
 		outputType = CDxLibRecorder::EOutputType::Pngs;
 		break;
+	case Menu::kExportAsJpgs:
+		outputType = CDxLibRecorder::EOutputType::Jpgs;
 	default:
 		break;
 	}
@@ -1161,7 +1166,8 @@ void CMainWindow::StepUpRecording()
 			}
 		}
 
-		if (m_dxLibRecorder.GetOutputType() == CDxLibRecorder::EOutputType::Pngs)
+		const auto& outputType = m_dxLibRecorder.GetOutputType();
+		if (outputType == CDxLibRecorder::EOutputType::Pngs || outputType == CDxLibRecorder::EOutputType::Jpgs)
 		{
 			std::wstring wstrFrameName = FormatAnimationTime(fTrack);
 			m_dxLibRecorder.CaptureFrame(wstrFrameName.c_str());

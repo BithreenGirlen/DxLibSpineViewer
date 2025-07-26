@@ -56,7 +56,7 @@ private:
 			kSkeletonSetting, kAtlasSetting, kAddEffectFile, kExportSetting,
 			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
 			kSnapAsPNG, kSnapAsJPG,
-			kExportAsGif, kExportAsVideo, kExportAsPngs,
+			kExportAsGif, kExportAsVideo, kExportAsPngs, kExportAsJpgs,
 			kEndRecording
 		};
 	};
