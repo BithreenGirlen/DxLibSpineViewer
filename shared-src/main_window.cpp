@@ -928,7 +928,10 @@ void CMainWindow::MenuOnStartRecording(int menuKind)
 	if (!bRet)return;
 
 	/* Disable manual resizing once video recording has started. */
-	MenuOnAllowManualSizing();
+	if (outputType == CDxLibRecorder::EOutputType::Video)
+	{
+		MenuOnAllowManualSizing();
+	}
 
 	if (m_exportSettingDialogue.IsToExportPerAnimation())
 	{

@@ -45,7 +45,7 @@ private:
 
 	bool m_isAmdCpu = false;
 
-	EOutputType m_outputType = EOutputType::Video;
+	EOutputType m_outputType = EOutputType::Unknown;
 	EState m_recorderState = EState::Idle;
 
 	int m_fps = kDefaultFps;
@@ -197,7 +197,7 @@ void CDxLibRecorder::Impl::Clear()
 	m_images.clear();
 	m_imageNames.clear();
 
-	m_outputType = EOutputType::Video;
+	m_outputType = EOutputType::Unknown;
 	m_recorderState = EState::Idle;
 }
 
