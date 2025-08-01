@@ -1,9 +1,6 @@
 ﻿
-/* FREE() and MALLOC_STR() macro */
-#include <spine/extension.h>
 
 #include "dxlib_spine_player_c.h"
-#include "spine_loader_c.h"
 
 CDxLibSpinePlayerC::CDxLibSpinePlayerC()
 {

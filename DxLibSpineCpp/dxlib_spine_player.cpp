@@ -1,7 +1,6 @@
 ﻿
 
 #include "dxlib_spine_player.h"
-#include "spine_loader.h"
 
 CDxLibSpinePlayer::CDxLibSpinePlayer()
 {
