@@ -1,4 +1,4 @@
-# DxLibSpineViewer
+﻿# DxLibSpineViewer
 
 Spine viewer for Windows based on [Runtime for DxLib](#spine-runtime-for-dxlib) (`2.1`, `3.5` to `4.2`).
 
@@ -156,22 +156,17 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 - [DxLib](https://dxlib.xsrv.jp/)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
 
-## Build
+## Build Spine viewer
 
-Visual Studio is required.
-1. Open `shared-src/deps` directory with file explorer.
-2. Type `cmd` in the directory path box.
-    - Command prompt will start up.
-3. Type `start devenv .` in the command prompt.
-     - Visual Studio will start up and configure CMake.
-4. Wait for the CMake configuration to be done.
-5. Open `DxLibSpineViewer.sln`.
-6. Select `Build Solution` on menu item.
-    - Build having succeeded, delete `out` and `.vs` folders in `shared-src/deps`.
+Visual Studio is required.  
 
-The `CMakeLists.txt` modifies some of the external sources as well as obtains them.
-- For spine-c `3.5`, renames some of the functions which lack `sp` prefix in `extension.c` and `extension.h` so as to be consistent with those of `3.6` and later.
-- For spine-c `2.1`, supplies binary skeleton reader which is lacking in official `2.1.25` runtime, and overwrites some of the files with those from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
+1. Open `shared-src/deps` folder with Visual Studio.
+2. Wait for the CMake configuration to be done.
+    - The configuration downloads external libraries and modifies older Spine `extensions`.
+      - For spine-c `3.5`, renames some of the functions which lack `sp` prefix so as to be consistent with `3.6` and later.
+      - For spine-c `2.1`, supplies binary skeleton reader from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
+3. Install Spine generic runtimes both for `x64-debug` and `x64-release`.
+4. Open `DxLibSpineViewer.sln` and build.
 
 ## Spine runtime for DxLib
 
@@ -189,3 +184,4 @@ The `CMakeLists.txt` modifies some of the external sources as well as obtains th
 | [dxlib_spine_player.cpp/h](/DxLibSpineCpp/dxlib_spine_player.h) | Adjust scale and translation using matrix of DxLib. |
 | [spine_loader.cpp/h](/DxLibSpineCpp/spine_loader.h) | Load atlas or skeleton file. |
 | [spine_player.cpp/h](/DxLibSpineCpp/spine_player.h) | Manage Spine resources and manipulation. |
+

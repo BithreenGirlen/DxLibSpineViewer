@@ -8,12 +8,6 @@
     <Filter Include="Source File\shared">
       <UniqueIdentifier>{e01db6c6-fd37-46b6-89ae-df45b5584f2f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source File\deps">
-      <UniqueIdentifier>{1a0b4197-51ad-4cfc-8b2a-4fa647015b72}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source File\deps\spine-c-3.7">
-      <UniqueIdentifier>{4a8e5ce2-23ef-4535-a724-4233258acd6f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header File">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
@@ -30,6 +24,12 @@
     </Filter>
     <Filter Include="Source File\shared\native-ui">
       <UniqueIdentifier>{d1c59087-079b-42d2-84b4-e2906b224349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source File\deps">
+      <UniqueIdentifier>{f9d351f8-6c9a-4b82-9559-ab55571825c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source File\deps\spine-c-3.7">
+      <UniqueIdentifier>{dec6e272-22d2-4487-8a85-f8c1e9d99dd1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -68,9 +68,6 @@
     </ClInclude>
     <ClInclude Include="..\..\DxLibSpineC\dxlib_spine_c.h">
       <Filter>Header File</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared-src\deps\spine-c-3.7\src\spine\Json.h">
-      <Filter>Source File\deps\spine-c-3.7</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared-src\mf_video_encoder.h">
       <Filter>Header File\shared</Filter>
@@ -114,6 +111,12 @@
     <ClInclude Include="..\..\shared-src\win_clock.h">
       <Filter>Header File\shared</Filter>
     </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Resource File</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\deps\spine-c-3.7\src\spine\Json.h">
+      <Filter>Source File\deps\spine-c-3.7</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -148,6 +151,48 @@
     </ClCompile>
     <ClCompile Include="..\..\DxLibSpineC\dxlib_spine_c.cpp">
       <Filter>Source File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\cpu.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\dxlib_recorder.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\dxlib_map.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\json_minimal.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\dialogue_controls.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\dialogue_template.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\export_setting_dialogue.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\spine_atlas_dialogue.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\spine_manipulator_dialogue.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\spine_setting_dialogue.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DxLibSpineC\spine_player_c.cpp">
+      <Filter>Source File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\win_clock.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Resource File</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.7\src\spine\Animation.c">
       <Filter>Source File\deps\spine-c-3.7</Filter>
@@ -265,45 +310,6 @@
     </ClCompile>
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.7\src\spine\VertexEffect.c">
       <Filter>Source File\deps\spine-c-3.7</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\cpu.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\dxlib_recorder.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\dxlib_map.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\json_minimal.cpp">
-      <Filter>Source File\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\native-ui\dialogue_controls.cpp">
-      <Filter>Source File\shared\native-ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\native-ui\dialogue_template.cpp">
-      <Filter>Source File\shared\native-ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\native-ui\export_setting_dialogue.cpp">
-      <Filter>Source File\shared\native-ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\native-ui\spine_atlas_dialogue.cpp">
-      <Filter>Source File\shared\native-ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\native-ui\spine_manipulator_dialogue.cpp">
-      <Filter>Source File\shared\native-ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\native-ui\spine_setting_dialogue.cpp">
-      <Filter>Source File\shared\native-ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\DxLibSpineC\spine_player_c.cpp">
-      <Filter>Source File</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\win_clock.cpp">
-      <Filter>Source File\shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

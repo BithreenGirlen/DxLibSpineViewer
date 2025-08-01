@@ -1,13 +1,13 @@
-cmake_minimum_required (VERSION 3.10)
+﻿cmake_minimum_required (VERSION 3.25)
 project(DxLibSpineViewer-deps)
 
 set(DIR_DXLIB ${CMAKE_CURRENT_LIST_DIR}/dxlib)
 
 set(DIR_TEMP ${CMAKE_CURRENT_BINARY_DIR}/temp)
 
-# Fetch DxLib.
+# Download DxLib.
 # --------------------
-# The version being currently used is 3.24e, so fetch from "../temp/DxLibVCTest.zip".
+# The version to be used is the latest, so download from "../temp/DxLibVCTest.zip".
 # The static libraries in need are those for Visual Studio x64 MDd or MD.
 
 if (NOT EXISTS "${DIR_DXLIB}")
@@ -33,13 +33,11 @@ if (NOT EXISTS "${DIR_DXLIB}")
 	endforeach()
 endif()
 
-# End of DxLib processing
-
-# Fetch Spine runtime
+# Download Spine runtime
 # --------------------
 # The runtimes of interest are spine-c for spine 3.7 and older, and spine-cpp for 3.8 and later.
-# Spine 2.1 is no longer maintained, so has to be obtained from 2.1.25 tag.
-# Also, this version has different directory struture from later runtimes.
+# Spine 2.1 has no branch, so has to be obtained from 2.1.25 tag.
+# Also, this version has different directory depths from later runtimes.
 
 set(
 	SPINE_VERSIONS
@@ -79,14 +77,14 @@ foreach(VERSION IN LISTS SPINE_VERSIONS)
 
 	set(DIR_SPINE "${CMAKE_CURRENT_LIST_DIR}/${FOLDER_NAME}")
 
-	if (NOT EXISTS "${DIR_SPINE}")
+	if (NOT EXISTS "${DIR_SPINE}/src")
 		donwload_spine_runtime(${BRANCH_NAME} ${DIR_SPINE})
 	endif()
 endforeach()
 
 # Exceptional procedure for spine 2.1 runtime
 set(DIR_SPINE_C_21 ${CMAKE_CURRENT_LIST_DIR}/spine-c-2.1)
-if (NOT EXISTS "${DIR_SPINE_C_21}")
+if (NOT EXISTS "${DIR_SPINE_C_21}/src")
 	set (SPINE_21_RUNTIME_URL "https://github.com/EsotericSoftware/spine-runtimes/archive/refs/tags/2.1.25.zip")
 	set (SPINE_21_RUNTIME_FILEPATH "${DIR_TEMP}/spine-runtimes-2.1.25")
 	if (NOT EXISTS "${SPINE_21_RUNTIME_FILEPATH}.zip")
@@ -147,3 +145,27 @@ function(MODIFY_SPINE_35)
 endfunction()
 
 MODIFY_SPINE_35()
+
+# Delete Spine runtimes for other languages because they are irrelevant for the project.
+file(REMOVE_RECURSE "${DIR_TEMP}")
+
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:Embedded>,$<$<CONFIG:Debug,RelWithDebInfo>:Embedded>>")
+endif()
+
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+	add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/d1trimfile:${CMAKE_SOURCE_DIR}\\>")
+endif()
+
+# Build Spine runtime as static library
+add_subdirectory ("spine-c-2.1")
+add_subdirectory ("spine-c-3.5")
+add_subdirectory ("spine-c-3.6")
+add_subdirectory ("spine-c-3.7")
+
+add_subdirectory ("spine-cpp-3.8")
+add_subdirectory ("spine-cpp-4.0")
+add_subdirectory ("spine-cpp-4.1")
+add_subdirectory ("spine-cpp-4.2")

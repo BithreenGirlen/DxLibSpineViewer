@@ -106,11 +106,14 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)shared-src\deps\dxlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.6\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,13 +126,16 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)shared-src\deps\dxlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.6\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -139,8 +145,14 @@
     <ClInclude Include="..\..\DxLibSpineC\spine_loader_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\spine_player_c.h" />
     <ClInclude Include="..\..\shared-src\cpu.h" />
-    <ClInclude Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Json.h" />
-    <ClInclude Include="..\..\shared-src\deps\spine-c-3.6\src\spine\kvec.h" />
+    <ClInclude Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Json.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\deps\spine-c-3.6\src\spine\kvec.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\shared-src\dxlib_image_encoder.h" />
     <ClInclude Include="..\..\shared-src\dxlib_init.h" />
     <ClInclude Include="..\..\shared-src\dxlib_map.h" />
@@ -162,6 +174,7 @@
     <ClInclude Include="..\..\shared-src\win_filesystem.h" />
     <ClInclude Include="..\..\shared-src\win_image.h" />
     <ClInclude Include="..\..\shared-src\win_text.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\DxLibSpineC\dxlib_spine_c.cpp" />
@@ -169,45 +182,162 @@
     <ClCompile Include="..\..\DxLibSpineC\spine_loader_c.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\spine_player_c.cpp" />
     <ClCompile Include="..\..\shared-src\cpu.cpp" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Animation.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AnimationState.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AnimationStateData.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Array.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Atlas.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AtlasAttachmentLoader.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Attachment.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AttachmentLoader.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Bone.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\BoneData.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\BoundingBoxAttachment.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\ClippingAttachment.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Color.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Event.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\EventData.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\extension.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\IkConstraint.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\IkConstraintData.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Json.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\MeshAttachment.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\PathAttachment.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\PathConstraint.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\PathConstraintData.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\PointAttachment.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\RegionAttachment.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Skeleton.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonBinary.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonBounds.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonClipping.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonData.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonJson.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Skin.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Slot.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SlotData.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\TransformConstraint.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\TransformConstraintData.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Triangulator.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\VertexAttachment.c" />
-    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\VertexEffect.c" />
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Animation.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AnimationState.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AnimationStateData.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Array.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Atlas.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AtlasAttachmentLoader.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Attachment.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\AttachmentLoader.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Bone.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\BoneData.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\BoundingBoxAttachment.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\ClippingAttachment.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Color.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Event.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\EventData.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\extension.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\IkConstraint.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\IkConstraintData.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Json.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\MeshAttachment.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\PathAttachment.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\PathConstraint.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\PathConstraintData.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\PointAttachment.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\RegionAttachment.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Skeleton.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonBinary.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonBounds.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonClipping.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonData.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SkeletonJson.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Skin.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Slot.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\SlotData.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\TransformConstraint.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\TransformConstraintData.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\Triangulator.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\VertexAttachment.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\spine-c-3.6\src\spine\VertexEffect.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_init.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_map.cpp" />
@@ -227,6 +357,10 @@
     <ClCompile Include="..\..\shared-src\win_filesystem.cpp" />
     <ClCompile Include="..\..\shared-src\win_image.cpp" />
     <ClCompile Include="..\..\shared-src\win_text.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\dpiAwareness.manifest" />
