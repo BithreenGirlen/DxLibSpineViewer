@@ -75,10 +75,11 @@ int CMainWindow::MessageLoop()
 {
 	MSG msg{};
 
-	m_winclock.Restart();
 	for (; msg.message != WM_QUIT;)
 	{
-		BOOL iRet = ::PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE);
+		BOOL iRet = m_dxLibSpinePlayer.HasSpineBeenLoaded() ? 
+			::PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) :
+			::GetMessageW(&msg, nullptr, 0, 0);
 		if (iRet)
 		{
 			::TranslateMessage(&msg);
@@ -182,8 +183,17 @@ LRESULT CMainWindow::OnClose()
 /*WM_PAINT*/
 LRESULT CMainWindow::OnPaint()
 {
-	Tick();
-	m_hasProcessedWmPaint = true;
+	if (!m_dxLibSpinePlayer.HasSpineBeenLoaded())
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = ::BeginPaint(m_hWnd, &ps);
+		::EndPaint(m_hWnd, &ps);
+	}
+	else
+	{
+		Tick();
+		m_hasProcessedWmPaint = true;
+	}
 
 	return 0;
 }
