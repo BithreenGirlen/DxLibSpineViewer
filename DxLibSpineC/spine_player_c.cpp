@@ -838,14 +838,13 @@ void CSpinePlayerC::ClearAnimationTracks()
 {
 	for (const auto& pDdrawble : m_drawables)
 	{
-#ifdef SPINE_2_1
-		/*This clears 0-th track as well.*/
-		spAnimationState_clearTracks(pDdrawble->animationState);
-#else
 		for (int iTrack = 1; iTrack < pDdrawble->animationState->tracksCount; ++iTrack)
 		{
+#ifdef SPINE_2_1
+			spAnimationState_clearTrack(pDdrawble->animationState, iTrack);
+#else
 			spAnimationState_setEmptyAnimation(pDdrawble->animationState, iTrack, 0.f);
-		}
 #endif
+		}
 	}
 }
