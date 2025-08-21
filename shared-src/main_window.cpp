@@ -202,7 +202,7 @@ LRESULT CMainWindow::OnSize(WPARAM wParam, LPARAM lParam)
 {
 	int iClientWidth = LOWORD(lParam);
 	int iClientHeight = HIWORD(lParam);
-
+		
 	int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
 	int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
 
@@ -1017,7 +1017,7 @@ void CMainWindow::ToggleWindowFrameStyle()
 	}
 	else
 	{
-		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME);
+		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle | WS_CAPTION | WS_SYSMENU | (m_isManuallyResizable ? WS_THICKFRAME : 0));
 		::SetMenu(m_hWnd, m_hMenuBar);
 	}
 
