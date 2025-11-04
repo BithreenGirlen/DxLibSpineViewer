@@ -36,6 +36,7 @@ public:
 	EState GetState() const { return m_recorderState; }
 
 	bool Capture(const wchar_t* imageName);
+	bool CommitFrame(const int iGraphicHandle, const wchar_t* imageName);
 	bool HasFrames() const { return !m_images.empty(); }
 
 	bool End(const wchar_t* filePath);
@@ -51,6 +52,8 @@ private:
 	int m_fps = kDefaultFps;
 
 	void Clear();
+
+	void TruncateSize(int* width, int* height) const;
 };
 
 bool CDxLibRecorder::Impl::Start(EOutputType outputType, unsigned int fps)
@@ -73,18 +76,9 @@ bool CDxLibRecorder::Impl::Capture(const wchar_t* imageName)
 		int iGraphHeight = 0;
 		DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
 
-		/*
-		* Truncate video dimension to be multiple of 4 to prevent AMD CPU from hanging on final output
-		* in spite of successful return values of mediatype setup and sample delivering.
-		*/
-		if (m_isAmdCpu && m_outputType == EOutputType::Video)
-		{
-			iGraphWidth &= 0xfffffffc;
-			iGraphHeight &= 0xfffffffc;
-		}
-
+		TruncateSize(&iGraphWidth, &iGraphHeight);
 		DxLibImageHandle dxLibGraphHandle(DxLib::MakeGraph(iGraphWidth, iGraphHeight));
-		if (dxLibGraphHandle.Get() == -1)return false;
+		if (dxLibGraphHandle.Empty())return false;
 
 		int iRet = DxLib::GetDrawScreenGraph(0, 0, iGraphWidth, iGraphHeight, dxLibGraphHandle.Get());
 		if (iRet == -1)return false;
@@ -98,6 +92,26 @@ bool CDxLibRecorder::Impl::Capture(const wchar_t* imageName)
 	return false;
 }
 
+bool CDxLibRecorder::Impl::CommitFrame(const int iGraphicHandle, const wchar_t* imageName)
+{
+	int iGraphWidth = 0;
+	int iGraphHeight = 0;
+	int iRet = DxLib::GetGraphSize(iGraphicHandle, &iGraphWidth, &iGraphHeight);
+	if (iRet == -1)return false;
+
+	TruncateSize(&iGraphWidth, &iGraphHeight);
+	DxLibImageHandle dxLibGraphHandle(DxLib::MakeGraph(iGraphWidth, iGraphHeight));
+	if (dxLibGraphHandle.Empty())return false;
+
+	iRet = DxLib::BltDrawValidGraph(iGraphicHandle, 0, 0, iGraphWidth, iGraphHeight, 0, 0, dxLibGraphHandle.Get());
+	if (iRet == -1)return false;
+
+	m_images.push_back(std::move(dxLibGraphHandle));
+	if (imageName != nullptr)m_imageNames.push_back(imageName);
+
+	return true;
+}
+
 bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 {
 	if (filePath == nullptr)
@@ -105,13 +119,16 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 		Clear();
 		return false;
 	}
+	std::wstring wstrFilePath = filePath;
 
 	switch (m_outputType)
 	{
 	case EOutputType::Gif:
 	{
+		wstrFilePath += L".gif";
+
 		win_image::CWicGifEncoder wicGifEncoder;
-		bool bRet = wicGifEncoder.Initialise(filePath);
+		bool bRet = wicGifEncoder.Initialise(wstrFilePath.c_str());
 		if (bRet)
 		{
 			for (auto& image : m_images)
@@ -129,6 +146,8 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 	break;
 	case EOutputType::Video:
 	{
+		wstrFilePath += L".mp4";
+
 		CMfVideoEncoder mfVideoEncoder;
 		int iVideoWidth = 0;
 		int iVideoHeight = 0;
@@ -139,7 +158,7 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 
 		/* Initialising input media types takes time. In the meantime, pause rendering. */
 		m_recorderState = EState::InitialisingVideoStream;
-		bool bRet = mfVideoEncoder.Start(filePath, iVideoWidth, iVideoHeight, m_fps);
+		bool bRet = mfVideoEncoder.Start(wstrFilePath.c_str(), iVideoWidth, iVideoHeight, m_fps);
 		if (bRet)
 		{
 			for (auto& image : m_images)
@@ -167,16 +186,16 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 			CDxLibMap s(image.Get());
 			if (s.IsAccessible())
 			{
-				std::wstring wstrFilePath = filePath + m_imageNames[i];
+				std::wstring wstrSequentialFilePath = wstrFilePath + m_imageNames[i];
 				if (m_outputType == EOutputType::Pngs)
 				{
-					wstrFilePath += L".png";
-					win_image::SaveImageAsPng(wstrFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
+					wstrSequentialFilePath += L".png";
+					win_image::SaveImageAsPng(wstrSequentialFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
 				}
 				else if (m_outputType == EOutputType::Jpgs)
 				{
-					wstrFilePath += L".jpg";
-					win_image::SaveImageAsJpg(wstrFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
+					wstrSequentialFilePath += L".jpg";
+					win_image::SaveImageAsJpg(wstrSequentialFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
 				}
 			}
 			image.Reset();
@@ -199,6 +218,19 @@ void CDxLibRecorder::Impl::Clear()
 
 	m_outputType = EOutputType::Unknown;
 	m_recorderState = EState::Idle;
+}
+
+void CDxLibRecorder::Impl::TruncateSize(int* width, int* height) const
+{
+	/*
+	* Truncate video dimension to be multiple of 4 to prevent AMD CPU from hanging on final output
+	* in spite of successful return values of mediatype setup and sample delivering.
+	*/
+	if (m_isAmdCpu && m_outputType == EOutputType::Video)
+	{
+		if (width != nullptr) *width &= 0xfffffffc;
+		if (height != nullptr)*height &= 0xfffffffc;
+	}
 }
 
 
@@ -232,6 +264,10 @@ CDxLibRecorder::EState CDxLibRecorder::GetState() const
 bool CDxLibRecorder::CaptureFrame(const wchar_t* imageName)
 {
 	return m_impl->Capture(imageName);
+}
+bool CDxLibRecorder::CommitFrame(const int iGraphicHandle, const wchar_t* imageName)
+{
+	return m_impl->CommitFrame(iGraphicHandle, imageName);
 }
 bool CDxLibRecorder::HasFrames() const
 {

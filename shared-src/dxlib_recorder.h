@@ -28,6 +28,7 @@ public:
 	EState GetState() const;
 
 	bool CaptureFrame(const wchar_t* imageName = nullptr);
+	bool CommitFrame(const int iGraphicHandle, const wchar_t* imageName = nullptr);
 	bool HasFrames() const;
 
 	bool End(const wchar_t* pwzFilePath);

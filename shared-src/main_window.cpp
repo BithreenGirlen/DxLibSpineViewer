@@ -202,7 +202,7 @@ LRESULT CMainWindow::OnSize(WPARAM wParam, LPARAM lParam)
 {
 	int iClientWidth = LOWORD(lParam);
 	int iClientHeight = HIWORD(lParam);
-		
+
 	int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
 	int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
 
@@ -954,20 +954,6 @@ void CMainWindow::MenuOnEndRecording()
 	if (m_dxLibRecorder.GetState() == CDxLibRecorder::EState::UnderRecording)
 	{
 		std::wstring wstrFilePath = BuildExportFilePath();
-
-		const auto& outputType = m_dxLibRecorder.GetOutputType();
-		switch (outputType)
-		{
-		case CDxLibRecorder::EOutputType::Gif:
-			wstrFilePath += L".gif";
-			break;
-		case CDxLibRecorder::EOutputType::Video:
-			wstrFilePath += L".mp4";
-			break;
-		default:
-			break;
-		}
-
 		m_dxLibRecorder.End(wstrFilePath.c_str());
 	}
 }
@@ -1054,18 +1040,18 @@ void CMainWindow::UpdateMenuItemState()
 		HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kTool);
 		if (hMenu != nullptr)
 		{
-			for (unsigned int i = 0; i < sizeof(toolMenuIndices) / sizeof(toolMenuIndices[0]); ++i)
+			for (const auto& toolMenuIndex : toolMenuIndices)
 			{
-				::EnableMenuItem(hMenu, toolMenuIndices[i], uiState);
+				::EnableMenuItem(hMenu, toolMenuIndex, uiState);
 			}
 		}
 
 		hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
 		if (hMenu != nullptr)
 		{
-			for (unsigned int i = 0; i < sizeof(windowIndices) / sizeof(windowIndices[0]); ++i)
+			for (const auto& windowIndex : windowIndices)
 			{
-				::EnableMenuItem(hMenu, windowIndices[i], uiState);
+				::EnableMenuItem(hMenu, windowIndex, uiState);
 			}
 		}
 	}

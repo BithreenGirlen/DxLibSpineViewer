@@ -9,6 +9,9 @@ public:
 	static bool SaveScreenAsJpg(const wchar_t* wszFilePath);
 	static bool SaveScreenAsPng(const wchar_t* wszFilePath);
 
+	static bool SaveGraphicAsJpg(int iGraphicHandle, const wchar_t* wszFilePath);
+	static bool SaveGraphicAsPng(int iGraphicHandle, const wchar_t* wszFilePath);
+
 	static bool GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, bool bToCovertToRgba = true);
 private:
 

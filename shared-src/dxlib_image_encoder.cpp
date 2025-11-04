@@ -26,6 +26,28 @@ bool CDxLibImageEncoder::SaveScreenAsPng(const wchar_t *wszFilePath)
 	int iRet = DxLib::SaveDrawScreenToPNG(0, 0, iGraphWidth, iGraphHeight, wszFilePath);
 	return iRet != -1;
 }
+
+bool CDxLibImageEncoder::SaveGraphicAsJpg(int iGraphicHandle, const wchar_t* wszFilePath)
+{
+	int iGraphWidth = 0;
+	int iGraphHeight = 0;
+	int iRet = DxLib::GetGraphSize(iGraphicHandle, &iGraphWidth, &iGraphHeight);
+	if (iRet == -1)return false;
+
+	iRet = DxLib::SaveDrawValidGraphToJPEG(iGraphicHandle, 0, 0, iGraphWidth, iGraphHeight, wszFilePath);
+	return iRet != -1;
+}
+
+bool CDxLibImageEncoder::SaveGraphicAsPng(int iGraphicHandle, const wchar_t* wszFilePath)
+{
+	int iGraphWidth = 0;
+	int iGraphHeight = 0;
+	int iRet = DxLib::GetGraphSize(iGraphicHandle, &iGraphWidth, &iGraphHeight);
+	if (iRet == -1)return false;
+
+	iRet = DxLib::SaveDrawValidGraphToPNG(iGraphicHandle, 0, 0, iGraphWidth, iGraphHeight, wszFilePath);
+	return iRet != -1;
+}
 /*描画対象の画素配列取得。*/
 bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, bool bToCovertToRgba)
 {

@@ -24,6 +24,7 @@ public:
 			m_iHandle = -1;
 		}
 	}
+	bool Empty() const { return m_iHandle == -1; }
 
 	DxLibHandle(DxLibHandle&& other) noexcept
 		: m_iHandle(other.m_iHandle)
