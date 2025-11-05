@@ -114,6 +114,9 @@
     <ClInclude Include="pch.h">
       <Filter>Resource File</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\window_menu.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -373,6 +376,9 @@
     </ClCompile>
     <ClCompile Include="..\..\shared-src\deps\spine-cpp-3.8\src\spine\VertexEffect.cpp">
       <Filter>Source File\deps\spine-cpp-3.8</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\window_menu.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

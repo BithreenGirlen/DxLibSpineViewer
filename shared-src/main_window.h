@@ -21,7 +21,7 @@ public:
 	CMainWindow();
 	~CMainWindow();
 
-	bool Create(HINSTANCE hInstance, const wchar_t* pwzWindowName);
+	bool Create(HINSTANCE hInstance, const wchar_t* pwzWindowName, HICON hIcon = nullptr);
 	int MessageLoop();
 
 	HWND GetHwnd()const { return m_hWnd; }
@@ -120,7 +120,6 @@ private:
 	std::wstring GetWindowTitle() const;
 
 	void ToggleWindowFrameStyle();
-	bool SetMenuCheckState(unsigned int uiMenuIndex, unsigned int uiItemIndex, bool checked) const;
 	void UpdateMenuItemState();
 
 	bool LoadSpineFilesInFolder(const wchar_t* folderPath);
@@ -129,7 +128,7 @@ private:
 
 	std::wstring BuildExportFilePath();
 	std::wstring FormatAnimationTime(float fAnimationTime);
-	void StepUpRecording();
+	void StepRecording();
 
 	CDxLibSpinePlayer m_dxLibSpinePlayer;
 	CSpineSettingDialogue m_spineSettingDialogue;

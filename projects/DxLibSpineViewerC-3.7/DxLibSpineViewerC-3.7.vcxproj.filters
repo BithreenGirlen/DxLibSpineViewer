@@ -117,6 +117,9 @@
     <ClInclude Include="..\..\shared-src\deps\spine-c-3.7\src\spine\Json.h">
       <Filter>Source File\deps\spine-c-3.7</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\window_menu.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -310,6 +313,9 @@
     </ClCompile>
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.7\src\spine\VertexEffect.c">
       <Filter>Source File\deps\spine-c-3.7</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\window_menu.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

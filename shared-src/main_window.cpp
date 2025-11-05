@@ -11,6 +11,7 @@
 #include "dxlib_image_encoder.h"
 #include "json_minimal.h"
 #include "text_utility.h"
+#include "native-ui/window_menu.h"
 
 
 CMainWindow::CMainWindow()
@@ -23,7 +24,7 @@ CMainWindow::~CMainWindow()
 
 }
 
-bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
+bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName, HICON hIcon)
 {
 	WNDCLASSEXW wcex{};
 
@@ -34,12 +35,14 @@ bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	//wcex.hIcon = ::LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON_APP));
 	wcex.hCursor = ::LoadCursor(nullptr, IDC_ARROW);
 	wcex.hbrBackground = ::GetSysColorBrush(COLOR_BTNFACE);
-	//wcex.lpszMenuName = MAKEINTRESOURCE(IDI_ICON_APP);
 	wcex.lpszClassName = m_swzClassName;
-	//wcex.hIconSm = ::LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_ICON_APP));
+	if (hIcon != nullptr)
+	{
+		wcex.hIcon = hIcon;
+		wcex.hIconSm = hIcon;
+	}
 
 	if (::RegisterClassExW(&wcex))
 	{
@@ -77,7 +80,7 @@ int CMainWindow::MessageLoop()
 
 	for (; msg.message != WM_QUIT;)
 	{
-		BOOL iRet = m_dxLibSpinePlayer.HasSpineBeenLoaded() ? 
+		BOOL iRet = m_dxLibSpinePlayer.HasSpineBeenLoaded() ?
 			::PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) :
 			::GetMessageW(&msg, nullptr, 0, 0);
 		if (iRet)
@@ -435,58 +438,36 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 	WORD usKey = LOWORD(wParam);
 	if (usKey == 0)
 	{
-		const auto PreparePupupMenu = [this](HMENU* hMenu)
-			-> bool
-			{
-				if (hMenu == nullptr)return false;
-				HMENU hPopupMenu = *hMenu;
+		const auto& recorderState = m_dxLibRecorder.GetState();
 
-				const auto& recorderState = m_dxLibRecorder.GetState();
-				if (recorderState == CDxLibRecorder::EState::Idle)
-				{
-					int iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kSnapAsPNG, L"Snap as PNG");
-					if (iRet == 0)return false;
-					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kSnapAsJPG, L"Snap as JPG");
-					if (iRet == 0)return false;
-
-					iRet = ::AppendMenuW(hPopupMenu, MF_SEPARATOR, 0, nullptr);
-					if (iRet == 0)return false;
-					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsGif, L"Export as GIF");
-					if (iRet == 0)return false;
-					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsVideo, L"Export as H264");
-					if (iRet == 0)return false;
-
-					if (m_exportSettingDialogue.IsToExportPerAnimation())
-					{
-						iRet = ::AppendMenuW(hPopupMenu, MF_SEPARATOR, 0, nullptr);
-						if (iRet == 0)return false;
-						iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsPngs, L"Export as PNGs");
-						if (iRet == 0)return false;
-						iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsJpgs, L"Export as JPGs");
-						if (iRet == 0)return false;
-					}
-				}
-				else if (recorderState == CDxLibRecorder::EState::UnderRecording)
-				{
-					int iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kEndRecording, L"End recording");
-					if (iRet == 0)return false;
-				}
-
-				return true;
-			};
-
-		HMENU hPopupMenu = ::CreatePopupMenu();
-		if (hPopupMenu != nullptr)
+		window_menu::CContextMenu contextMenu;
+		if (recorderState == CDxLibRecorder::EState::Idle)
 		{
-			bool bRet = PreparePupupMenu(&hPopupMenu);
-			if (bRet)
+			contextMenu.AddItems(
+				{
+					{Menu::kSnapAsPNG, L"Snap as PNG"},
+					{Menu::kSnapAsJPG, L"Snap as JPG"},
+					{},
+					{Menu::kExportAsGif, L"Export as GIF"},
+					{Menu::kExportAsVideo, L"Export as H264"}
+				});
+
+			if (m_exportSettingDialogue.IsToExportPerAnimation())
 			{
-				POINT point{};
-				::GetCursorPos(&point);
-				::TrackPopupMenu(hPopupMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, point.x, point.y, 0, m_hWnd, nullptr);
+				contextMenu.AddItems(
+					{
+						{},
+						{Menu::kExportAsPngs, L"Export as PNGs"},
+						{Menu::kExportAsJpgs, L"Export as JPGs"}
+					});
 			}
-			::DestroyMenu(hPopupMenu);
 		}
+		else if (recorderState == CDxLibRecorder::EState::UnderRecording)
+		{
+			contextMenu.AddItems({ {Menu::kEndRecording, L"End recording"} });
+		}
+
+		contextMenu.Display(m_hWnd);
 	}
 
 	return 0;
@@ -530,7 +511,7 @@ void CMainWindow::Tick()
 		m_dxLibSpinePlayer.Update(fDelta);
 		m_dxLibSpinePlayer.Redraw();
 
-		StepUpRecording();
+		StepRecording();
 
 		m_winclock.Restart();
 
@@ -540,88 +521,48 @@ void CMainWindow::Tick()
 /*操作欄作成*/
 void CMainWindow::InitialiseMenuBar()
 {
-	HMENU hMenuFile = nullptr;
-	HMENU hMenuTool = nullptr;
-	HMENU hMenuWindow = nullptr;
-	HMENU hMenuBar = nullptr;
-	BOOL iRet = FALSE;
+	if (::IsMenu(m_hMenuBar))return;
 
-	if (m_hMenuBar != nullptr)return;
+	HMENU hMenu = window_menu::MenuBuilder(
+		{
+			{0, L"File", window_menu::MenuBuilder(
+				{
+					{Menu::kOpenFiles, L"Open Files"},
+					{},
+					{Menu::kOpenFolder, L"Open folder"},
+					{Menu::kExtensionSetting, L"Extension setting"},
+					{},
+					{Menu::kImportCocos, L"Import Cocos"},
+				}).Get()
+			},
+			{0, L"Tool", window_menu::MenuBuilder(
+				{
+					{Menu::kSkeletonSetting, L"Exclude slot/ Mix anim./ Mix skin"},
+					{Menu::kAtlasSetting, L"Replace attachment"},
+					{Menu::kAddEffectFile, L"Add animation effect"},
+					{Menu::kExportSetting, L"Export setting"}
+				}).Get()
+			},
+			{0, L"Window", window_menu::MenuBuilder(
+				{
+					{Menu::kSeeThroughImage, L"Make window tranparent"},
+					{Menu::kAllowManualSizing, L"Allow manual sizing"},
+					{Menu::kReverseZoomDirection, L"Reverse zoom direction"}
+				}).Get()
+			}
+		}
+	).Get();
 
-	hMenuFile = ::CreateMenu();
-	if (hMenuFile == nullptr)goto failed;
-
-	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kOpenFiles, "Open files");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuFile, MF_SEPARATOR, 0, nullptr);
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kOpenFolder, "Open folder");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kExtensionSetting, "Extension setting");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuFile, MF_SEPARATOR, 0, nullptr);
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuFile, MF_STRING, Menu::kImportCocos, "Import Cocos");
-	if (iRet == 0)goto failed;
-
-	hMenuTool = ::CreateMenu();
-	if (hMenuTool == nullptr)goto failed;
-
-	iRet = ::AppendMenuA(hMenuTool, MF_STRING, Menu::kSkeletonSetting, "Exclude slot/ Mix anim./ Mix skin");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuTool, MF_STRING, Menu::kAtlasSetting, "Replace attachment");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuTool, MF_STRING, Menu::kAddEffectFile, "Add animation effect");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuTool, MF_STRING, Menu::kExportSetting, "Export setting");
-	if (iRet == 0)goto failed;
-
-	hMenuWindow = ::CreateMenu();
-	if (hMenuWindow == nullptr)goto failed;
-
-	iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kSeeThroughImage, "Make window tranparent");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kAllowManualSizing, "Allow manual sizing");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuWindow, MF_STRING, Menu::kReverseZoomDirection, "Reverse zoom direction");
-	if (iRet == 0)goto failed;
-
-	hMenuBar = ::CreateMenu();
-	if (hMenuBar == nullptr) goto failed;
-
-	iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuFile), "File");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuTool), "Tool");
-	if (iRet == 0)goto failed;
-	iRet = ::AppendMenuA(hMenuBar, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuWindow), "Window");
-	if (iRet == 0)goto failed;
-
-	iRet = ::SetMenu(m_hWnd, hMenuBar);
-	if (iRet == 0)goto failed;
-
-	m_hMenuBar = hMenuBar;
-
-	return;
-
-failed:
-	std::wstring wstrMessage = L"Failed to create menu; code: " + std::to_wstring(::GetLastError());
-	win_dialogue::ShowErrorMessageValidatingOwnerWindow(wstrMessage.c_str(), m_hWnd);
-
-	if (hMenuFile != nullptr)
+	if (!::IsMenu(hMenu) || ::SetMenu(m_hWnd, hMenu) == 0)
 	{
-		::DestroyMenu(hMenuFile);
+		std::wstring wstrMessage = L"Failed to create menu; code: " + std::to_wstring(::GetLastError());
+		::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
+
+		if (::IsMenu(hMenu))::DestroyMenu(hMenu);
 	}
-	if (hMenuTool != nullptr)
+	else
 	{
-		::DestroyMenu(hMenuTool);
-	}
-	if (hMenuWindow != nullptr)
-	{
-		::DestroyMenu(hMenuWindow);
-	}
-	if (hMenuBar != nullptr)
-	{
-		::DestroyMenu(hMenuBar);
+		m_hMenuBar = hMenu;
 	}
 }
 /*ファイル選択*/
@@ -823,8 +764,8 @@ void CMainWindow::MenuOnExportSetting()
 /*透過*/
 void CMainWindow::MenuOnMakeWindowTransparent()
 {
-	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kSeeThroughImage, !m_isTransparentWindow);
-	if (result)
+	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kSeeThroughImage, !m_isTransparentWindow);
+	if (bRet)
 	{
 		m_isTransparentWindow ^= true;
 		LONG lStyleEx = ::GetWindowLong(m_hWnd, GWL_EXSTYLE);
@@ -847,8 +788,8 @@ void CMainWindow::MenuOnMakeWindowTransparent()
 void CMainWindow::MenuOnAllowManualSizing()
 {
 	bool isResizingAllowed = !m_isManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording;
-	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kAllowManualSizing, isResizingAllowed);
-	if (result)
+	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kAllowManualSizing, isResizingAllowed);
+	if (bRet)
 	{
 		m_isManuallyResizable = isResizingAllowed;
 		UpdateWindowResizableAttribute();
@@ -857,8 +798,8 @@ void CMainWindow::MenuOnAllowManualSizing()
 /*拡縮方向反転*/
 void CMainWindow::MenuOnReverseZoomDirection()
 {
-	bool result = SetMenuCheckState(MenuBar::kWindow, Menu::kReverseZoomDirection, !m_isZoomDirectionReversed);
-	if (result)
+	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kReverseZoomDirection, !m_isZoomDirectionReversed);
+	if (bRet)
 	{
 		m_isZoomDirectionReversed ^= true;
 	}
@@ -960,15 +901,18 @@ void CMainWindow::MenuOnEndRecording()
 /*表題変更*/
 void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
 {
-	std::wstring wstr;
-	if (pwzTitle != nullptr)
+	const wchar_t* pwzName = pwzTitle;
+	if (pwzName != nullptr)
 	{
-		std::wstring wstrTitle = pwzTitle;
-		size_t nPos = wstrTitle.find_last_of(L"\\/");
-		wstr = nPos == std::wstring::npos ? wstrTitle : wstrTitle.substr(nPos + 1);
+		for (;;)
+		{
+			const wchar_t* pPos = wcspbrk(pwzName, L"\\/");
+			if (pPos == nullptr)break;
+			pwzName = pPos + 1;
+		}
 	}
 
-	::SetWindowTextW(m_hWnd, wstr.empty() ? m_swzDefaultWindowName : wstr.c_str());
+	::SetWindowTextW(m_hWnd, (pwzName == nullptr || *pwzName == L'\0') ? m_swzDefaultWindowName : pwzName);
 }
 /*表題取得*/
 std::wstring CMainWindow::GetWindowTitle() const
@@ -1010,51 +954,15 @@ void CMainWindow::ToggleWindowFrameStyle()
 	ResizeWindow();
 }
 
-bool CMainWindow::SetMenuCheckState(unsigned int uiMenuIndex, unsigned int uiItemIndex, bool checked) const
-{
-	HMENU hMenuBar = ::GetMenu(m_hWnd);
-	if (hMenuBar != nullptr)
-	{
-		HMENU hMenu = ::GetSubMenu(hMenuBar, uiMenuIndex);
-		if (hMenu != nullptr)
-		{
-			DWORD ulRet = ::CheckMenuItem(hMenu, uiItemIndex, checked ? MF_CHECKED : MF_UNCHECKED);
-			return ulRet != (DWORD)-1;
-		}
-	}
-
-	return false;
-}
-
 void CMainWindow::UpdateMenuItemState()
 {
-	/* Temporal measure. */
 	constexpr const unsigned int toolMenuIndices[] = { Menu::kSkeletonSetting, Menu::kAtlasSetting, Menu::kAddEffectFile, Menu::kExportSetting };
-	constexpr const unsigned int windowIndices[] = { Menu::kSeeThroughImage, Menu::kAllowManualSizing, Menu::kReverseZoomDirection };
+	constexpr const unsigned int windowMenuIndices[] = { Menu::kSeeThroughImage, Menu::kAllowManualSizing, Menu::kReverseZoomDirection };
 
-	UINT uiState = m_dxLibSpinePlayer.HasSpineBeenLoaded() ? MF_ENABLED : MF_GRAYED;
+	bool toEnable = m_dxLibSpinePlayer.HasSpineBeenLoaded();
 
-	HMENU hMenuBar = ::GetMenu(m_hWnd);
-	if (hMenuBar != nullptr)
-	{
-		HMENU hMenu = ::GetSubMenu(hMenuBar, MenuBar::kTool);
-		if (hMenu != nullptr)
-		{
-			for (const auto& toolMenuIndex : toolMenuIndices)
-			{
-				::EnableMenuItem(hMenu, toolMenuIndex, uiState);
-			}
-		}
-
-		hMenu = ::GetSubMenu(hMenuBar, MenuBar::kWindow);
-		if (hMenu != nullptr)
-		{
-			for (const auto& windowIndex : windowIndices)
-			{
-				::EnableMenuItem(hMenu, windowIndex, uiState);
-			}
-		}
-	}
+	window_menu::EnableMenuItems(window_menu::GetMenuInBar(m_hWnd, MenuBar::kTool), toolMenuIndices, toEnable);
+	window_menu::EnableMenuItems(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), windowMenuIndices, toEnable);
 }
 /*描画素材設定*/
 bool CMainWindow::LoadSpineFilesInFolder(const wchar_t* pwzFolderPath)
@@ -1148,7 +1056,7 @@ std::wstring CMainWindow::FormatAnimationTime(float fAnimationTime)
 	return swBuffer;
 }
 /*記録逓進*/
-void CMainWindow::StepUpRecording()
+void CMainWindow::StepRecording()
 {
 	const auto& recorderState = m_dxLibRecorder.GetState();
 	if (recorderState == CDxLibRecorder::EState::UnderRecording)

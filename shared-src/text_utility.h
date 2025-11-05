@@ -54,18 +54,29 @@ namespace text_utility
 	{
 		if (strOld.empty() || strOld == strNew) return;
 
-		for (size_t nRead = 0;;)
+		for (size_t nPos = 0;;)
 		{
-			size_t nPos = src.find(strOld, nRead);
-			if (nPos == std::basic_string<CharType>::npos) break;
+			nPos = src.find(strOld, nPos);
+			if (nPos == std::basic_string<CharType>::npos)break;
 			src.replace(nPos, strOld.size(), strNew);
-			nRead = nPos + strNew.size();
+			nPos += strNew.size();
 		}
 	}
-	template <typename CharType>
-	void ReplaceAll(std::basic_string<CharType>& src, const CharType* strOld, const CharType* strNew)
+	template <typename CharType, size_t sizeOld, size_t sizeNew>
+	void ReplaceAll(std::basic_string<CharType>& src, const CharType(&strOld)[sizeOld], const CharType(&strNew)[sizeNew])
 	{
-		ReplaceAll(src, std::basic_string<CharType>(strOld), std::basic_string<CharType>(strNew));
+		const size_t lenOld = sizeOld - 1;
+		const size_t lenNew = sizeNew - 1;
+
+		if (lenOld == 0 || (lenOld == lenNew && std::char_traits<CharType>::compare(strOld, strNew, lenOld) == 0)) return;
+
+		for (size_t nPos = 0;;)
+		{
+			nPos = src.find(strOld, nPos, lenOld);
+			if (nPos == std::basic_string<CharType>::npos)break;
+			src.replace(nPos, lenOld, strNew, lenNew);
+			nPos += lenNew;
+		}
 	}
 
 	template <typename CharType>

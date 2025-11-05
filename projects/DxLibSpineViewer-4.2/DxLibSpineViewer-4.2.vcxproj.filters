@@ -122,6 +122,9 @@
     <ClInclude Include="pch.h">
       <Filter>Resource File</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\window_menu.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\cpu.cpp">
@@ -399,6 +402,9 @@
     </ClCompile>
     <ClCompile Include="..\..\shared-src\deps\spine-cpp-4.2\src\spine\VertexAttachment.cpp">
       <Filter>Source File\deps\spine-cpp-4.2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\window_menu.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
