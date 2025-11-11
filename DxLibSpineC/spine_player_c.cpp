@@ -626,6 +626,36 @@ FPoint2 CSpinePlayerC::GetBaseSize() const noexcept
 	return m_fBaseSize;
 }
 
+void CSpinePlayerC::SetBaseSize(float fWidth, float fHeight)
+{
+	m_fBaseSize = { fWidth, fHeight };
+	WorkOutDefaultScale();
+	m_fDefaultOffset = m_fOffset;
+
+	ResetScale();
+}
+
+void CSpinePlayerC::ResetBaseSize()
+{
+	WorkOutDefaultSize();
+	WorkOutDefaultScale();
+
+	m_fOffset = {};
+	UpdatePosition();
+	for (const auto& drawable : m_drawables)
+	{
+		/* Spine 2.1 does not have empty animation, so cannot be returned to default state without reloading. */
+#ifndef SPINE_2_1
+		spAnimationState_setEmptyAnimations(drawable->animationState, 0.f);
+#endif
+		drawable->Update(0.f);
+	}
+
+	WorkOutDefaultOffset();
+	ResetScale();
+	RestartAnimation();
+}
+
 FPoint2 CSpinePlayerC::GetOffset() const noexcept
 {
 	return m_fOffset;

@@ -30,7 +30,6 @@ public:
 	bool HasSpineBeenLoaded() const noexcept;
 
 	void Update(float fDelta);
-	virtual void Redraw() = 0;
 
 	void RescaleSkeleton(bool upscale);
 	void RescaleCanvas(bool upscale);
@@ -89,6 +88,9 @@ public:
 	bool ReplaceAttachment(const char* szSlotName, const char* szAttachmentName);
 
 	FPoint2 GetBaseSize() const noexcept;
+	void SetBaseSize(float fWidth, float fHeight);
+	void ResetBaseSize();
+
 	FPoint2 GetOffset() const noexcept;
 
 	float GetSkeletonScale() const noexcept;

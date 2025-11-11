@@ -37,6 +37,28 @@ void CDxLibSpinePlayerC::Redraw()
 	}
 }
 
+DxLib::FLOAT4 CDxLibSpinePlayerC::GetCurrentBounding() const
+{
+	if (m_drawables.empty())return {};
+
+	float fMinX = FLT_MAX;
+	float fMinY = FLT_MAX;
+	float fMaxWidth = FLT_MIN;
+	float fMaxHeight = FLT_MIN;
+
+	for (const auto& drawable : m_drawables)
+	{
+		const auto& rect = drawable->GetBoundingBox();
+
+		fMinX = (std::min)(fMinX, rect.x);
+		fMinY = (std::min)(fMinY, rect.y);
+		fMaxWidth = (std::max)(fMaxWidth, rect.z);
+		fMaxHeight = (std::max)(fMaxHeight, rect.w);
+	}
+
+	return { fMinX, fMinY, fMaxWidth, fMaxHeight };
+}
+
 /*標準尺度算出*/
 void CDxLibSpinePlayerC::WorkOutDefaultScale()
 {
@@ -89,11 +111,11 @@ void CDxLibSpinePlayerC::WorkOutDefaultOffset()
 
 void CDxLibSpinePlayerC::SetTransformMatrix() const
 {
-	int iClientWidth = 0;
-	int iClientHeight = 0;
-	DxLib::GetScreenState(&iClientWidth, &iClientHeight, nullptr);
-	float fX = (m_fBaseSize.x * m_fSkeletonScale - iClientWidth) / 2;
-	float fY = (m_fBaseSize.y * m_fSkeletonScale - iClientHeight) / 2;
+	int iScreenWidth = 0;
+	int iScreenHeight = 0;
+	DxLib::GetDrawScreenSize(&iScreenWidth, &iScreenHeight);
+	float fX = (m_fBaseSize.x * m_fSkeletonScale - iScreenWidth) / 2;
+	float fY = (m_fBaseSize.y * m_fSkeletonScale - iScreenHeight) / 2;
 
 	DxLib::MATRIX matrix = DxLib::MGetScale(DxLib::VGet(m_fSkeletonScale, m_fSkeletonScale, 1.f));
 	DxLib::MATRIX tranlateMatrix = DxLib::MGetTranslate(DxLib::VGet(-fX, -fY, 0.f));

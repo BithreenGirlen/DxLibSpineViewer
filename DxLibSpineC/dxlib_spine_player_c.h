@@ -9,7 +9,9 @@ public:
 	CDxLibSpinePlayerC();
 	~CDxLibSpinePlayerC();
 
-	virtual void Redraw();
+	void Redraw();
+
+	DxLib::FLOAT4 GetCurrentBounding() const;
 private:
 	virtual void WorkOutDefaultScale();
 	virtual void WorkOutDefaultOffset();

@@ -286,6 +286,12 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kReverseZoomDirection:
 			MenuOnReverseZoomDirection();
 			break;
+		case Menu::kFitToManualSize:
+			MenuOnFiToManualSize();
+			break;
+		case Menu::kFitToDefaultSize:
+			MenuOnFitToDefaultSize();
+			break;
 		case Menu::kSnapAsPNG:
 			MenuOnSaveAsPng();
 			break;
@@ -545,9 +551,15 @@ void CMainWindow::InitialiseMenuBar()
 			},
 			{0, L"Window", window_menu::MenuBuilder(
 				{
-					{Menu::kSeeThroughImage, L"Make window tranparent"},
+					{Menu::kSeeThroughImage, L"Make tranparent"},
 					{Menu::kAllowManualSizing, L"Allow manual sizing"},
-					{Menu::kReverseZoomDirection, L"Reverse zoom direction"}
+					{Menu::kReverseZoomDirection, L"Reverse zoom direction"},
+					{0, L"Base size", window_menu::MenuBuilder(
+						{
+							{Menu::kFitToManualSize, L"Fit to current frame"},
+							{Menu::kFitToDefaultSize, L"Reset to the default"}
+						}).Get()
+					},
 				}).Get()
 			}
 		}
@@ -804,6 +816,26 @@ void CMainWindow::MenuOnReverseZoomDirection()
 		m_isZoomDirectionReversed ^= true;
 	}
 }
+/* 現在の描画先の大きさに合わせる */
+void CMainWindow::MenuOnFiToManualSize()
+{
+	int iScreenWidth = 0;
+	int iScreenHeight = 0;
+	DxLib::GetDrawScreenSize(&iScreenWidth, &iScreenHeight);
+
+	const float fSkeletonScale = m_dxLibSpinePlayer.GetSkeletonScale();
+	float fBaseWidth = iScreenWidth / fSkeletonScale;
+	float fBaseHeight = iScreenHeight / fSkeletonScale;
+
+	m_dxLibSpinePlayer.SetBaseSize(fBaseWidth, fBaseHeight);
+	ResizeWindow();
+}
+/* ファイル情報に合わせる */
+void CMainWindow::MenuOnFitToDefaultSize()
+{
+	m_dxLibSpinePlayer.ResetBaseSize();
+	ResizeWindow();
+}
 /*次のフォルダに移動*/
 void CMainWindow::KeyUpOnNextFolder()
 {
@@ -957,7 +989,7 @@ void CMainWindow::ToggleWindowFrameStyle()
 void CMainWindow::UpdateMenuItemState()
 {
 	constexpr const unsigned int toolMenuIndices[] = { Menu::kSkeletonSetting, Menu::kAtlasSetting, Menu::kAddEffectFile, Menu::kExportSetting };
-	constexpr const unsigned int windowMenuIndices[] = { Menu::kSeeThroughImage, Menu::kAllowManualSizing, Menu::kReverseZoomDirection };
+	constexpr const unsigned int windowMenuIndices[] = { Menu::kSeeThroughImage, Menu::kAllowManualSizing, Menu::kReverseZoomDirection, Menu::kFitToManualSize, Menu::kFitToDefaultSize };
 
 	bool toEnable = m_dxLibSpinePlayer.HasSpineBeenLoaded();
 

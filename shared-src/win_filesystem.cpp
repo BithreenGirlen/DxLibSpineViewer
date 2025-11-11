@@ -9,7 +9,7 @@
 namespace win_filesystem
 {
 	/*ファイルのメモリ展開*/
-	char* LoadExistingFile(const wchar_t* pwzFilePath, unsigned long* ulSize)
+	static char* LoadExistingFile(const wchar_t* pwzFilePath, unsigned long* ulSize)
 	{
 		HANDLE hFile = ::CreateFile(pwzFilePath, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 		if (hFile != INVALID_HANDLE_VALUE)
@@ -42,7 +42,7 @@ namespace win_filesystem
 		return nullptr;
 	}
 	/*指定階層のファイル・フォルダ名一覧取得*/
-	bool CreateFilaNameList(const wchar_t* pwzFolderPath, const wchar_t* pwzFileNamePattern, std::vector<std::wstring>& wstrNames)
+	static bool CreateFilaNameList(const wchar_t* pwzFolderPath, const wchar_t* pwzFileNamePattern, std::vector<std::wstring>& wstrNames)
 	{
 		if (pwzFolderPath == nullptr)return false;
 
@@ -100,7 +100,7 @@ namespace win_filesystem
 /*指定階層のファイル・フォルダ一覧作成*/
 bool win_filesystem::CreateFilePathList(const wchar_t* pwzFolderPath, const wchar_t* pwzFileSpec, std::vector<std::wstring>& paths)
 {
-	if (pwzFolderPath == nullptr || wcslen(pwzFolderPath) == 0)return false;
+	if (pwzFolderPath == nullptr || *pwzFolderPath == L'\0')return false;
 
 	std::wstring wstrParent = pwzFolderPath;
 	if (wstrParent.back() != L'\\')
@@ -154,12 +154,12 @@ bool win_filesystem::CreateFilePathList(const wchar_t* pwzFolderPath, const wcha
 		size_t nIndex = i;
 		for (size_t j = i; j < wstrNames.size(); ++j)
 		{
-			if (::StrCmpLogicalW(wstrNames.at(nIndex).c_str(), wstrNames.at(j).c_str()) > 0)
+			if (::StrCmpLogicalW(wstrNames[nIndex].c_str(), wstrNames[j].c_str()) > 0)
 			{
 				nIndex = j;
 			}
 		}
-		std::swap(wstrNames.at(i), wstrNames.at(nIndex));
+		std::swap(wstrNames[i], wstrNames[nIndex]);
 	}
 
 	for (const std::wstring& wstr : wstrNames)
@@ -173,18 +173,16 @@ bool win_filesystem::CreateFilePathList(const wchar_t* pwzFolderPath, const wcha
 bool win_filesystem::GetFilePathListAndIndex(const std::wstring& wstrPath, const wchar_t* pwzFileSpec, std::vector<std::wstring>& paths, size_t* nIndex)
 {
 	std::wstring wstrParent;
-	std::wstring wstrCurrent;
 
 	size_t nPos = wstrPath.find_last_of(L"\\/");
 	if (nPos != std::wstring::npos)
 	{
 		wstrParent = wstrPath.substr(0, nPos);
-		wstrCurrent = wstrPath.substr(nPos + 1);
 	}
 
 	win_filesystem::CreateFilePathList(wstrParent.c_str(), pwzFileSpec, paths);
 
-	auto iter = std::find(paths.begin(), paths.end(), wstrPath);
+	const auto& iter = std::find(paths.begin(), paths.end(), wstrPath);
 	if (iter != paths.end())
 	{
 		*nIndex = std::distance(paths.begin(), iter);
@@ -212,10 +210,16 @@ std::string win_filesystem::LoadFileAsString(const wchar_t* pwzFilePath)
 
 std::wstring win_filesystem::GetCurrentProcessPath()
 {
-	wchar_t pwzPath[MAX_PATH]{};
-	::GetModuleFileName(nullptr, pwzPath, MAX_PATH);
-	std::wstring::size_type nPos = std::wstring(pwzPath).find_last_of(L"\\/");
-	return std::wstring(pwzPath).substr(0, nPos);
+	wchar_t sBuffer[MAX_PATH]{};
+	DWORD ulLength = ::GetModuleFileNameW(nullptr, sBuffer, MAX_PATH);
+	if (ulLength == 0)return {};
+
+	const wchar_t* p = sBuffer + ulLength;
+	for (; p != sBuffer; --p)
+	{
+		if (*p == L'\\' || *p == '/')break;
+	}
+	return std::wstring(sBuffer, p - sBuffer);
 }
 
 std::wstring win_filesystem::CreateWorkFolder(const std::wstring& wstrRelativePath)
@@ -223,24 +227,29 @@ std::wstring win_filesystem::CreateWorkFolder(const std::wstring& wstrRelativePa
 	if (wstrRelativePath.empty())return std::wstring();
 
 	std::wstring wstrPath = GetCurrentProcessPath();
+	if (wstrPath.empty())return std::wstring{};
+
 	wstrPath.push_back(L'\\');
 	size_t nRead = 0;
-	if (wstrRelativePath.front() == L'\\')++nRead;
+	if (wstrRelativePath[0] == L'\\' || wstrRelativePath[0] == L'/')++nRead;
 
-	for (; nRead < wstrRelativePath.size();)
+	for (const wchar_t* pStart = wstrRelativePath.data();;)
 	{
-		const wchar_t* pPos = wcspbrk(&wstrRelativePath[nRead], L"\\/");
-		if (pPos == nullptr)
+		size_t nPos = wstrRelativePath.find_first_of(L"\\/", nRead);
+		if (nPos == std::wstring::npos)
 		{
-			wstrPath += wstrRelativePath.substr(nRead) + L"\\";
+			wstrPath.append(pStart + nRead, wstrRelativePath.size() - nRead);
+			wstrPath.push_back(L'\\');
 			::CreateDirectoryW(wstrPath.c_str(), nullptr);
+
 			break;
 		}
-		size_t nPos = pPos - &wstrRelativePath[nRead];
-		wstrPath += wstrRelativePath.substr(nRead, nPos) + L"\\";
+		++nPos;
+		wstrPath.append(pStart + nRead, nPos - nRead);
 		::CreateDirectoryW(wstrPath.c_str(), nullptr);
 
-		nRead += nPos + 1;
+		nRead = nPos;
 	}
+
 	return wstrPath;
 }

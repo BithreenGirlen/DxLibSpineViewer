@@ -55,6 +55,7 @@ private:
 			kOpenFiles = 1, kOpenFolder,  kExtensionSetting, kImportCocos,
 			kSkeletonSetting, kAtlasSetting, kAddEffectFile, kExportSetting,
 			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
+			kFitToManualSize, kFitToDefaultSize,
 			kSnapAsPNG, kSnapAsJPG,
 			kExportAsGif, kExportAsVideo, kExportAsPngs, kExportAsJpgs,
 			kEndRecording
@@ -106,6 +107,8 @@ private:
 	void MenuOnMakeWindowTransparent();
 	void MenuOnAllowManualSizing();
 	void MenuOnReverseZoomDirection();
+	void MenuOnFiToManualSize();
+	void MenuOnFitToDefaultSize();
 
 	void KeyUpOnNextFolder();
 	void KeyUpOnForeFolder();
