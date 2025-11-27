@@ -11,11 +11,10 @@ public:
 
 	void Redraw();
 
-	DxLib::FLOAT4 GetCurrentBounding() const;
+	DxLib::MATRIX CalculateTransformMatrix() const;
+	DxLib::FLOAT4 GetCurrentBoundingOfSlot(const std::string& slotName) const;
 private:
 	virtual void WorkOutDefaultScale();
 	virtual void WorkOutDefaultOffset();
-
-	void SetTransformMatrix() const;
 };
 #endif // !DXLIB_SPINE_PLAYER_H_

@@ -17,7 +17,8 @@ void CDxLibSpinePlayer::Redraw()
 {
 	if (!m_drawables.empty())
 	{
-		SetTransformMatrix();
+		DxLib::MATRIX matrix = CalculateTransformMatrix();
+		DxLib::SetTransformTo2D(&matrix);
 
 		if (!m_isDrawOrderReversed)
 		{
@@ -38,26 +39,32 @@ void CDxLibSpinePlayer::Redraw()
 	}
 }
 
-DxLib::FLOAT4 CDxLibSpinePlayer::GetCurrentBounding() const
+DxLib::MATRIX CDxLibSpinePlayer::CalculateTransformMatrix() const
 {
-	if (m_drawables.empty())return {};
+	int iScreenWidth = 0;
+	int iScreenHeight = 0;
+	DxLib::GetDrawScreenSize(&iScreenWidth, &iScreenHeight);
+	float fX = (m_fBaseSize.x * m_fSkeletonScale - iScreenWidth) / 2;
+	float fY = (m_fBaseSize.y * m_fSkeletonScale - iScreenHeight) / 2;
 
-	float fMinX = FLT_MAX;
-	float fMinY = FLT_MAX;
-	float fMaxWidth = FLT_MIN;
-	float fMaxHeight = FLT_MIN;
+	DxLib::MATRIX matrix = DxLib::MGetScale(DxLib::VGet(m_fSkeletonScale, m_fSkeletonScale, 1.f));
+	DxLib::MATRIX tranlateMatrix = DxLib::MGetTranslate(DxLib::VGet(-fX, -fY, 0.f));
 
+	return DxLib::MMult(matrix, tranlateMatrix);
+}
+
+DxLib::FLOAT4 CDxLibSpinePlayer::GetCurrentBoundingOfSlot(const std::string& slotName) const
+{
+	bool found = false;
 	for (const auto& drawable : m_drawables)
 	{
-		const auto& rect = drawable->GetBoundingBox();
-
-		fMinX = (std::min)(fMinX, rect.x);
-		fMinY = (std::min)(fMinY, rect.y);
-		fMaxWidth = (std::max)(fMaxWidth, rect.z);
-		fMaxHeight = (std::max)(fMaxHeight, rect.w);
+		const auto& rect = drawable->GetBoundingBoxOfSlot(slotName.c_str(), slotName.size(), &found);
+		if (found)
+		{
+			return rect;
+		}
 	}
-
-	return {fMinX, fMinY, fMaxWidth, fMaxHeight };
+	return {};
 }
 /*既定尺度算出*/
 void CDxLibSpinePlayer::WorkOutDefaultScale()
@@ -108,19 +115,4 @@ void CDxLibSpinePlayer::WorkOutDefaultOffset()
 	}
 
 	m_fDefaultOffset = { fMinX == FLT_MAX ? 0 : fMinX, fMinY == FLT_MAX ? 0 : fMinY };
-}
-
-void CDxLibSpinePlayer::SetTransformMatrix() const
-{
-	int iScreenWidth = 0;
-	int iScreenHeight = 0;
-	DxLib::GetDrawScreenSize(&iScreenWidth, &iScreenHeight);
-	float fX = (m_fBaseSize.x * m_fSkeletonScale - iScreenWidth) / 2;
-	float fY = (m_fBaseSize.y * m_fSkeletonScale - iScreenHeight) / 2;
-
-	DxLib::MATRIX matrix = DxLib::MGetScale(DxLib::VGet(m_fSkeletonScale, m_fSkeletonScale, 1.f));
-	DxLib::MATRIX tranlateMatrix = DxLib::MGetTranslate(DxLib::VGet(-fX, -fY, 0.f));
-	matrix = DxLib::MMult(matrix, tranlateMatrix);
-
-	DxLib::SetTransformTo2D(&matrix);
 }

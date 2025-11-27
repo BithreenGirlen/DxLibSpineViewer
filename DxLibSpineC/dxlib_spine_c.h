@@ -89,6 +89,7 @@ public:
 	void SetLeaveOutCallback(bool (*pFunc)(const char*, size_t)) { m_pLeaveOutCallback = pFunc; }
 
 	DxLib::FLOAT4 GetBoundingBox() const;
+	DxLib::FLOAT4 GetBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr) const;
 private:
 	bool m_hasOwnAnimationStateData = false;
 
