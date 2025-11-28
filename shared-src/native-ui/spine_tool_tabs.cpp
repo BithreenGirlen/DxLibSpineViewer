@@ -1,0 +1,447 @@
+﻿
+#include <algorithm>
+/* Not inclied to use this heavy STL */
+//#include <regex>
+
+#include "spine_tool_tabs.h"
+#include "dialogue_layout.h"
+#include "../win_text.h"
+
+/// @brief global data for slot exclusion.
+namespace slot_exclusion
+{
+	static std::string s_filter;
+	static bool IsSlotToBeExcluded(const char* szSlotName, size_t nSlotNameLength)
+	{
+		if (s_filter.empty())return false;
+
+		const char* pEnd = szSlotName + nSlotNameLength;
+		return std::search(szSlotName, pEnd, s_filter.begin(), s_filter.end()) != pEnd;
+		//return std::regex_search(szSlotName, pEnd, std::regex(s_filter));
+	}
+};
+
+/// @brief Conversion between UTF-16LE and UTF-8 for a list
+namespace controls_util
+{
+	static void WidenList(const std::vector<std::string>& strList, std::vector<std::wstring>& wstrList)
+	{
+		wstrList.resize(strList.size());
+		for (size_t i = 0; i < strList.size(); ++i)
+		{
+			wstrList[i] = win_text::WidenUtf8(strList[i]);
+		}
+		std::sort(wstrList.begin(), wstrList.end());
+	}
+
+	static void NarrowList(const std::vector<std::wstring>& wstrList, std::vector<std::string>& strList)
+	{
+		strList.resize(wstrList.size());
+		for (size_t i = 0; i < strList.size(); ++i)
+		{
+			strList[i] = win_text::NarrowUtf8(wstrList[i]);
+		}
+	}
+}
+
+/* ==================== Base tab class ==================== */
+
+HWND CTabBase::Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, HFONT hFont, CDxLibSpinePlayer* pPlayer)
+{
+	m_pDxLibSpinePlayer = pPlayer;
+	m_hFont = hFont;
+
+	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)pDialogueTemplate, hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
+}
+
+/*C CALLBACK*/
+LRESULT CTabBase::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	if (uMsg == WM_INITDIALOG)
+	{
+		::SetWindowLongPtr(hWnd, DWLP_USER, lParam);
+	}
+
+	CTabBase* pThis = reinterpret_cast<CTabBase*>(::GetWindowLongPtr(hWnd, DWLP_USER));
+	if (pThis != nullptr)
+	{
+		return pThis->HandleMessage(hWnd, uMsg, wParam, lParam);
+	}
+	return FALSE;
+}
+/*メッセージ処理*/
+LRESULT CTabBase::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_INITDIALOG:
+		return OnInit(hWnd);
+	case WM_SIZE:
+		return OnSize();
+	case WM_CLOSE:
+		return OnClose();
+	case WM_COMMAND:
+		return OnCommand(wParam, lParam);
+	default:
+		break;
+	}
+	return FALSE;
+}
+/*WM_INITDIALOG*/
+LRESULT CTabBase::OnInit(HWND hWnd)
+{
+	m_hWnd = hWnd;
+
+	CreateControls();
+	RefreshControls();
+	ResizeControls();
+
+	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
+
+	return TRUE;
+}
+/*WM_CLOSE*/
+LRESULT CTabBase::OnClose()
+{
+	::DestroyWindow(m_hWnd);
+	m_hWnd = nullptr;
+	return 0;
+}
+/*WM_SIZE*/
+LRESULT CTabBase::OnSize()
+{
+	ResizeControls();
+
+	return 0;
+}
+/*EnumChildWindows CALLBACK*/
+BOOL CTabBase::SetFontCallback(HWND hWnd, LPARAM lParam)
+{
+	::SendMessage(hWnd, WM_SETFONT, static_cast<WPARAM>(lParam), 0);
+	/*TRUE: 続行, FALSE: 終了*/
+	return TRUE;
+}
+
+/* ==================== Slot tab ==================== */
+
+bool CSpineSlotTab::HasSlotExclusionFilter()
+{
+	return !slot_exclusion::s_filter.empty();
+}
+
+bool(*CSpineSlotTab::GetSlotExcludeCallback())(const char*, size_t)
+{
+	return &slot_exclusion::IsSlotToBeExcluded;
+}
+
+/*WM_COMMAND*/
+LRESULT CSpineSlotTab::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+	int wmId = LOWORD(wParam);
+	int wmKind = LOWORD(lParam);
+	if (wmKind == 0)
+	{
+		/*Menus*/
+	}
+	else
+	{
+		/*Controls*/
+		WORD usCode = HIWORD(wParam);
+		if (usCode == CBN_SELCHANGE)
+		{
+			/*Notification code*/
+			if (reinterpret_cast<HWND>(lParam) == m_slotComboBox.GetHwnd())
+			{
+				OnSlotSelect();
+			}
+		}
+		else
+		{
+			switch (wmId)
+			{
+			case Controls::kExcludeButton:
+				OnExcludeButton();
+				break;
+			case Controls::kReplaceButton:
+				OnReplaceButton();
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	return 0;
+}
+
+void CSpineSlotTab::CreateControls()
+{
+	m_slotFilterEdit.Create(win_text::WidenUtf8(slot_exclusion::s_filter).c_str(), m_hWnd);
+	m_slotFilterEdit.SetHint(L"Partial slot name to exclude");
+
+	const std::vector<std::wstring> slotColumnNames = { L"Slots to exclude" };
+	m_slotListView.Create(m_hWnd, slotColumnNames, true);
+
+	m_slotExcludeButton.Create(L"Exclude slot", m_hWnd, reinterpret_cast<HMENU>(Controls::kExcludeButton));
+
+	m_slotReplacementSeparator.Create(L"", m_hWnd, true);
+	m_slotStatic.Create(L"Slot", m_hWnd);
+	m_attachmentStatic.Create(L"Attachment", m_hWnd);
+
+	m_slotComboBox.Create(m_hWnd);
+	m_attachmentComboBox.Create(m_hWnd);
+
+	m_replaceButton.Create(L"Replace slot", m_hWnd, reinterpret_cast<HMENU>(Controls::kReplaceButton));
+}
+/*寸法・位置調整*/
+void CSpineSlotTab::ResizeControls()
+{
+	using namespace dialogue_layout;
+	LayoutControls(m_hWnd, Constants::kFontSize,
+		{
+			{m_slotFilterEdit.GetHwnd()},
+			{m_slotListView.GetHwnd(), WidthOption::Auto, HeightOption::List},
+			{m_slotExcludeButton.GetHwnd(), WidthOption::Quarter},
+			{m_slotReplacementSeparator.GetHwnd(), WidthOption::Auto, HeightOption::Fixed, 0, 1},
+			{m_slotStatic.GetHwnd()},
+			{m_slotComboBox.GetHwnd(), WidthOption::Auto, HeightOption::Combo},
+			{m_attachmentStatic.GetHwnd()},
+			{m_attachmentComboBox.GetHwnd(), WidthOption::Auto, HeightOption::Combo},
+			{m_replaceButton.GetHwnd(), WidthOption::Quarter},
+		});
+	m_slotListView.AdjustWidth();
+}
+
+void CSpineSlotTab::RefreshControls()
+{
+	m_slotListView.Clear();
+	std::vector<std::wstring> temp;
+	controls_util::WidenList(m_pDxLibSpinePlayer->GetSlotNames(), temp);
+	m_slotListView.CreateSingleList(temp);
+
+	m_slotAttachmentMap = m_pDxLibSpinePlayer->GetSlotNamesWithTheirAttachments();
+
+	std::vector<std::wstring> wstrSlotNames;
+	wstrSlotNames.reserve(m_slotAttachmentMap.size());
+	for (const auto& slot : m_slotAttachmentMap)
+	{
+		wstrSlotNames.push_back(win_text::WidenUtf8(slot.first));
+	}
+	m_slotComboBox.Setup(wstrSlotNames);
+	OnSlotSelect();
+}
+/*適用ボタン押下*/
+void CSpineSlotTab::OnExcludeButton()
+{
+	if (m_pDxLibSpinePlayer != nullptr)
+	{
+		const std::wstring wstrSlotExclusionRegex = m_slotFilterEdit.GetText();
+		slot_exclusion::s_filter = win_text::NarrowUtf8(wstrSlotExclusionRegex);
+		if (!slot_exclusion::s_filter.empty())
+		{
+			m_pDxLibSpinePlayer->SetSlotExcludeCallback(&slot_exclusion::IsSlotToBeExcluded);
+		}
+		else
+		{
+			m_pDxLibSpinePlayer->SetSlotExcludeCallback(nullptr);
+
+			std::vector<std::wstring> wstrCheckedItems = m_slotListView.PickupCheckedItems();
+			std::vector<std::string> strCheckedItems;
+			controls_util::NarrowList(wstrCheckedItems, strCheckedItems);
+			m_pDxLibSpinePlayer->SetSlotsToExclude(strCheckedItems);
+		}
+	}
+}
+/*再装着ボタン*/
+void CSpineSlotTab::OnReplaceButton()
+{
+	std::wstring wstrSlotName = m_slotComboBox.GetSelectedItemText();
+	std::wstring wstrAtlasRegionName = m_attachmentComboBox.GetSelectedItemText();
+	if (!wstrSlotName.empty() && !wstrAtlasRegionName.empty())
+	{
+		std::string strSlotName = win_text::NarrowUtf8(wstrSlotName);
+		std::string strAtlasRegionName = win_text::NarrowUtf8(wstrAtlasRegionName);
+		m_pDxLibSpinePlayer->ReplaceAttachment(strSlotName.c_str(), strAtlasRegionName.c_str());
+	}
+}
+/*選択項目変更*/
+void CSpineSlotTab::OnSlotSelect()
+{
+	std::string strSlotName = win_text::NarrowUtf8(m_slotComboBox.GetSelectedItemText());
+	if (strSlotName.empty())return;
+
+	const auto& iter = m_slotAttachmentMap.find(strSlotName);
+	if (iter != m_slotAttachmentMap.cend())
+	{
+		std::vector<std::string>& attachmentNames = iter->second;
+
+		std::vector<std::wstring> wstrAttachmentNames;
+		controls_util::WidenList(attachmentNames, wstrAttachmentNames);
+		m_attachmentComboBox.Setup(wstrAttachmentNames);
+		::InvalidateRect(m_hWnd, nullptr, FALSE);
+	}
+}
+
+/* ==================== Animation tab ==================== */
+
+LRESULT CSpineAnimationTab::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+	int wmId = LOWORD(wParam);
+	int wmKind = LOWORD(lParam);
+	if (wmKind == 0)
+	{
+		/*Menus*/
+	}
+	else
+	{
+		/*Controls*/
+		switch (wmId)
+		{
+		case Controls::kSetAnimationButton:
+			OnSetAnimationButton();
+			break;
+		case Controls::kMixAnimationButton:
+			OnMixAnimationButton();
+			break;
+		default:
+			break;
+		}
+	}
+
+	return 0;
+}
+
+void CSpineAnimationTab::CreateControls()
+{
+	m_animationComboBox.Create(m_hWnd);
+	m_setAnimationButton.Create(L"Set animation", m_hWnd, reinterpret_cast<HMENU>(Controls::kSetAnimationButton));
+
+	m_mixAnimationSeparator.Create(L"", m_hWnd, true);
+
+	const std::vector<std::wstring> animationColumnNames = { L"Animations to mix" };
+	m_animationListView.Create(m_hWnd, animationColumnNames, true);
+	m_mixAnimationButton.Create(L"Mix animations", m_hWnd, reinterpret_cast<HMENU>(Controls::kMixAnimationButton));
+}
+
+void CSpineAnimationTab::ResizeControls()
+{
+	using namespace dialogue_layout;
+	LayoutControls(m_hWnd, Constants::kFontSize,
+		{
+			{m_animationComboBox.GetHwnd(), WidthOption::Auto, HeightOption::Combo},
+			{m_setAnimationButton.GetHwnd(), WidthOption::Quarter},
+			{m_mixAnimationSeparator.GetHwnd(), WidthOption::Auto, HeightOption::Fixed, 0, 1},
+
+			{m_animationListView.GetHwnd(), WidthOption::Auto, HeightOption::List},
+			{m_mixAnimationButton.GetHwnd(), WidthOption::Quarter},
+		});
+	m_animationListView.AdjustWidth();
+}
+
+void CSpineAnimationTab::RefreshControls()
+{
+	const auto& animationNames = m_pDxLibSpinePlayer->GetAnimationNames();
+	std::vector<std::wstring> temp;
+	controls_util::WidenList(animationNames, temp);
+
+	m_animationComboBox.Setup(temp);
+	m_animationListView.Clear();
+	m_animationListView.CreateSingleList(temp);
+}
+
+void CSpineAnimationTab::OnSetAnimationButton()
+{
+	std::wstring wstrAnimationName = m_animationComboBox.GetSelectedItemText();
+	std::string strAnimationName = win_text::NarrowUtf8(wstrAnimationName);
+	m_pDxLibSpinePlayer->SetAnimationByName(strAnimationName.c_str());
+}
+
+void CSpineAnimationTab::OnMixAnimationButton()
+{
+	std::vector<std::wstring> wstrCheckedItems = m_animationListView.PickupCheckedItems();
+	std::vector<std::string> strCheckedItems;
+	controls_util::NarrowList(wstrCheckedItems, strCheckedItems);
+	m_pDxLibSpinePlayer->MixAnimations(strCheckedItems);
+}
+
+/* ==================== Skin tab ==================== */
+
+LRESULT CSpineSkinTab::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+	int wmId = LOWORD(wParam);
+	int wmKind = LOWORD(lParam);
+	if (wmKind == 0)
+	{
+		/*Menus*/
+	}
+	else
+	{
+		/*Controls*/
+		switch (wmId)
+		{
+		case Controls::kSetSkinButton:
+			OnSetSkinButton();
+			break;
+		case Controls::kMixSkinButton:
+			OnMixSkinButton();
+			break;
+		default:
+			break;
+		}
+	}
+
+	return 0;
+}
+
+void CSpineSkinTab::CreateControls()
+{
+	m_skinComboBox.Create(m_hWnd);
+	m_setSkinButton.Create(L"Set skin", m_hWnd, reinterpret_cast<HMENU>(Controls::kSetSkinButton));
+
+	m_mixSkinSeparator.Create(L"", m_hWnd, true);
+
+	const std::vector<std::wstring> animationColumnNames = { L"Skins to mix" };
+	m_skinListView.Create(m_hWnd, animationColumnNames, true);
+	m_mixSkinButton.Create(L"Mix skins", m_hWnd, reinterpret_cast<HMENU>(Controls::kMixSkinButton));
+}
+
+void CSpineSkinTab::ResizeControls()
+{
+	using namespace dialogue_layout;
+	LayoutControls(m_hWnd, Constants::kFontSize,
+		{
+			{m_skinComboBox.GetHwnd(), WidthOption::Auto, HeightOption::Combo},
+			{m_setSkinButton.GetHwnd(), WidthOption::Quarter},
+			{m_mixSkinSeparator.GetHwnd(), WidthOption::Auto, HeightOption::Fixed, 0, 1},
+
+			{m_skinListView.GetHwnd(), WidthOption::Auto, HeightOption::List},
+			{m_mixSkinButton.GetHwnd(), WidthOption::Quarter},
+		});
+	m_skinListView.AdjustWidth();
+}
+
+void CSpineSkinTab::RefreshControls()
+{
+	const auto& skinNames = m_pDxLibSpinePlayer->GetSkinNames();
+	std::vector<std::wstring> temp;
+	controls_util::WidenList(skinNames, temp);
+
+	m_skinComboBox.Setup(temp);
+	m_skinListView.Clear();
+	m_skinListView.CreateSingleList(temp);
+}
+
+void CSpineSkinTab::OnSetSkinButton()
+{
+	std::wstring wstrSkinnName = m_skinComboBox.GetSelectedItemText();
+	std::string strSkinName = win_text::NarrowUtf8(wstrSkinnName);
+	m_pDxLibSpinePlayer->SetSkinByName(strSkinName.c_str());
+}
+
+void CSpineSkinTab::OnMixSkinButton()
+{
+	std::vector<std::wstring> wstrCheckedItems = m_skinListView.PickupCheckedItems();
+	std::vector<std::string> strCheckedItems;
+	controls_util::NarrowList(wstrCheckedItems, strCheckedItems);
+	m_pDxLibSpinePlayer->MixSkins(strCheckedItems);
+}

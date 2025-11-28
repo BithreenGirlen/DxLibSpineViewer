@@ -1032,10 +1032,9 @@ bool CMainWindow::LoadSpineFiles(const std::vector<std::string>& atlasPaths, con
 		ResizeWindow();
 		ChangeWindowTitle(windowName);
 
-		const auto* pSpineManipulatorDialogue = m_spineToolDialogue.GetManipulatorDialogue();
-		if (pSpineManipulatorDialogue != nullptr && pSpineManipulatorDialogue->HasSlotExclusionFilter())
+		if (CSpineSlotTab::HasSlotExclusionFilter())
 		{
-			m_dxLibSpinePlayer.SetSlotExcludeCallback(pSpineManipulatorDialogue->GetSlotExcludeCallback());
+			m_dxLibSpinePlayer.SetSlotExcludeCallback(CSpineSlotTab::GetSlotExcludeCallback());
 		}
 		m_winclock.Restart();
 	}

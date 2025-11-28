@@ -72,7 +72,7 @@ bool CListView::Add(const std::vector<std::wstring>& columns, bool ToBottom)
 
 		lvItem.iItem = ToBottom ? iItem : 0;
 		lvItem.iSubItem = static_cast<int>(i);
-		lvItem.pszText = const_cast<wchar_t*>(columns.at(i).c_str());
+		lvItem.pszText = const_cast<wchar_t*>(columns[i].c_str());
 
 		if (i == 0)
 		{
@@ -515,9 +515,9 @@ CStatic::~CStatic()
 
 }
 
-bool CStatic::Create(const wchar_t* szText, HWND hParentWnd)
+bool CStatic::Create(const wchar_t* szText, HWND hParentWnd, bool hasEdge)
 {
-	m_hWnd = ::CreateWindowExW(0, WC_STATIC, szText, WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
+	m_hWnd = ::CreateWindowExW(0, WC_STATIC, szText, WS_VISIBLE | WS_CHILD | (hasEdge ? SS_ETCHEDHORZ : 0), 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
 
 	return m_hWnd != nullptr;
 }

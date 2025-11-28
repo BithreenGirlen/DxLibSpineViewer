@@ -132,7 +132,7 @@ public:
 	CStatic();
 	~CStatic();
 
-	bool Create(const wchar_t* szText, HWND hParentWnd);
+	bool Create(const wchar_t* szText, HWND hParentWnd, bool hasEdge = false);
 	HWND GetHwnd()const { return m_hWnd; }
 private:
 	HWND m_hWnd = nullptr;

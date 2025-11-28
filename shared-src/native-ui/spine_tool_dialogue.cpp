@@ -26,6 +26,10 @@ HWND CSpineToolDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wcha
 
 	m_pDxLibSpinePlayer = pPlayer;
 
+	//m_tabs.clear();
+	//m_tabs.push_back(std::make_unique<CSpineAnimationTab>());
+	//m_tabs.push_back(std::make_unique<CSpineSlotTab>());
+
 	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.data(), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
 
@@ -83,14 +87,19 @@ LRESULT CSpineToolDialogue::OnInit(HWND hWnd)
 /*WM_CLOSE*/
 LRESULT CSpineToolDialogue::OnClose()
 {
-	if (m_spineManipulatorDialogue.GetHwnd() != nullptr)
+	if (m_spineAnimationTab.GetHwnd() != nullptr)
 	{
-		::SendMessage(m_spineManipulatorDialogue.GetHwnd(), WM_CLOSE, 0, 0);
+		::SendMessage(m_spineAnimationTab.GetHwnd(), WM_CLOSE, 0, 0);
 	}
 
-	if (m_spineAtlasDialogue.GetHwnd() != nullptr)
+	if (m_spineSkinTab.GetHwnd() != nullptr)
 	{
-		::SendMessage(m_spineAtlasDialogue.GetHwnd(), WM_CLOSE, 0, 0);
+		::SendMessage(m_spineSkinTab.GetHwnd(), WM_CLOSE, 0, 0);
+	}
+
+	if (m_spineSlotTab.GetHwnd() != nullptr)
+	{
+		::SendMessage(m_spineSlotTab.GetHwnd(), WM_CLOSE, 0, 0);
 	}
 
 	::DestroyWindow(m_hWnd);
@@ -120,17 +129,24 @@ LRESULT CSpineToolDialogue::OnNotify(WPARAM wParam, LPARAM lParam)
 			switch (index)
 			{
 			case Tab::Animation:
-				hWnd = m_spineAtlasDialogue.GetHwnd();
+				hWnd = m_spineAnimationTab.GetHwnd();
 				if (hWnd == nullptr)
 				{
-					hWnd = m_spineAtlasDialogue.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Spine re-attachment").data(), m_pDxLibSpinePlayer);
+					hWnd = m_spineAnimationTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Animation").data(), m_hFont, m_pDxLibSpinePlayer);
+				}
+				break;
+			case Tab::Skin:
+				hWnd = m_spineSkinTab.GetHwnd();
+				if (hWnd == nullptr)
+				{
+					hWnd = m_spineSkinTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Skin").data(), m_hFont, m_pDxLibSpinePlayer);
 				}
 				break;
 			case Tab::Slot:
-				hWnd = m_spineManipulatorDialogue.GetHwnd();
+				hWnd = m_spineSlotTab.GetHwnd();
 				if (hWnd == nullptr)
 				{
-					hWnd = m_spineManipulatorDialogue.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Spine manipulation").data(), m_pDxLibSpinePlayer);
+					hWnd = m_spineSlotTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Slot").data(), m_hFont, m_pDxLibSpinePlayer);
 				}
 				break;
 			default:

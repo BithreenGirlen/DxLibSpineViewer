@@ -5,8 +5,7 @@
 
 #include "../spine_player_shared.h"
 #include "dialogue_controls.h"
-#include "spine_manipulator_dialogue.h"
-#include "spine_atlas_dialogue.h"
+#include "spine_tool_tabs.h"
 
 class CSpineToolDialogue
 {
@@ -16,9 +15,6 @@ public:
 
 	HWND Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer);
 	HWND GetHwnd()const { return m_hWnd; }
-
-	const CSpineManipulatorDialogue* GetManipulatorDialogue() const { return &m_spineManipulatorDialogue; }
-	const CSpineAtlasDialogue* GetAtlasDialogue() const { return &m_spineAtlasDialogue; }
 private:
 	HWND m_hWnd = nullptr;
 
@@ -36,10 +32,10 @@ private:
 	{
 		enum
 		{
-			Size = 0, Animation, Skin, Slot, Rendering, Export,
+			Size = 0, Animation, Skin, Slot, Rendering,
 		};
 	};
-	static constexpr const wchar_t* const m_tabNames[] = { L"Size/Scale", L"Animation", L"Skin", L"Slot", L"Rendering", L"Export" };
+	static constexpr const wchar_t* const m_tabNames[] = { L"Size/Scale", L"Animation", L"Skin", L"Slot", L"Rendering" };
 
 	HFONT m_hFont = nullptr;
 
@@ -53,8 +49,11 @@ private:
 
 	CDxLibSpinePlayer* m_pDxLibSpinePlayer = nullptr;
 
-	CSpineManipulatorDialogue m_spineManipulatorDialogue;
-	CSpineAtlasDialogue m_spineAtlasDialogue;
+	//std::vector<std::unique_ptr<CTabBase>> m_tabs;
+
+	CSpineAnimationTab m_spineAnimationTab;
+	CSpineSkinTab m_spineSkinTab;
+	CSpineSlotTab m_spineSlotTab;
 
 	HWND m_hLastTab = nullptr;
 };
