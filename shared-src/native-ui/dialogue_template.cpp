@@ -1,6 +1,4 @@
 ﻿
-#include <string>
-
 #include "dialogue_template.h"
 
 
@@ -11,7 +9,7 @@ CDialogueTemplate::CDialogueTemplate()
 
 CDialogueTemplate::~CDialogueTemplate()
 {
-
+	Release();
 }
 
 void CDialogueTemplate::SetWindowSize(unsigned short usWidth, unsigned short usHeight)
@@ -30,10 +28,10 @@ void CDialogueTemplate::MakeWindowChild(bool bChild)
 	m_bChild = bChild;
 }
 
-std::vector<unsigned char> CDialogueTemplate::Generate(const wchar_t* wszWindowTitle)
+const unsigned char* CDialogueTemplate::Generate(const wchar_t* wszWindowTitle)
 {
 	/*
-	* Dialogue box template without any controls.
+	* Dialogue template without child controls.
 	* https://learn.microsoft.com/en-us/windows/win32/dlgbox/dlgtemplateex
 	*/
 #pragma pack(push, 1)
@@ -60,15 +58,19 @@ std::vector<unsigned char> CDialogueTemplate::Generate(const wchar_t* wszWindowT
 		BYTE italic = TRUE;
 		BYTE characterset = ANSI_CHARSET;
 	};
+#pragma pack (pop)
 
+	static constexpr const wchar_t defaultTitle[] = L"Dialogue";
+	static constexpr const size_t defaultTitleSize = sizeof(defaultTitle);
+	static constexpr const wchar_t defaultTypeFace[] = L"MS Shell Dlg";
+	static constexpr const size_t defaultTypeFaceSize = sizeof(defaultTypeFace);
 	struct SDialogueTemplateEx
 	{
 		SDialogueTemplateHeader header;
-		std::wstring wstrTitle = L"Dialogue";
+		const wchar_t* title = defaultTitle;
 		SDialogueTemplateFont font;
-		std::wstring wstrTypeface = L"MS Shell Dlg";
+		const wchar_t* typeFace = defaultTypeFace;
 	};
-#pragma pack (pop)
 
 	SDialogueTemplateEx sDialogueTemplateEx;
 
@@ -82,38 +84,46 @@ std::vector<unsigned char> CDialogueTemplate::Generate(const wchar_t* wszWindowT
 	}
 	else if (m_bResizable)
 	{
-		sDialogueTemplateEx.header.style |= WS_THICKFRAME & ~DS_MODALFRAME;
+		sDialogueTemplateEx.header.style &= ~DS_MODALFRAME;
+		sDialogueTemplateEx.header.style |= WS_THICKFRAME;
 	}
 
+	size_t titleSize = defaultTitleSize;
 	if (wszWindowTitle != nullptr)
 	{
-		sDialogueTemplateEx.wstrTitle = wszWindowTitle;
+		sDialogueTemplateEx.title = wszWindowTitle;
+		titleSize = (wcslen(wszWindowTitle) + 1) * sizeof(wchar_t);
 	}
 
-	std::vector<unsigned char> v;
-	v.resize(
-		sizeof(SDialogueTemplateHeader) +
-		(sDialogueTemplateEx.wstrTitle.size() + 1LL) * sizeof(wchar_t) +
-		sizeof(SDialogueTemplateFont) +
-		(sDialogueTemplateEx.wstrTypeface.size() + 1LL) * sizeof(wchar_t)
-	);
+	Release();
+	size_t dataSize = sizeof(SDialogueTemplateHeader) + titleSize + sizeof(SDialogueTemplateFont) + defaultTypeFaceSize;
+	m_pData = static_cast<unsigned char*>(malloc(dataSize));
 
 	size_t nWritten = 0;
 	size_t nLen = sizeof(SDialogueTemplateHeader);
-	memcpy(&v[nWritten], &sDialogueTemplateEx.header, nLen);
+	memcpy(&m_pData[nWritten], &sDialogueTemplateEx.header, nLen);
 	nWritten += nLen;
 
-	nLen = (sDialogueTemplateEx.wstrTitle.size() + 1LL) * sizeof(wchar_t);
-	memcpy(&v[nWritten], sDialogueTemplateEx.wstrTitle.c_str(), nLen);
+	nLen = titleSize;
+	memcpy(&m_pData[nWritten], sDialogueTemplateEx.title, nLen);
 	nWritten += nLen;
 
 	nLen = sizeof(SDialogueTemplateFont);
-	memcpy(&v[nWritten], &sDialogueTemplateEx.font, nLen);
+	memcpy(&m_pData[nWritten], &sDialogueTemplateEx.font, nLen);
 	nWritten += nLen;
 
-	nLen = (sDialogueTemplateEx.wstrTypeface.size() + 1LL) * sizeof(wchar_t);
-	memcpy(&v[nWritten], sDialogueTemplateEx.wstrTypeface.c_str(), nLen);
+	nLen = defaultTypeFaceSize;
+	memcpy(&m_pData[nWritten], sDialogueTemplateEx.typeFace, nLen);
 	nWritten += nLen;
 
-	return v;
+	return m_pData;
+}
+
+void CDialogueTemplate::Release()
+{
+	if (m_pData != nullptr)
+	{
+		free(m_pData);
+		m_pData = nullptr;
+	}
 }

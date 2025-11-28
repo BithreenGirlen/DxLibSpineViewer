@@ -3,8 +3,6 @@
 
 #include <Windows.h>
 
-#include <vector>
-
 class CDialogueTemplate
 {
 public:
@@ -15,16 +13,19 @@ public:
 	void MakeWindowResizable(bool bResizable);
 	void MakeWindowChild(bool bChild);
 
-	std::vector<unsigned char> Generate(const wchar_t* wszWindowTitle = nullptr);
-
+	const unsigned char* Generate(const wchar_t* wszWindowTitle = nullptr);
 private:
 	enum Constants {kBaseWidth = 200, kBaseHeight = 240};
 
 	WORD m_usWidth = Constants::kBaseWidth;
 	WORD m_usHeight = Constants::kBaseHeight;
 
+	unsigned char* m_pData = nullptr;
+
 	bool m_bResizable = false;
 	bool m_bChild = false;
+
+	void Release();
 };
 
 #endif // !DIALOGUE_TEMPLATE_H_

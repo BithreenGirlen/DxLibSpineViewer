@@ -46,11 +46,7 @@ private:
 	void ResizeControls();
 	void OnTabSelect();
 
-	std::vector<unsigned char> GenerateTabPageDialogueTemplate(const wchar_t* windowName);
-
 	CDxLibSpinePlayer* m_pDxLibSpinePlayer = nullptr;
-
-	//std::vector<std::unique_ptr<CTabBase>> m_tabs;
 
 	CSpineAnimationTab m_spineAnimationTab;
 	CSpineSkinTab m_spineSkinTab;

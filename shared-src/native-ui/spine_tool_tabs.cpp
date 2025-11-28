@@ -46,7 +46,7 @@ namespace controls_util
 
 /* ==================== Base tab class ==================== */
 
-HWND CTabBase::Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer)
+HWND CTabBase::Create(HINSTANCE hInstance, HWND hWndParent, const unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer)
 {
 	m_pDxLibSpinePlayer = pPlayer;
 
@@ -511,6 +511,7 @@ void CSpineRenderingTab::CreateControls()
 #if defined(SPINE_4_0) || defined(SPINE_4_1_OR_LATER) || defined(SPINE_4_2_OR_LATER)
 	::EnableWindow(m_pmaButton.GetHwnd(), FALSE);
 #endif
+	::EnableWindow(m_drawOrderButton.GetHwnd(), m_pDxLibSpinePlayer->GetNumberOfSpines() > 1 ? TRUE : FALSE);
 }
 
 void CSpineRenderingTab::ResizeControls()

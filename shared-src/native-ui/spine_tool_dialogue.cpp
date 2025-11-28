@@ -19,14 +19,13 @@ CSpineToolDialogue::~CSpineToolDialogue()
 
 HWND CSpineToolDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer)
 {
-	CDialogueTemplate sWinDialogueTemplate;
-	sWinDialogueTemplate.MakeWindowResizable(true);
-	sWinDialogueTemplate.SetWindowSize(BaseSize::kWidth, BaseSize::kHeight);
-	std::vector<unsigned char> dialogueTemplate = sWinDialogueTemplate.Generate(pwzWindowName);
+	CDialogueTemplate dialogueTemplate;
+	dialogueTemplate.MakeWindowResizable(true);
+	dialogueTemplate.SetWindowSize(BaseSize::kWidth, BaseSize::kHeight);
 
 	m_pDxLibSpinePlayer = pPlayer;
 
-	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.data(), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
+	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.Generate(pwzWindowName), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
 
 /*C CALLBACK*/
@@ -77,10 +76,14 @@ LRESULT CSpineToolDialogue::OnInit(HWND hWnd)
 
 	ResizeControls();
 
-	m_spineAnimationTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Animation").data(), m_pDxLibSpinePlayer);
-	m_spineSkinTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Skin").data(), m_pDxLibSpinePlayer);
-	m_spineSlotTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Slot").data(), m_pDxLibSpinePlayer);
-	m_spineRenderingTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Rendering").data(), m_pDxLibSpinePlayer);
+	CDialogueTemplate dialogueTemplate;
+	dialogueTemplate.SetWindowSize(BaseSize::kWidth, BaseSize::kHeight);
+	dialogueTemplate.MakeWindowChild(true);
+
+	m_spineAnimationTab.Create(::GetModuleHandle(nullptr), m_hWnd, dialogueTemplate.Generate(L"Animation"), m_pDxLibSpinePlayer);
+	m_spineSkinTab.Create(::GetModuleHandle(nullptr), m_hWnd, dialogueTemplate.Generate(L"Skin"), m_pDxLibSpinePlayer);
+	m_spineSlotTab.Create(::GetModuleHandle(nullptr), m_hWnd, dialogueTemplate.Generate(L"Slot"), m_pDxLibSpinePlayer);
+	m_spineRenderingTab.Create(::GetModuleHandle(nullptr), m_hWnd, dialogueTemplate.Generate(L"Rendering"), m_pDxLibSpinePlayer);
 
 	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
 
@@ -216,12 +219,4 @@ void CSpineToolDialogue::OnTabSelect()
 		m_hLastTab = hWnd;
 		ResizeControls();
 	}
-}
-
-std::vector<unsigned char> CSpineToolDialogue::GenerateTabPageDialogueTemplate(const wchar_t* windowName)
-{
-	CDialogueTemplate sWinDialogueTemplate;
-	sWinDialogueTemplate.SetWindowSize(BaseSize::kWidth, BaseSize::kHeight);
-	sWinDialogueTemplate.MakeWindowChild(true);
-	return sWinDialogueTemplate.Generate(windowName);
 }

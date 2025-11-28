@@ -11,7 +11,7 @@ class CTabBase
 public:
 	virtual ~CTabBase() = default;
 
-	HWND Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer);
+	HWND Create(HINSTANCE hInstance, HWND hWndParent, const unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer);
 	HWND GetHwnd() const { return m_hWnd; }
 protected:
 	HWND m_hWnd;
