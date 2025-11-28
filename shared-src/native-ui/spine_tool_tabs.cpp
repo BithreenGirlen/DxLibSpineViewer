@@ -46,10 +46,9 @@ namespace controls_util
 
 /* ==================== Base tab class ==================== */
 
-HWND CTabBase::Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, HFONT hFont, CDxLibSpinePlayer* pPlayer)
+HWND CTabBase::Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer)
 {
 	m_pDxLibSpinePlayer = pPlayer;
-	m_hFont = hFont;
 
 	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)pDialogueTemplate, hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
@@ -96,8 +95,6 @@ LRESULT CTabBase::OnInit(HWND hWnd)
 	RefreshControls();
 	ResizeControls();
 
-	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
-
 	return TRUE;
 }
 /*WM_CLOSE*/
@@ -113,13 +110,6 @@ LRESULT CTabBase::OnSize()
 	ResizeControls();
 
 	return 0;
-}
-/*EnumChildWindows CALLBACK*/
-BOOL CTabBase::SetFontCallback(HWND hWnd, LPARAM lParam)
-{
-	::SendMessage(hWnd, WM_SETFONT, static_cast<WPARAM>(lParam), 0);
-	/*TRUE: 続行, FALSE: 終了*/
-	return TRUE;
 }
 
 /* ==================== Slot tab ==================== */
@@ -150,7 +140,7 @@ LRESULT CSpineSlotTab::OnCommand(WPARAM wParam, LPARAM lParam)
 		if (usCode == CBN_SELCHANGE)
 		{
 			/*Notification code*/
-			if (reinterpret_cast<HWND>(lParam) == m_slotComboBox.GetHwnd())
+			if (reinterpret_cast<HWND>(lParam) == m_replaceableSlotComboBox.GetHwnd())
 			{
 				OnSlotSelect();
 			}
@@ -164,6 +154,9 @@ LRESULT CSpineSlotTab::OnCommand(WPARAM wParam, LPARAM lParam)
 				break;
 			case Controls::kReplaceButton:
 				OnReplaceButton();
+				break;
+			case Controls::kBoundButton:
+				OnBoundButton();
 				break;
 			default:
 				break;
@@ -179,8 +172,7 @@ void CSpineSlotTab::CreateControls()
 	m_slotFilterEdit.Create(win_text::WidenUtf8(slot_exclusion::s_filter).c_str(), m_hWnd);
 	m_slotFilterEdit.SetHint(L"Partial slot name to exclude");
 
-	const std::vector<std::wstring> slotColumnNames = { L"Slots to exclude" };
-	m_slotListView.Create(m_hWnd, slotColumnNames, true);
+	m_slotListView.Create(m_hWnd, { L"Slots to exclude" }, true);
 
 	m_slotExcludeButton.Create(L"Exclude slot", m_hWnd, reinterpret_cast<HMENU>(Controls::kExcludeButton));
 
@@ -188,10 +180,15 @@ void CSpineSlotTab::CreateControls()
 	m_slotStatic.Create(L"Slot", m_hWnd);
 	m_attachmentStatic.Create(L"Attachment", m_hWnd);
 
-	m_slotComboBox.Create(m_hWnd);
+	m_replaceableSlotComboBox.Create(m_hWnd);
 	m_attachmentComboBox.Create(m_hWnd);
 
 	m_replaceButton.Create(L"Replace slot", m_hWnd, reinterpret_cast<HMENU>(Controls::kReplaceButton));
+
+	m_slotBoundSeparator.Create(L"", m_hWnd, true);;
+	m_slotBoundComboBox.Create(m_hWnd);
+	m_slotBoundButton.Create(L"Bound", m_hWnd, reinterpret_cast<HMENU>(Controls::kBoundButton));
+	m_slotBoundStatic.Create(L"", m_hWnd);
 }
 /*寸法・位置調整*/
 void CSpineSlotTab::ResizeControls()
@@ -202,12 +199,20 @@ void CSpineSlotTab::ResizeControls()
 			{m_slotFilterEdit.GetHwnd()},
 			{m_slotListView.GetHwnd(), WidthOption::Auto, HeightOption::List},
 			{m_slotExcludeButton.GetHwnd(), WidthOption::Quarter},
+
 			{m_slotReplacementSeparator.GetHwnd(), WidthOption::Auto, HeightOption::Fixed, 0, 1},
+
 			{m_slotStatic.GetHwnd()},
-			{m_slotComboBox.GetHwnd(), WidthOption::Auto, HeightOption::Combo},
+			{m_replaceableSlotComboBox.GetHwnd(), WidthOption::Auto, HeightOption::Combo},
 			{m_attachmentStatic.GetHwnd()},
 			{m_attachmentComboBox.GetHwnd(), WidthOption::Auto, HeightOption::Combo},
 			{m_replaceButton.GetHwnd(), WidthOption::Quarter},
+
+			{m_slotBoundSeparator.GetHwnd(), WidthOption::Auto, HeightOption::Fixed, 0, 1},
+
+			{m_slotBoundComboBox.GetHwnd(), WidthOption::Auto, HeightOption::Combo},
+			{m_slotBoundButton.GetHwnd(), WidthOption::Quarter},
+			{m_slotBoundStatic.GetHwnd()},
 		});
 	m_slotListView.AdjustWidth();
 }
@@ -227,8 +232,10 @@ void CSpineSlotTab::RefreshControls()
 	{
 		wstrSlotNames.push_back(win_text::WidenUtf8(slot.first));
 	}
-	m_slotComboBox.Setup(wstrSlotNames);
+	m_replaceableSlotComboBox.Setup(wstrSlotNames);
 	OnSlotSelect();
+
+	m_slotBoundComboBox.Setup(temp);
 }
 /*適用ボタン押下*/
 void CSpineSlotTab::OnExcludeButton()
@@ -245,40 +252,57 @@ void CSpineSlotTab::OnExcludeButton()
 		{
 			m_pDxLibSpinePlayer->SetSlotExcludeCallback(nullptr);
 
-			std::vector<std::wstring> wstrCheckedItems = m_slotListView.PickupCheckedItems();
+			const std::vector<std::wstring> wstrCheckedItems = m_slotListView.PickupCheckedItems();
 			std::vector<std::string> strCheckedItems;
 			controls_util::NarrowList(wstrCheckedItems, strCheckedItems);
 			m_pDxLibSpinePlayer->SetSlotsToExclude(strCheckedItems);
 		}
 	}
 }
-/*再装着ボタン*/
-void CSpineSlotTab::OnReplaceButton()
-{
-	std::wstring wstrSlotName = m_slotComboBox.GetSelectedItemText();
-	std::wstring wstrAtlasRegionName = m_attachmentComboBox.GetSelectedItemText();
-	if (!wstrSlotName.empty() && !wstrAtlasRegionName.empty())
-	{
-		std::string strSlotName = win_text::NarrowUtf8(wstrSlotName);
-		std::string strAtlasRegionName = win_text::NarrowUtf8(wstrAtlasRegionName);
-		m_pDxLibSpinePlayer->ReplaceAttachment(strSlotName.c_str(), strAtlasRegionName.c_str());
-	}
-}
 /*選択項目変更*/
 void CSpineSlotTab::OnSlotSelect()
 {
-	std::string strSlotName = win_text::NarrowUtf8(m_slotComboBox.GetSelectedItemText());
+	const std::string strSlotName = win_text::NarrowUtf8(m_replaceableSlotComboBox.GetSelectedItemText());
 	if (strSlotName.empty())return;
 
 	const auto& iter = m_slotAttachmentMap.find(strSlotName);
 	if (iter != m_slotAttachmentMap.cend())
 	{
-		std::vector<std::string>& attachmentNames = iter->second;
+		const std::vector<std::string>& attachmentNames = iter->second;
 
 		std::vector<std::wstring> wstrAttachmentNames;
 		controls_util::WidenList(attachmentNames, wstrAttachmentNames);
 		m_attachmentComboBox.Setup(wstrAttachmentNames);
 		::InvalidateRect(m_hWnd, nullptr, FALSE);
+	}
+}
+/*再装着ボタン*/
+void CSpineSlotTab::OnReplaceButton()
+{
+	const std::wstring wstrSlotName = m_replaceableSlotComboBox.GetSelectedItemText();
+	const std::wstring wstrAtlasRegionName = m_attachmentComboBox.GetSelectedItemText();
+	if (!wstrSlotName.empty() && !wstrAtlasRegionName.empty())
+	{
+		const std::string strSlotName = win_text::NarrowUtf8(wstrSlotName);
+		const std::string strAtlasRegionName = win_text::NarrowUtf8(wstrAtlasRegionName);
+		m_pDxLibSpinePlayer->ReplaceAttachment(strSlotName.c_str(), strAtlasRegionName.c_str());
+	}
+}
+
+void CSpineSlotTab::OnBoundButton()
+{
+	const std::wstring wstrSlotName = m_slotBoundComboBox.GetSelectedItemText();
+	const std::string strSlotName = win_text::NarrowUtf8(wstrSlotName);
+	DxLib::FLOAT4 bound = m_pDxLibSpinePlayer->GetCurrentBoundingOfSlot(strSlotName);
+	if (bound.z == 0.f)
+	{
+		::SetWindowTextW(m_slotBoundStatic.GetHwnd(), L"The slot not found in this animation");
+	}
+	else
+	{
+		wchar_t sBuffer[128]{};
+		swprintf_s(sBuffer, L"Slot bound: (%.2f, %.2f, %.2f, %.2f)", bound.x, bound.y, bound.z, bound.w);
+		::SetWindowTextW(m_slotBoundStatic.GetHwnd(), sBuffer);
 	}
 }
 
@@ -318,8 +342,7 @@ void CSpineAnimationTab::CreateControls()
 
 	m_mixAnimationSeparator.Create(L"", m_hWnd, true);
 
-	const std::vector<std::wstring> animationColumnNames = { L"Animations to mix" };
-	m_animationListView.Create(m_hWnd, animationColumnNames, true);
+	m_animationListView.Create(m_hWnd, { L"Animations to mix" }, true);
 	m_mixAnimationButton.Create(L"Mix animations", m_hWnd, reinterpret_cast<HMENU>(Controls::kMixAnimationButton));
 }
 
@@ -351,14 +374,14 @@ void CSpineAnimationTab::RefreshControls()
 
 void CSpineAnimationTab::OnSetAnimationButton()
 {
-	std::wstring wstrAnimationName = m_animationComboBox.GetSelectedItemText();
-	std::string strAnimationName = win_text::NarrowUtf8(wstrAnimationName);
+	const std::wstring wstrAnimationName = m_animationComboBox.GetSelectedItemText();
+	const std::string strAnimationName = win_text::NarrowUtf8(wstrAnimationName);
 	m_pDxLibSpinePlayer->SetAnimationByName(strAnimationName.c_str());
 }
 
 void CSpineAnimationTab::OnMixAnimationButton()
 {
-	std::vector<std::wstring> wstrCheckedItems = m_animationListView.PickupCheckedItems();
+	const std::vector<std::wstring> wstrCheckedItems = m_animationListView.PickupCheckedItems();
 	std::vector<std::string> strCheckedItems;
 	controls_util::NarrowList(wstrCheckedItems, strCheckedItems);
 	m_pDxLibSpinePlayer->MixAnimations(strCheckedItems);
@@ -400,8 +423,7 @@ void CSpineSkinTab::CreateControls()
 
 	m_mixSkinSeparator.Create(L"", m_hWnd, true);
 
-	const std::vector<std::wstring> animationColumnNames = { L"Skins to mix" };
-	m_skinListView.Create(m_hWnd, animationColumnNames, true);
+	m_skinListView.Create(m_hWnd, { L"Skins to mix" }, true);
 	m_mixSkinButton.Create(L"Mix skins", m_hWnd, reinterpret_cast<HMENU>(Controls::kMixSkinButton));
 }
 
@@ -433,15 +455,100 @@ void CSpineSkinTab::RefreshControls()
 
 void CSpineSkinTab::OnSetSkinButton()
 {
-	std::wstring wstrSkinnName = m_skinComboBox.GetSelectedItemText();
-	std::string strSkinName = win_text::NarrowUtf8(wstrSkinnName);
+	const std::wstring wstrSkinnName = m_skinComboBox.GetSelectedItemText();
+	const std::string strSkinName = win_text::NarrowUtf8(wstrSkinnName);
 	m_pDxLibSpinePlayer->SetSkinByName(strSkinName.c_str());
 }
 
 void CSpineSkinTab::OnMixSkinButton()
 {
-	std::vector<std::wstring> wstrCheckedItems = m_skinListView.PickupCheckedItems();
+	const std::vector<std::wstring> wstrCheckedItems = m_skinListView.PickupCheckedItems();
 	std::vector<std::string> strCheckedItems;
 	controls_util::NarrowList(wstrCheckedItems, strCheckedItems);
 	m_pDxLibSpinePlayer->MixSkins(strCheckedItems);
+}
+
+/* ==================== Rendering tab ==================== */
+
+LRESULT CSpineRenderingTab::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+	int wmId = LOWORD(wParam);
+	int wmKind = LOWORD(lParam);
+	if (wmKind == 0)
+	{
+		/*Menus*/
+	}
+	else
+	{
+		/*Controls*/
+		switch (wmId)
+		{
+		case Controls::kPmaButton:
+			OnPmaButton();
+			break;
+		case Controls::kBlendModeButton:
+			OnBlendModeButton();
+			break;
+		case Controls::kDrawOrderButton:
+			OnDrawOrderButton();
+			break;
+		default:
+			break;
+		}
+	}
+
+	return 0;
+}
+
+void CSpineRenderingTab::CreateControls()
+{
+	m_pmaButton.Create(L"Alpha premultiplied", m_hWnd, reinterpret_cast<HMENU>(Controls::kPmaButton), true);
+	m_blendModeSeparator.Create(L"", m_hWnd, true);
+	m_blemdModeButton.Create(L"Force blend-mode-normal", m_hWnd, reinterpret_cast<HMENU>(Controls::kBlendModeButton), true);
+	m_drawOrderSeparator.Create(L"", m_hWnd, true);
+	m_drawOrderButton.Create(L"Reverse draw order", m_hWnd, reinterpret_cast<HMENU>(Controls::kDrawOrderButton), true);
+
+#if defined(SPINE_4_0) || defined(SPINE_4_1_OR_LATER) || defined(SPINE_4_2_OR_LATER)
+	::EnableWindow(m_pmaButton.GetHwnd(), FALSE);
+#endif
+}
+
+void CSpineRenderingTab::ResizeControls()
+{
+	using namespace dialogue_layout;
+	LayoutControls(m_hWnd, Constants::kFontSize,
+		{
+			{m_pmaButton.GetHwnd(), WidthOption::Half},
+			{m_blendModeSeparator.GetHwnd(), WidthOption::Auto, HeightOption::Fixed, 0, 1},
+
+			{m_blemdModeButton.GetHwnd(), WidthOption::Half},
+			{m_drawOrderSeparator.GetHwnd(), WidthOption::Auto, HeightOption::Fixed, 0, 1},
+			{m_drawOrderButton.GetHwnd(), WidthOption::Half},
+		});
+}
+
+void CSpineRenderingTab::RefreshControls()
+{
+	m_pmaButton.SetCheckBox(m_pDxLibSpinePlayer->IsAlphaPremultiplied());
+	m_blemdModeButton.SetCheckBox(m_pDxLibSpinePlayer->IsBlendModeNormalForced());
+	m_drawOrderButton.SetCheckBox(m_pDxLibSpinePlayer->IsDrawOrderReversed());
+	::InvalidateRect(m_hWnd, nullptr, FALSE);
+}
+
+void CSpineRenderingTab::OnPmaButton()
+{
+	m_pDxLibSpinePlayer->TogglePma();
+	RefreshControls();
+}
+
+void CSpineRenderingTab::OnBlendModeButton()
+{
+	m_pDxLibSpinePlayer->ToggleBlendModeAdoption();
+	RefreshControls();
+}
+
+void CSpineRenderingTab::OnDrawOrderButton()
+{
+	m_pDxLibSpinePlayer->SetDrawOrder(!m_pDxLibSpinePlayer->IsDrawOrderReversed());
+	RefreshControls();
 }

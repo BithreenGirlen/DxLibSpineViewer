@@ -15,20 +15,20 @@ CListView::~CListView()
 
 }
 /*ListView作成*/
-bool CListView::Create(HWND hParentWnd, const std::vector<std::wstring>& columnNames, bool bHasCheckBox)
+bool CListView::Create(HWND hParentWnd, const wchar_t** columnNames, size_t columnCount, bool hasCheckBox)
 {
 	m_hWnd = ::CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"", WS_VISIBLE | WS_CHILD | LVS_REPORT | LVS_ALIGNLEFT | WS_TABSTOP | LVS_SINGLESEL, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(nullptr), nullptr);
 	if (m_hWnd != nullptr)
 	{
-		ListView_SetExtendedListViewStyle(m_hWnd, LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | (bHasCheckBox ? LVS_EX_CHECKBOXES : 0) | LVS_EX_HEADERDRAGDROP);
+		ListView_SetExtendedListViewStyle(m_hWnd, LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | (hasCheckBox ? LVS_EX_CHECKBOXES : 0) | LVS_EX_HEADERDRAGDROP);
 
 		LVCOLUMNW lvColumn{};
 		lvColumn.mask = LVCF_TEXT | LVCF_SUBITEM | LVCF_FMT | LVCF_WIDTH;
 		lvColumn.fmt = LVCFMT_LEFT;
-		for (size_t i = 0; i < columnNames.size(); ++i)
+		for (size_t i = 0; i < columnCount; ++i)
 		{
 			lvColumn.iSubItem = static_cast<int>(i);
-			lvColumn.pszText = const_cast<LPWSTR>(columnNames.at(i).data());
+			lvColumn.pszText = const_cast<LPWSTR>(columnNames[i]);
 			ListView_InsertColumn(m_hWnd, i, &lvColumn);
 		}
 	}

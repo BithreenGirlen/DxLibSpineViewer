@@ -26,10 +26,6 @@ HWND CSpineToolDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wcha
 
 	m_pDxLibSpinePlayer = pPlayer;
 
-	//m_tabs.clear();
-	//m_tabs.push_back(std::make_unique<CSpineAnimationTab>());
-	//m_tabs.push_back(std::make_unique<CSpineSlotTab>());
-
 	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.data(), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
 
@@ -80,7 +76,15 @@ LRESULT CSpineToolDialogue::OnInit(HWND hWnd)
 	}
 
 	ResizeControls();
+
+	m_spineAnimationTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Animation").data(), m_pDxLibSpinePlayer);
+	m_spineSkinTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Skin").data(), m_pDxLibSpinePlayer);
+	m_spineSlotTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Slot").data(), m_pDxLibSpinePlayer);
+	m_spineRenderingTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Rendering").data(), m_pDxLibSpinePlayer);
+
 	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
+
+	OnTabSelect();
 
 	return TRUE;
 }
@@ -102,6 +106,11 @@ LRESULT CSpineToolDialogue::OnClose()
 		::SendMessage(m_spineSlotTab.GetHwnd(), WM_CLOSE, 0, 0);
 	}
 
+	if (m_spineRenderingTab.GetHwnd() != nullptr)
+	{
+		::SendMessage(m_spineRenderingTab.GetHwnd(), WM_CLOSE, 0, 0);
+	}
+
 	::DestroyWindow(m_hWnd);
 	m_hWnd = nullptr;
 	return 0;
@@ -120,45 +129,7 @@ LRESULT CSpineToolDialogue::OnNotify(WPARAM wParam, LPARAM lParam)
 	{
 		if (pNmhdr->code == TCN_SELCHANGE)
 		{
-			int index = m_tab.GetSelectedTabIndex();
-			if (m_hLastTab != nullptr)
-			{
-				::ShowWindow(m_hLastTab, SW_HIDE);
-			}
-			HWND hWnd = nullptr;
-			switch (index)
-			{
-			case Tab::Animation:
-				hWnd = m_spineAnimationTab.GetHwnd();
-				if (hWnd == nullptr)
-				{
-					hWnd = m_spineAnimationTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Animation").data(), m_hFont, m_pDxLibSpinePlayer);
-				}
-				break;
-			case Tab::Skin:
-				hWnd = m_spineSkinTab.GetHwnd();
-				if (hWnd == nullptr)
-				{
-					hWnd = m_spineSkinTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Skin").data(), m_hFont, m_pDxLibSpinePlayer);
-				}
-				break;
-			case Tab::Slot:
-				hWnd = m_spineSlotTab.GetHwnd();
-				if (hWnd == nullptr)
-				{
-					hWnd = m_spineSlotTab.Create(::GetModuleHandle(nullptr), m_hWnd, GenerateTabPageDialogueTemplate(L"Slot").data(), m_hFont, m_pDxLibSpinePlayer);
-				}
-				break;
-			default:
-				break;
-			}
-
-			if (hWnd != nullptr)
-			{
-				::ShowWindow(hWnd, SW_SHOWNORMAL);
-				m_hLastTab = hWnd;
-				ResizeControls();
-			}
+			OnTabSelect();
 		}
 	}
 	return 0;
@@ -187,7 +158,7 @@ BOOL CSpineToolDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 	return TRUE;
 }
 /*寸法・位置調整*/
-LRESULT CSpineToolDialogue::ResizeControls()
+void CSpineToolDialogue::ResizeControls()
 {
 	RECT rect;
 	::GetClientRect(m_hWnd, &rect);
@@ -209,10 +180,42 @@ LRESULT CSpineToolDialogue::ResizeControls()
 	{
 		int tabHeight = m_tab.GetItemHeight();
 		::MoveWindow(m_hLastTab, rect.left, rect.top + tabHeight, clientWidth, clientHeight - tabHeight, TRUE);
-		::InvalidateRect(m_hLastTab, nullptr, TRUE);
+		::InvalidateRect(m_hLastTab, nullptr, FALSE);
+	}
+}
+
+void CSpineToolDialogue::OnTabSelect()
+{
+	int index = m_tab.GetSelectedTabIndex();
+	if (m_hLastTab != nullptr)
+	{
+		::ShowWindow(m_hLastTab, SW_HIDE);
+	}
+	HWND hWnd = nullptr;
+	switch (index)
+	{
+	case Tab::Animation:
+		hWnd = m_spineAnimationTab.GetHwnd();
+		break;
+	case Tab::Skin:
+		hWnd = m_spineSkinTab.GetHwnd();
+		break;
+	case Tab::Slot:
+		hWnd = m_spineSlotTab.GetHwnd();
+		break;
+	case Tab::Rendering:
+		hWnd = m_spineRenderingTab.GetHwnd();
+		break;
+	default:
+		break;
 	}
 
-	return 0;
+	if (hWnd != nullptr)
+	{
+		::ShowWindow(hWnd, SW_SHOWNORMAL);
+		m_hLastTab = hWnd;
+		ResizeControls();
+	}
 }
 
 std::vector<unsigned char> CSpineToolDialogue::GenerateTabPageDialogueTemplate(const wchar_t* windowName)

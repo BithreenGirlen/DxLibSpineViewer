@@ -32,10 +32,10 @@ private:
 	{
 		enum
 		{
-			Size = 0, Animation, Skin, Slot, Rendering,
+			Animation = 0, Skin, Slot, Rendering,
 		};
 	};
-	static constexpr const wchar_t* const m_tabNames[] = { L"Size/Scale", L"Animation", L"Skin", L"Slot", L"Rendering" };
+	static constexpr const wchar_t* const m_tabNames[] = { L"Animation", L"Skin", L"Slot", L"Rendering" };
 
 	HFONT m_hFont = nullptr;
 
@@ -43,7 +43,8 @@ private:
 
 	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
 
-	LRESULT ResizeControls();
+	void ResizeControls();
+	void OnTabSelect();
 
 	std::vector<unsigned char> GenerateTabPageDialogueTemplate(const wchar_t* windowName);
 
@@ -54,6 +55,7 @@ private:
 	CSpineAnimationTab m_spineAnimationTab;
 	CSpineSkinTab m_spineSkinTab;
 	CSpineSlotTab m_spineSlotTab;
+	CSpineRenderingTab m_spineRenderingTab;
 
 	HWND m_hLastTab = nullptr;
 };

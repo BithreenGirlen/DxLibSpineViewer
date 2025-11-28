@@ -13,7 +13,13 @@ public:
 	CListView();
 	~CListView();
 
-	bool Create(HWND hParentWnd, const std::vector<std::wstring>& columnNames, bool bHasCheckBox = false);
+	bool Create(HWND hParentWnd, const wchar_t** columnNames, size_t columnCount, bool hasCheckBox = false);
+	template <size_t columnCount>
+	void Create(HWND hParentWnd, const wchar_t*(&&columnNames)[columnCount], bool hasCheckBox = false)
+	{
+		Create(hParentWnd, columnNames, columnCount, hasCheckBox);
+	}
+
 	HWND GetHwnd()const { return m_hWnd; }
 
 	void AdjustWidth();

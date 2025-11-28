@@ -11,8 +11,8 @@ class CTabBase
 public:
 	virtual ~CTabBase() = default;
 
-	HWND Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, HFONT hFont, CDxLibSpinePlayer* pPlayer);
-	HWND GetHwnd()const { return m_hWnd; }
+	HWND Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer);
+	HWND GetHwnd() const { return m_hWnd; }
 protected:
 	HWND m_hWnd;
 
@@ -24,10 +24,6 @@ protected:
 	virtual LRESULT OnCommand(WPARAM wParam, LPARAM lParam) = 0;
 
 	struct Constants { enum { kFontSize = 16 }; };
-
-	HFONT m_hFont = nullptr;
-
-	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
 
 	virtual void CreateControls() = 0;
 	virtual void ResizeControls() = 0;
@@ -47,7 +43,7 @@ private:
 
 	enum Controls
 	{
-		kExcludeButton = 1, kReplaceButton
+		kExcludeButton = 1, kReplaceButton, kBoundButton
 	};
 
 	CEdit m_slotFilterEdit;
@@ -57,19 +53,24 @@ private:
 	CStatic m_slotReplacementSeparator;
 
 	CStatic m_slotStatic;
-	CComboBox m_slotComboBox;
+	CComboBox m_replaceableSlotComboBox;
 	CStatic m_attachmentStatic;
 	CComboBox m_attachmentComboBox;
 	CButton m_replaceButton;
+
+	CStatic m_slotBoundSeparator;
+	CComboBox m_slotBoundComboBox;
+	CButton m_slotBoundButton;
+	CStatic m_slotBoundStatic;
 
 	void CreateControls() override;
 	void ResizeControls() override;
 	void RefreshControls() override;
 
 	void OnExcludeButton();
-	void OnReplaceButton();
-
 	void OnSlotSelect();
+	void OnReplaceButton();
+	void OnBoundButton();
 
 	std::unordered_map<std::string, std::vector<std::string>> m_slotAttachmentMap;
 };
@@ -132,5 +133,34 @@ private:
 	void OnSetSkinButton();
 	void OnMixSkinButton();
 };
+
+/// @brief Alternate rendering parameters
+class CSpineRenderingTab : public CTabBase
+{
+public:
+
+private:
+	LRESULT OnCommand(WPARAM wParam, LPARAM lParam) override;
+
+	struct Controls
+	{
+		enum { kPmaButton = 1, kBlendModeButton, kDrawOrderButton };
+	};
+
+	CButton m_pmaButton;
+	CStatic m_blendModeSeparator;
+	CButton m_blemdModeButton;
+	CStatic m_drawOrderSeparator;
+	CButton m_drawOrderButton;
+
+	void CreateControls() override;
+	void ResizeControls() override;
+	void RefreshControls() override;
+
+	void OnPmaButton();
+	void OnBlendModeButton();
+	void OnDrawOrderButton();
+};
+
 
 #endif // !SPINE_TOOL_TABS
