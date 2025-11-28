@@ -11,9 +11,8 @@
 #include "win_clock.h"
 
 #include "native-ui/spine_setting_dialogue.h"
-#include "native-ui/spine_manipulator_dialogue.h"
-#include "native-ui/spine_atlas_dialogue.h"
 #include "native-ui/export_setting_dialogue.h"
+#include "native-ui/spine_tool_dialogue.h"
 
 class CMainWindow
 {
@@ -53,7 +52,7 @@ private:
 		enum
 		{
 			kOpenFiles = 1, kOpenFolder,  kExtensionSetting, kImportCocos,
-			kSkeletonSetting, kAtlasSetting, kAddEffectFile, kExportSetting,
+			kSpineTool, kAddEffectFile, kExportSetting,
 			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
 			kFitToManualSize, kFitToDefaultSize,
 			kSnapAsPNG, kSnapAsJPG,
@@ -99,8 +98,7 @@ private:
 	void MenuOnExtensionSetting();
 	void MenuOnImportCocos();
 
-	void MenuOnSkeletonSetting();
-	void MenuOnAtlasSetting();
+	void MenuOnSpineTool();
 	void MenuOnAddFile();
 	void MenuOnExportSetting();
 
@@ -135,8 +133,7 @@ private:
 
 	CDxLibSpinePlayer m_dxLibSpinePlayer;
 	CSpineSettingDialogue m_spineSettingDialogue;
-	CSpineManipulatorDialogue m_spineManipulatorDialogue;
-	CSpineAtlasDialogue m_spineAtlasDialogue;
+	CSpineToolDialogue m_spineToolDialogue;
 
 	CDxLibRecorder m_dxLibRecorder;
 	CExportSettingDialogue m_exportSettingDialogue;

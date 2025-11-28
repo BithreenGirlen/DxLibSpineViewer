@@ -265,11 +265,8 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kImportCocos:
 			MenuOnImportCocos();
 			break;
-		case Menu::kSkeletonSetting:
-			MenuOnSkeletonSetting();
-			break;
-		case Menu::kAtlasSetting:
-			MenuOnAtlasSetting();
+		case Menu::kSpineTool:
+			MenuOnSpineTool();
 			break;
 		case Menu::kAddEffectFile:
 			MenuOnAddFile();
@@ -543,8 +540,7 @@ void CMainWindow::InitialiseMenuBar()
 			},
 			{0, L"Tool", window_menu::MenuBuilder(
 				{
-					{Menu::kSkeletonSetting, L"Exclude slot/ Mix anim./ Mix skin"},
-					{Menu::kAtlasSetting, L"Replace attachment"},
+					{Menu::kSpineTool, L"Spine tool"},
 					{Menu::kAddEffectFile, L"Add animation effect"},
 					{Menu::kExportSetting, L"Export setting"}
 				}).Get()
@@ -722,31 +718,17 @@ void CMainWindow::MenuOnImportCocos()
 	if (bLastState != bRet)UpdateMenuItemState();
 }
 /*骨組み操作画面呼び出し*/
-void CMainWindow::MenuOnSkeletonSetting()
+void CMainWindow::MenuOnSpineTool()
 {
-	if (m_spineManipulatorDialogue.GetHwnd() == nullptr)
+	if (m_spineToolDialogue.GetHwnd() == nullptr)
 	{
-		HWND hWnd = m_spineManipulatorDialogue.Create(m_hInstance, m_hWnd, L"Spine manipulation", &m_dxLibSpinePlayer);
+		HWND hWnd = m_spineToolDialogue.Create(m_hInstance, m_hWnd, L"Spine tool", &m_dxLibSpinePlayer);
 
 		::ShowWindow(hWnd, SW_SHOWNORMAL);
 	}
 	else
 	{
-		::SetFocus(m_spineManipulatorDialogue.GetHwnd());
-	}
-}
-/*装着変更画面呼び出し*/
-void CMainWindow::MenuOnAtlasSetting()
-{
-	if (m_spineAtlasDialogue.GetHwnd() == nullptr)
-	{
-		HWND hWnd = m_spineAtlasDialogue.Create(m_hInstance, m_hWnd, L"Spine re-attachment", &m_dxLibSpinePlayer);
-
-		::ShowWindow(hWnd, SW_SHOWNORMAL);
-	}
-	else
-	{
-		::SetFocus(m_spineAtlasDialogue.GetHwnd());
+		::SetFocus(m_spineToolDialogue.GetHwnd());
 	}
 }
 /*ファイル追加*/
@@ -988,7 +970,7 @@ void CMainWindow::ToggleWindowFrameStyle()
 
 void CMainWindow::UpdateMenuItemState()
 {
-	constexpr const unsigned int toolMenuIndices[] = { Menu::kSkeletonSetting, Menu::kAtlasSetting, Menu::kAddEffectFile, Menu::kExportSetting };
+	constexpr const unsigned int toolMenuIndices[] = { Menu::kSpineTool, Menu::kAddEffectFile, Menu::kExportSetting };
 	constexpr const unsigned int windowMenuIndices[] = { Menu::kSeeThroughImage, Menu::kAllowManualSizing, Menu::kReverseZoomDirection, Menu::kFitToManualSize, Menu::kFitToDefaultSize };
 
 	bool toEnable = m_dxLibSpinePlayer.HasSpineBeenLoaded();
@@ -1050,9 +1032,10 @@ bool CMainWindow::LoadSpineFiles(const std::vector<std::string>& atlasPaths, con
 		ResizeWindow();
 		ChangeWindowTitle(windowName);
 
-		if (m_spineManipulatorDialogue.HasSlotExclusionFilter())
+		const auto* pSpineManipulatorDialogue = m_spineToolDialogue.GetManipulatorDialogue();
+		if (pSpineManipulatorDialogue != nullptr && pSpineManipulatorDialogue->HasSlotExclusionFilter())
 		{
-			m_dxLibSpinePlayer.SetSlotExcludeCallback(m_spineManipulatorDialogue.GetSlotExcludeCallback());
+			m_dxLibSpinePlayer.SetSlotExcludeCallback(pSpineManipulatorDialogue->GetSlotExcludeCallback());
 		}
 		m_winclock.Restart();
 	}

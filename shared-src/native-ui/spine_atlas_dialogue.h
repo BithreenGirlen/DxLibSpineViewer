@@ -16,7 +16,7 @@ class CSpineAtlasDialogue
 public:
 	CSpineAtlasDialogue();
 	~CSpineAtlasDialogue();
-	HWND Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer);
+	HWND Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer);
 	HWND GetHwnd()const { return m_hWnd; }
 private:
 	HWND m_hWnd = nullptr;

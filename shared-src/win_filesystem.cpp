@@ -217,7 +217,7 @@ std::wstring win_filesystem::GetCurrentProcessPath()
 	const wchar_t* p = sBuffer + ulLength;
 	for (; p != sBuffer; --p)
 	{
-		if (*p == L'\\' || *p == '/')break;
+		if (*p == L'\\' || *p == L'/')break;
 	}
 	return std::wstring(sBuffer, p - sBuffer);
 }
@@ -238,17 +238,15 @@ std::wstring win_filesystem::CreateWorkFolder(const std::wstring& wstrRelativePa
 		size_t nPos = wstrRelativePath.find_first_of(L"\\/", nRead);
 		if (nPos == std::wstring::npos)
 		{
-			wstrPath.append(pStart + nRead, wstrRelativePath.size() - nRead);
-			wstrPath.push_back(L'\\');
+			wstrPath.append(pStart + nRead, wstrRelativePath.size() - nRead).push_back(L'\\');
 			::CreateDirectoryW(wstrPath.c_str(), nullptr);
 
 			break;
 		}
-		++nPos;
-		wstrPath.append(pStart + nRead, nPos - nRead);
+		wstrPath.append(pStart + nRead, nPos - nRead).push_back(L'\\');
 		::CreateDirectoryW(wstrPath.c_str(), nullptr);
 
-		nRead = nPos;
+		nRead = nPos + 1;
 	}
 
 	return wstrPath;

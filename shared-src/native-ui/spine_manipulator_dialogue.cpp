@@ -8,7 +8,6 @@
 //#include <regex>
 
 #include "spine_manipulator_dialogue.h"
-#include "dialogue_template.h"
 #include "../win_text.h"
 
 /// @brief global data for slot exclusion.
@@ -39,16 +38,11 @@ CSpineManipulatorDialogue::~CSpineManipulatorDialogue()
 	}
 }
 
-HWND CSpineManipulatorDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer)
+HWND CSpineManipulatorDialogue::Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer)
 {
-	CDialogueTemplate sWinDialogueTemplate;
-	sWinDialogueTemplate.SetWindowSize(128, 320);
-	sWinDialogueTemplate.MakeWindowResizable(true);
-	std::vector<unsigned char> dialogueTemplate = sWinDialogueTemplate.Generate(pwzWindowName);
-
 	m_pDxLibSpinePlayer = pPlayer;
 
-	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.data(), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
+	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)pDialogueTemplate, hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
 
 bool CSpineManipulatorDialogue::HasSlotExclusionFilter() const

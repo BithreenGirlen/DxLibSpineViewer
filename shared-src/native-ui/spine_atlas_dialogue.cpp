@@ -1,8 +1,7 @@
-
+Ôªø
 
 #include "spine_atlas_dialogue.h"
 
-#include "dialogue_template.h"
 #include "../win_text.h"
 
 
@@ -20,15 +19,11 @@ CSpineAtlasDialogue::~CSpineAtlasDialogue()
 	}
 }
 
-HWND CSpineAtlasDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer)
+HWND CSpineAtlasDialogue::Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer)
 {
-	CDialogueTemplate sWinDialogueTemplate;
-	sWinDialogueTemplate.SetWindowSize(120, 80);
-	std::vector<unsigned char> dialogueTemplate = sWinDialogueTemplate.Generate(pwzWindowName);
-
 	m_pDxLibSpinePlayer = pPlayer;
 
-	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.data(), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
+	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)pDialogueTemplate, hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
 /*C CALLBACK*/
 LRESULT CSpineAtlasDialogue::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -45,7 +40,7 @@ LRESULT CSpineAtlasDialogue::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 	}
 	return FALSE;
 }
-/*ÉÅÉbÉZÅ[ÉWèàóù*/
+/*„É°„ÉÉ„Çª„Éº„Ç∏Âá¶ÁêÜ*/
 LRESULT CSpineAtlasDialogue::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -153,10 +148,10 @@ LRESULT CSpineAtlasDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 BOOL CSpineAtlasDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 {
 	::SendMessage(hWnd, WM_SETFONT, static_cast<WPARAM>(lParam), 0);
-	/*TRUE: ë±çs, FALSE: èIóπ*/
+	/*TRUE: Á∂öË°å, FALSE: ÁµÇ‰∫Ü*/
 	return TRUE;
 }
-/*çƒëïíÖÉ{É^Éì*/
+/*ÂÜçË£ÖÁùÄ„Éú„Çø„É≥*/
 void CSpineAtlasDialogue::OnReattachButton()
 {
 	if (m_pDxLibSpinePlayer != nullptr)
@@ -172,7 +167,7 @@ void CSpineAtlasDialogue::OnReattachButton()
 	}
 
 }
-/*çƒîzíu*/
+/*ÂÜçÈÖçÁΩÆ*/
 void CSpineAtlasDialogue::ResizeControls()
 {
 	RECT clientRect;
@@ -208,7 +203,7 @@ void CSpineAtlasDialogue::ResizeControls()
 	y = clientHeight - h -spaceY * 2;
 	::MoveWindow(m_reattachButton.GetHwnd(), x, y, w, h, TRUE);
 }
-/*ëIëçÄñ⁄ïœçX*/
+/*ÈÅ∏ÊäûÈ†ÖÁõÆÂ§âÊõ¥*/
 void CSpineAtlasDialogue::OnSlotSelect()
 {
 	std::string strSlotName = win_text::NarrowUtf8(m_slotComboBox.GetSelectedItemText());

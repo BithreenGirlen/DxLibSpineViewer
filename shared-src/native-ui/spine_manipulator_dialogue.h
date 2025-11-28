@@ -3,9 +3,6 @@
 
 #include <Windows.h>
 
-#include <string>
-#include <vector>
-
 #include "../spine_player_shared.h"
 #include "dialogue_controls.h"
 
@@ -15,7 +12,7 @@ public:
 	CSpineManipulatorDialogue();
 	~CSpineManipulatorDialogue();
 
-	HWND Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer);
+	HWND Create(HINSTANCE hInstance, HWND hWndParent, unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer);
 	HWND GetHwnd()const { return m_hWnd; }
 
 	bool HasSlotExclusionFilter() const;

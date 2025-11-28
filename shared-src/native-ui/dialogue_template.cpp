@@ -25,6 +25,11 @@ void CDialogueTemplate::MakeWindowResizable(bool bResizable)
 	m_bResizable = bResizable;
 }
 
+void CDialogueTemplate::MakeWindowChild(bool bChild)
+{
+	m_bChild = bChild;
+}
+
 std::vector<unsigned char> CDialogueTemplate::Generate(const wchar_t* wszWindowTitle)
 {
 	/*
@@ -70,10 +75,16 @@ std::vector<unsigned char> CDialogueTemplate::Generate(const wchar_t* wszWindowT
 	sDialogueTemplateEx.header.cx = m_usWidth;
 	sDialogueTemplateEx.header.cy = m_usHeight;
 
-	if (m_bResizable)
+	if (m_bChild)
+	{
+		sDialogueTemplateEx.header.style &= ~(WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_BORDER);
+		sDialogueTemplateEx.header.style |= WS_CHILD;
+	}
+	else if (m_bResizable)
 	{
 		sDialogueTemplateEx.header.style |= WS_THICKFRAME & ~DS_MODALFRAME;
 	}
+
 	if (wszWindowTitle != nullptr)
 	{
 		sDialogueTemplateEx.wstrTitle = wszWindowTitle;

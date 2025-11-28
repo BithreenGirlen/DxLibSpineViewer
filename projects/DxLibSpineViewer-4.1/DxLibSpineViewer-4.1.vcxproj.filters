@@ -117,6 +117,9 @@
     <ClInclude Include="..\..\shared-src\native-ui\window_menu.h">
       <Filter>Header File\shared\native-ui</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\spine_tool_dialogue.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp">
@@ -381,6 +384,9 @@
       <Filter>Source File\deps\spine-cpp-4.1</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\native-ui\window_menu.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\spine_tool_dialogue.cpp">
       <Filter>Source File\shared\native-ui</Filter>
     </ClCompile>
   </ItemGroup>

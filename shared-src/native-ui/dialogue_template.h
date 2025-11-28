@@ -1,4 +1,4 @@
-#ifndef DIALOGUE_TEMPLATE_H_
+﻿#ifndef DIALOGUE_TEMPLATE_H_
 #define DIALOGUE_TEMPLATE_H_
 
 #include <Windows.h>
@@ -13,6 +13,7 @@ public:
 
 	void SetWindowSize(unsigned short usWidth, unsigned short usHeight);
 	void MakeWindowResizable(bool bResizable);
+	void MakeWindowChild(bool bChild);
 
 	std::vector<unsigned char> Generate(const wchar_t* wszWindowTitle = nullptr);
 
@@ -23,6 +24,7 @@ private:
 	WORD m_usHeight = Constants::kBaseHeight;
 
 	bool m_bResizable = false;
+	bool m_bChild = false;
 };
 
 #endif // !DIALOGUE_TEMPLATE_H_

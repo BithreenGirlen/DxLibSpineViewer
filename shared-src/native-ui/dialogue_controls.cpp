@@ -629,3 +629,78 @@ void CSpin::AdjustPosition(int x, int y, int width, int height)
 	::MoveWindow(m_buddy.GetHwnd(), x, y, width, height, TRUE);
 	::MoveWindow(m_hWnd, x + width, y, width / 2, height, TRUE);
 }
+
+/* ==================== Tab control ==================== */
+
+CTab::CTab()
+{
+
+}
+
+CTab::~CTab()
+{
+
+}
+
+bool CTab::Create(HWND hParentWnd)
+{
+	m_hWnd = ::CreateWindowExW(0, WC_TABCONTROLW, L"", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(nullptr), nullptr);
+	return m_hWnd != nullptr;
+}
+
+bool CTab::Add(const wchar_t* name)
+{
+	if (m_hWnd != nullptr)
+	{
+		TCITEMW tcItem{};
+		tcItem.mask = TCIF_TEXT;
+		tcItem.pszText = const_cast<wchar_t*>(name);
+		
+		int index = GetTabCount();
+		
+		return ::SendMessageW(m_hWnd, TCM_INSERTITEM, static_cast<WPARAM>(index), reinterpret_cast<LPARAM>(&tcItem)) != -1;
+	}
+	return false;
+}
+
+int CTab::GetTabCount() const
+{
+	if (m_hWnd != nullptr)
+	{
+		LRESULT lResult = ::SendMessageW(m_hWnd, TCM_GETITEMCOUNT, 0, 0);
+		return static_cast<int>(lResult);
+	}
+	return 0;
+}
+
+int CTab::GetSelectedTabIndex() const
+{
+	if (m_hWnd != nullptr)
+	{
+		LRESULT lResult = ::SendMessageW(m_hWnd, TCM_GETCURSEL, 0, 0);
+		return static_cast<int>(lResult);
+	}
+	return -1;
+}
+
+void CTab::Adjust() const
+{
+	if (m_hWnd != nullptr)
+	{
+		RECT rect{};
+		::GetClientRect(m_hWnd, &rect);
+
+		::SendMessageW(m_hWnd, TCM_ADJUSTRECT, TRUE, reinterpret_cast<LPARAM>(&rect));
+	}
+}
+
+int CTab::GetItemHeight() const
+{
+	if (m_hWnd != nullptr)
+	{
+		RECT rect{};
+		::SendMessageW(m_hWnd, TCM_GETITEMRECT, GetSelectedTabIndex(), reinterpret_cast<LPARAM>(&rect));
+		return (rect.bottom - rect.top);
+	}
+	return 0;
+}

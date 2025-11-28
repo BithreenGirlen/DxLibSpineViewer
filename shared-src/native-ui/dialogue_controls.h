@@ -174,4 +174,24 @@ private:
 	CEdit m_buddy;
 };
 
+class CTab
+{
+public:
+	CTab();
+	~CTab();
+
+	bool Create(HWND hParentWnd);
+	HWND GetHwnd()const { return m_hWnd; }
+
+	bool Add(const wchar_t* name);
+	int GetTabCount() const;
+	int GetSelectedTabIndex() const;
+
+	void Adjust() const;
+	int GetItemHeight() const;
+
+private:
+	HWND m_hWnd = nullptr;
+};
+
 #endif // !DIALOGUE_CONTROLS_H_

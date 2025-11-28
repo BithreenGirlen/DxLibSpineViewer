@@ -167,6 +167,7 @@
     <ClInclude Include="..\..\shared-src\native-ui\spine_atlas_dialogue.h" />
     <ClInclude Include="..\..\shared-src\native-ui\spine_manipulator_dialogue.h" />
     <ClInclude Include="..\..\shared-src\native-ui\spine_setting_dialogue.h" />
+    <ClInclude Include="..\..\shared-src\native-ui\spine_tool_dialogue.h" />
     <ClInclude Include="..\..\shared-src\native-ui\window_menu.h" />
     <ClInclude Include="..\..\shared-src\spine_player_shared.h" />
     <ClInclude Include="..\..\shared-src\text_utility.h" />
@@ -353,6 +354,7 @@
     <ClCompile Include="..\..\shared-src\native-ui\spine_atlas_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\native-ui\spine_manipulator_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\native-ui\spine_setting_dialogue.cpp" />
+    <ClCompile Include="..\..\shared-src\native-ui\spine_tool_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\native-ui\window_menu.cpp" />
     <ClCompile Include="..\..\shared-src\win_clock.cpp" />
     <ClCompile Include="..\..\shared-src\win_dialogue.cpp" />
