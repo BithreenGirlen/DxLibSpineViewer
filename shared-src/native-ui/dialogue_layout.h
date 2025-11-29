@@ -17,7 +17,7 @@ namespace dialogue_layout
 	};
 
 	template <size_t childCount>
-	void LayoutControls(HWND hParentWnd, unsigned int fontSize, const Child(&childeren)[childCount])
+	void LayoutControls(HWND hParentWnd, unsigned int fontSize, const Child(&children)[childCount])
 	{
 		RECT rect{};
 		::GetClientRect(hParentWnd, &rect);
@@ -35,7 +35,7 @@ namespace dialogue_layout
 		int w = clientWidth - spaceX * 2;
 		int h = static_cast<int>(fontHeight * 1.5);
 
-		for (const auto& child : childeren)
+		for (const auto& child : children)
 		{
 			switch (child.widthOption)
 			{
@@ -59,7 +59,7 @@ namespace dialogue_layout
 				h = fontHeight + spaceY;
 				break;
 			case HeightOption::List:
-				h = clientHeight / 4 + spaceY;
+				h = clientHeight * 2 / 5 + spaceY;
 				break;
 			case HeightOption::Combo:
 				h = clientHeight / 2 + spaceY;

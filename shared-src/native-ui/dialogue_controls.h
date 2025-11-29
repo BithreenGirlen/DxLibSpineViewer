@@ -23,10 +23,19 @@ public:
 	HWND GetHwnd()const { return m_hWnd; }
 
 	void AdjustWidth();
-	bool Add(const std::vector<std::wstring>& columns, bool ToBottom = true);
+
+	bool Add(const wchar_t** columns, size_t columnCount, bool toBottom = true);
+	template<size_t columnCount>
+	bool Add(const wchar_t*(&&columns)[columnCount], bool toBottom = true)
+	{
+		Add(columns, columnCount, toBottom);
+	}
+	bool Add(const std::vector<std::wstring>& columns, bool toBottom = true);
+
 	void Clear() const;
 
-	void CreateSingleList(const std::vector<std::wstring>& names);
+	void CreateSingleList(const std::vector<std::wstring>& items);
+	void CreateSingleList(const wchar_t** items, size_t itemCount);
 
 	std::vector<std::wstring> PickupCheckedItems();
 private:
@@ -46,7 +55,7 @@ public:
 	bool Create(HWND hParentWnd);
 	HWND GetHwnd()const { return m_hWnd; }
 
-	void Add(const wchar_t* szText, bool ToBottom = true) const;
+	void Add(const wchar_t* szText, bool toBottom = true) const;
 	void Clear() const;
 	std::wstring GetSelectedItemName();
 private:
@@ -83,7 +92,7 @@ public:
 	CButton();
 	~CButton();
 
-	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool bHasCheckBox = false);
+	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool hasCheckBox = false);
 	HWND GetHwnd()const { return m_hWnd; }
 
 	void SetCheckBox(bool bToBeChecked) const;

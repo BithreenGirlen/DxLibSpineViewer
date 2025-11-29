@@ -126,6 +126,7 @@ private:
 	bool LoadSpineFilesInFolder(const wchar_t* folderPath);
 	bool LoadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName);
 	void ClearFolderPathList();
+	void PostSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t* windowName);
 
 	std::wstring BuildExportFilePath();
 	std::wstring FormatAnimationTime(float fAnimationTime);

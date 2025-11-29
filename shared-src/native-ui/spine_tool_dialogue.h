@@ -15,6 +15,9 @@ public:
 
 	HWND Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer);
 	HWND GetHwnd()const { return m_hWnd; }
+
+	void OnRefresh();
+
 private:
 	HWND m_hWnd = nullptr;
 
@@ -44,6 +47,7 @@ private:
 	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
 
 	void ResizeControls();
+	void RefreshControls();
 	void OnTabSelect();
 
 	CDxLibSpinePlayer* m_pDxLibSpinePlayer = nullptr;

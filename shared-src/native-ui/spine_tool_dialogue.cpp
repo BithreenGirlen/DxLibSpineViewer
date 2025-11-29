@@ -28,6 +28,11 @@ HWND CSpineToolDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wcha
 	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.Generate(pwzWindowName), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
 
+void CSpineToolDialogue::OnRefresh()
+{
+	RefreshControls();
+}
+
 /*C CALLBACK*/
 LRESULT CSpineToolDialogue::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -184,6 +189,29 @@ void CSpineToolDialogue::ResizeControls()
 		int tabHeight = m_tab.GetItemHeight();
 		::MoveWindow(m_hLastTab, rect.left, rect.top + tabHeight, clientWidth, clientHeight - tabHeight, TRUE);
 		::InvalidateRect(m_hLastTab, nullptr, FALSE);
+	}
+}
+
+void CSpineToolDialogue::RefreshControls()
+{
+	if (m_spineAnimationTab.GetHwnd() != nullptr)
+	{
+		m_spineAnimationTab.OnRefresh();
+	}
+
+	if (m_spineSkinTab.GetHwnd() != nullptr)
+	{
+		m_spineSkinTab.OnRefresh();
+	}
+
+	if (m_spineSlotTab.GetHwnd() != nullptr)
+	{
+		m_spineSlotTab.OnRefresh();
+	}
+
+	if (m_spineRenderingTab.GetHwnd() != nullptr)
+	{
+		m_spineRenderingTab.OnRefresh();
 	}
 }
 

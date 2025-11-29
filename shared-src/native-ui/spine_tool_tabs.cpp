@@ -53,6 +53,11 @@ HWND CTabBase::Create(HINSTANCE hInstance, HWND hWndParent, const unsigned char*
 	return ::CreateDialogIndirectParamA(hInstance, (LPCDLGTEMPLATE)pDialogueTemplate, hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
 
+void CTabBase::OnRefresh()
+{
+	RefreshControls();
+}
+
 /*C CALLBACK*/
 LRESULT CTabBase::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -219,7 +224,6 @@ void CSpineSlotTab::ResizeControls()
 
 void CSpineSlotTab::RefreshControls()
 {
-	m_slotListView.Clear();
 	std::vector<std::wstring> temp;
 	controls_util::WidenList(m_pDxLibSpinePlayer->GetSlotNames(), temp);
 	m_slotListView.CreateSingleList(temp);
@@ -301,7 +305,7 @@ void CSpineSlotTab::OnBoundButton()
 	else
 	{
 		wchar_t sBuffer[128]{};
-		swprintf_s(sBuffer, L"Slot bound: (%.2f, %.2f, %.2f, %.2f)", bound.x, bound.y, bound.z, bound.w);
+		swprintf_s(sBuffer, L"Slot bound: (%.2f, %.2f, %.2f, %.2f)", bound.x, bound.y, bound.x + bound.z, bound.y + bound.w);
 		::SetWindowTextW(m_slotBoundStatic.GetHwnd(), sBuffer);
 	}
 }
@@ -368,7 +372,6 @@ void CSpineAnimationTab::RefreshControls()
 	controls_util::WidenList(animationNames, temp);
 
 	m_animationComboBox.Setup(temp);
-	m_animationListView.Clear();
 	m_animationListView.CreateSingleList(temp);
 }
 
@@ -449,7 +452,6 @@ void CSpineSkinTab::RefreshControls()
 	controls_util::WidenList(skinNames, temp);
 
 	m_skinComboBox.Setup(temp);
-	m_skinListView.Clear();
 	m_skinListView.CreateSingleList(temp);
 }
 
@@ -533,7 +535,6 @@ void CSpineRenderingTab::RefreshControls()
 	m_pmaButton.SetCheckBox(m_pDxLibSpinePlayer->IsAlphaPremultiplied());
 	m_blemdModeButton.SetCheckBox(m_pDxLibSpinePlayer->IsBlendModeNormalForced());
 	m_drawOrderButton.SetCheckBox(m_pDxLibSpinePlayer->IsDrawOrderReversed());
-	::InvalidateRect(m_hWnd, nullptr, FALSE);
 }
 
 void CSpineRenderingTab::OnPmaButton()

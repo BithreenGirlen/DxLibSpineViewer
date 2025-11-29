@@ -20,8 +20,8 @@ bool CListView::Create(HWND hParentWnd, const wchar_t** columnNames, size_t colu
 	m_hWnd = ::CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"", WS_VISIBLE | WS_CHILD | LVS_REPORT | LVS_ALIGNLEFT | WS_TABSTOP | LVS_SINGLESEL, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(nullptr), nullptr);
 	if (m_hWnd != nullptr)
 	{
-		ListView_SetExtendedListViewStyle(m_hWnd, LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | (hasCheckBox ? LVS_EX_CHECKBOXES : 0) | LVS_EX_HEADERDRAGDROP);
-
+		::SendMessageW(m_hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | (hasCheckBox ? LVS_EX_CHECKBOXES : 0) | LVS_EX_HEADERDRAGDROP);
+		
 		LVCOLUMNW lvColumn{};
 		lvColumn.mask = LVCF_TEXT | LVCF_SUBITEM | LVCF_FMT | LVCF_WIDTH;
 		lvColumn.fmt = LVCFMT_LEFT;
@@ -29,7 +29,7 @@ bool CListView::Create(HWND hParentWnd, const wchar_t** columnNames, size_t colu
 		{
 			lvColumn.iSubItem = static_cast<int>(i);
 			lvColumn.pszText = const_cast<LPWSTR>(columnNames[i]);
-			ListView_InsertColumn(m_hWnd, i, &lvColumn);
+			::SendMessageW(m_hWnd, LVM_INSERTCOLUMN, i, reinterpret_cast<LPARAM>(&lvColumn));
 		}
 	}
 	return m_hWnd != nullptr;
@@ -51,13 +51,13 @@ void CListView::AdjustWidth()
 			lvColumn.cx = iWindowWidth / iColumnCount;
 			for (int i = 0; i < iColumnCount; ++i)
 			{
-				ListView_SetColumn(m_hWnd, i, &lvColumn);
+				::SendMessageW(m_hWnd, LVM_SETCOLUMN, i, reinterpret_cast<LPARAM>(&lvColumn));
 			}
 		}
 	}
 }
 /*項目追加*/
-bool CListView::Add(const std::vector<std::wstring>& columns, bool ToBottom)
+bool CListView::Add(const wchar_t** columns, size_t columnCount, bool toBottom)
 {
 	if (m_hWnd == nullptr)return false;
 
@@ -65,14 +65,14 @@ bool CListView::Add(const std::vector<std::wstring>& columns, bool ToBottom)
 	if (iItem == -1)return false;
 
 	LRESULT lResult = -1;
-	for (size_t i = 0; i < columns.size(); ++i)
+	for (size_t i = 0; i < columnCount; ++i)
 	{
 		LVITEMW lvItem{};
 		lvItem.mask = LVIF_TEXT | LVIF_PARAM;
 
-		lvItem.iItem = ToBottom ? iItem : 0;
+		lvItem.iItem = toBottom ? iItem : 0;
 		lvItem.iSubItem = static_cast<int>(i);
-		lvItem.pszText = const_cast<wchar_t*>(columns[i].c_str());
+		lvItem.pszText = const_cast<wchar_t*>(columns[i]);
 
 		if (i == 0)
 		{
@@ -89,25 +89,53 @@ bool CListView::Add(const std::vector<std::wstring>& columns, bool ToBottom)
 
 	return true;
 }
+
+bool CListView::Add(const std::vector<std::wstring>& columns, bool toBottom)
+{
+	size_t nSize = columns.size();
+	if (nSize == 0)return false;
+
+	const wchar_t** pBuffer = static_cast<const wchar_t**>(malloc(nSize));
+	for (size_t i = 0; i < nSize; ++i)
+	{
+		pBuffer[i] = columns[i].data();
+	}
+	bool bRet = Add(pBuffer, nSize);
+	free(pBuffer);
+
+	return bRet;
+}
 /*リスト項目消去*/
 void CListView::Clear() const
 {
 	if (m_hWnd != nullptr)
 	{
-		ListView_DeleteAllItems(m_hWnd);
+		::SendMessageW(m_hWnd, LVM_DELETEALLITEMS, 0, 0);
 	}
 }
 /*単要素リスト構築*/
-void CListView::CreateSingleList(const std::vector<std::wstring>& names)
+void CListView::CreateSingleList(const std::vector<std::wstring>& items)
 {
 	if (m_hWnd != nullptr)
 	{
 		Clear();
-		for (const auto& name : names)
+		for (const auto& item : items)
 		{
-			std::vector<std::wstring> columns;
-			columns.push_back(name);
-			Add(columns);
+			const wchar_t* pData = item.data();
+			const wchar_t** singleValue = &pData;
+			Add(singleValue, 1);
+		}
+	}
+}
+void CListView::CreateSingleList(const wchar_t** items, size_t itemCount)
+{
+	if (m_hWnd != nullptr)
+	{
+		Clear();
+		for (size_t i = 0; i < itemCount; ++i)
+		{
+			const wchar_t** singleValue = &items[i];
+			Add(singleValue, 1);
 		}
 	}
 }
@@ -129,7 +157,7 @@ std::vector<std::wstring> CListView::PickupCheckedItems()
 					std::wstring wstr = GetItemText(i, 0);
 					if (!wstr.empty())
 					{
-						checkedItems.push_back(wstr);
+						checkedItems.push_back(std::move(wstr));
 					}
 				}
 			}
@@ -212,11 +240,11 @@ bool CListBox::Create(HWND hParentWnd)
 	return m_hWnd != nullptr;
 }
 /*項目追加*/
-void CListBox::Add(const wchar_t* szText, bool ToBottom) const
+void CListBox::Add(const wchar_t* szText, bool toBottom) const
 {
 	if (m_hWnd != nullptr)
 	{
-		if (ToBottom)
+		if (toBottom)
 		{
 			::SendMessageW(m_hWnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(szText));
 		}
@@ -371,9 +399,9 @@ CButton::~CButton()
 
 }
 
-bool CButton::Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool bHasCheckBox)
+bool CButton::Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool hasCheckBox)
 {
-	m_hWnd = ::CreateWindowExW(0, WC_BUTTON, szText, WS_VISIBLE | WS_CHILD | WS_TABSTOP | (bHasCheckBox ? BS_CHECKBOX : 0), 0, 0, 0, 0, hParentWnd, hMenu, ::GetModuleHandle(NULL), nullptr);
+	m_hWnd = ::CreateWindowExW(0, WC_BUTTON, szText, WS_VISIBLE | WS_CHILD | WS_TABSTOP | (hasCheckBox ? BS_CHECKBOX : 0), 0, 0, 0, 0, hParentWnd, hMenu, ::GetModuleHandle(NULL), nullptr);
 	return m_hWnd != nullptr;
 }
 

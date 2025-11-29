@@ -703,19 +703,9 @@ void CMainWindow::MenuOnImportCocos()
 		isBinarySkel = true;
 	}
 
-	bool bLastState = m_dxLibSpinePlayer.HasSpineBeenLoaded();
+	bool hadLoaded = m_dxLibSpinePlayer.HasSpineBeenLoaded();
 	bRet = m_dxLibSpinePlayer.LoadSpineFromMemory(atlasData, textureDirectories, skeletonData, isBinarySkel);
-	if (bRet)
-	{
-		ResizeWindow();
-		ChangeWindowTitle(wstrSelectedFilePath.c_str());
-	}
-	else
-	{
-		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"Failed to load spine from Cocos import file", m_hWnd);
-		ChangeWindowTitle(nullptr);
-	}
-	if (bLastState != bRet)UpdateMenuItemState();
+	PostSpineLoading(hadLoaded, bRet, wstrSelectedFilePath.c_str());
 }
 /*骨組み操作画面呼び出し*/
 void CMainWindow::MenuOnSpineTool()
@@ -1025,9 +1015,21 @@ bool CMainWindow::LoadSpineFilesInFolder(const wchar_t* pwzFolderPath)
 /* ファイル取り込み */
 bool CMainWindow::LoadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName)
 {
-	bool bLastState = m_dxLibSpinePlayer.HasSpineBeenLoaded();
-	bool bRet = m_dxLibSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
-	if (bRet)
+	bool hadLoaded = m_dxLibSpinePlayer.HasSpineBeenLoaded();
+	bool hasLoaded = m_dxLibSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
+	PostSpineLoading(hadLoaded, hasLoaded, windowName);
+	return hasLoaded;
+}
+/*階層情報消去*/
+void CMainWindow::ClearFolderPathList()
+{
+	m_folders.clear();
+	m_nFolderIndex = 0;
+}
+/* 読み込み後処理*/
+void CMainWindow::PostSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t* windowName)
+{
+	if (hasLoaded)
 	{
 		ResizeWindow();
 		ChangeWindowTitle(windowName);
@@ -1036,22 +1038,20 @@ bool CMainWindow::LoadSpineFiles(const std::vector<std::string>& atlasPaths, con
 		{
 			m_dxLibSpinePlayer.SetSlotExcludeCallback(CSpineSlotTab::GetSlotExcludeCallback());
 		}
+
+		if (m_spineToolDialogue.GetHwnd() != nullptr)
+		{
+			m_spineToolDialogue.OnRefresh();
+		}
+
 		m_winclock.Restart();
 	}
 	else
 	{
-		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"Failed to load spine(s)", m_hWnd);
+		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"Failed to load Spine(s)", m_hWnd);
 		ChangeWindowTitle(nullptr);
 	}
-	if (bLastState != bRet)UpdateMenuItemState();
-
-	return bRet;
-}
-/*階層情報消去*/
-void CMainWindow::ClearFolderPathList()
-{
-	m_folders.clear();
-	m_nFolderIndex = 0;
+	if (hadLoaded != hasLoaded)UpdateMenuItemState();
 }
 
 std::wstring CMainWindow::BuildExportFilePath()

@@ -13,6 +13,9 @@ public:
 
 	HWND Create(HINSTANCE hInstance, HWND hWndParent, const unsigned char* pDialogueTemplate, CDxLibSpinePlayer* pPlayer);
 	HWND GetHwnd() const { return m_hWnd; }
+
+	void OnRefresh();
+
 protected:
 	HWND m_hWnd;
 
