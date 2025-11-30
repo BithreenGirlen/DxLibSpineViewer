@@ -25,3 +25,5 @@
 #include <DxLib.h>
 
 #include <spine/spine.h>
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui.h>

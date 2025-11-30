@@ -31,6 +31,18 @@
     <Filter Include="Source File\deps\spine-c-2.1">
       <UniqueIdentifier>{3a5159f6-1729-4133-ab06-23272f088e8f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source File\deps\imgui">
+      <UniqueIdentifier>{1bd07bc1-dab6-46ad-887b-47c98762f17b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source File\deps\imgui\backends">
+      <UniqueIdentifier>{7cc3b1ba-0249-4d1a-86fb-819e8f0df19d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source File\shared\dxlib-imgui">
+      <UniqueIdentifier>{a4b01665-c0fb-4086-a35e-d521462b07ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header File\shared\dxlib-imgui">
+      <UniqueIdentifier>{3776ff6e-ace2-4f59-99c0-406bbbd09043}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared-src\dxlib_image_encoder.h">
@@ -93,9 +105,6 @@
     <ClInclude Include="..\..\shared-src\native-ui\dialogue_template.h">
       <Filter>Header File\shared\native-ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared-src\native-ui\export_setting_dialogue.h">
-      <Filter>Header File\shared\native-ui</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\shared-src\native-ui\spine_setting_dialogue.h">
       <Filter>Header File\shared\native-ui</Filter>
     </ClInclude>
@@ -111,16 +120,19 @@
     <ClInclude Include="..\..\shared-src\deps\spine-c-2.1\src\spine\Json.h">
       <Filter>Source File\deps\spine-c-2.1</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\dxlib-imgui\dxlib_imgui.h">
+      <Filter>Header File\shared\dxlib-imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\dxlib-imgui\spine_tool_dialogue.h">
+      <Filter>Header File\shared\dxlib-imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\native-ui\font_setting_dialogue.h">
+      <Filter>Header File\shared\native-ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared-src\win_font.h">
+      <Filter>Header File\shared</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\shared-src\native-ui\window_menu.h">
-      <Filter>Header File\shared\native-ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared-src\native-ui\spine_tool_dialogue.h">
-      <Filter>Header File\shared\native-ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared-src\native-ui\dialogue_layout.h">
-      <Filter>Header File\shared\native-ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\shared-src\native-ui\spine_tool_tabs.h">
       <Filter>Header File\shared\native-ui</Filter>
     </ClInclude>
   </ItemGroup>
@@ -177,9 +189,6 @@
       <Filter>Source File\shared\native-ui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\native-ui\dialogue_template.cpp">
-      <Filter>Source File\shared\native-ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\native-ui\export_setting_dialogue.cpp">
       <Filter>Source File\shared\native-ui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\native-ui\spine_setting_dialogue.cpp">
@@ -278,13 +287,43 @@
     <ClCompile Include="..\..\shared-src\deps\spine-c-2.1\src\spine\SlotData.c">
       <Filter>Source File\deps\spine-c-2.1</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui.cpp">
+      <Filter>Source File\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui_demo.cpp">
+      <Filter>Source File\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui_draw.cpp">
+      <Filter>Source File\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui_tables.cpp">
+      <Filter>Source File\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui_widgets.cpp">
+      <Filter>Source File\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\backends\imgui_impl_dx11.cpp">
+      <Filter>Source File\deps\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\backends\imgui_impl_dx9.cpp">
+      <Filter>Source File\deps\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\backends\imgui_impl_win32.cpp">
+      <Filter>Source File\deps\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\dxlib-imgui\dxlib_imgui.cpp">
+      <Filter>Source File\shared\dxlib-imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\dxlib-imgui\spine_tool_dialogue.cpp">
+      <Filter>Source File\shared\dxlib-imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\native-ui\font_setting_dialogue.cpp">
+      <Filter>Source File\shared\native-ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared-src\win_font.cpp">
+      <Filter>Source File\shared</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\shared-src\native-ui\window_menu.cpp">
-      <Filter>Source File\shared\native-ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\native-ui\spine_tool_dialogue.cpp">
-      <Filter>Source File\shared\native-ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\shared-src\native-ui\spine_tool_tabs.cpp">
       <Filter>Source File\shared\native-ui</Filter>
     </ClCompile>
   </ItemGroup>

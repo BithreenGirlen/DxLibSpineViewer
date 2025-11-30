@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "main_window.h"
 #include "dxlib_init.h"
+#include "dxlib-imgui/dxlib_imgui.h"
 
 #if defined(DXLIB_SPINE_CPP)
 static constexpr const wchar_t g_swzDefaultWindowTitle[] = L"DxLib spine-cpp";
@@ -54,6 +55,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		if (dxLibInit.iDxLibInitialised == -1)
 		{
 			::MessageBoxW(nullptr, L"Failed to setup DxLib.", L"Error", MB_ICONERROR);
+			return iRet;
+		}
+
+		CDxLibImgui dxLibImgui("C:\\Windows\\Fonts\\yumin.ttf");
+		if (!dxLibImgui.HasBeenInitialised())
+		{
+			::MessageBoxW(nullptr, L"Failed to setup ImGui.", L"Error", MB_ICONERROR);
 			return iRet;
 		}
 

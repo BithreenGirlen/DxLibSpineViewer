@@ -155,6 +155,7 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 
 - [DxLib](https://dxlib.xsrv.jp/)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
+- [Dear ImGui](https://github.com/ocornut/imgui)
 
 ## Build Spine viewer
 

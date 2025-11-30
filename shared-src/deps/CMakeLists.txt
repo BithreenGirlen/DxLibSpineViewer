@@ -1,6 +1,9 @@
 ﻿cmake_minimum_required (VERSION 3.25)
 project(DxLibSpineViewer-deps)
 
+set(IMGUI_VERSION "1.92.2-docking")
+set(DIR_IMGUI "${CMAKE_CURRENT_LIST_DIR}/imgui-docking")
+
 set(DIR_DXLIB ${CMAKE_CURRENT_LIST_DIR}/dxlib)
 
 set(DIR_TEMP ${CMAKE_CURRENT_BINARY_DIR}/temp)
@@ -146,6 +149,22 @@ endfunction()
 
 MODIFY_SPINE_35()
 
+# Download Dear-ImGui docking
+if (NOT EXISTS "${DIR_IMGUI}")
+	set(IMGUI_SRC_URL "https://github.com/ocornut/imgui/archive/refs/tags/v${IMGUI_VERSION}.zip")
+	set(IMGUI_SRC_ARCHIVE_PATH "${DIR_TEMP}/${IMGUI_VERSION}")
+
+	if (NOT EXISTS "${IMGUI_SRC_ARCHIVE_PATH}.zip")
+		file(DOWNLOAD "${IMGUI_SRC_URL}" "${IMGUI_SRC_ARCHIVE_PATH}.zip" SHOW_PROGRESS)
+	endif()
+
+	if (NOT EXISTS "${IMGUI_SRC_ARCHIVE_PATH}")
+		file(ARCHIVE_EXTRACT INPUT "${IMGUI_SRC_ARCHIVE_PATH}.zip" DESTINATION "${DIR_TEMP}")
+	endif()
+
+	file(COPY "${DIR_TEMP}/imgui-${IMGUI_VERSION}/" DESTINATION "${DIR_IMGUI}")
+endif()
+
 # Delete Spine runtimes for other languages because they are irrelevant for the project.
 file(REMOVE_RECURSE "${DIR_TEMP}")
 
@@ -155,7 +174,7 @@ if (POLICY CMP0141)
 endif()
 
 if(MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/d1trimfile:${CMAKE_SOURCE_DIR}\\>")
 endif()
 

@@ -368,3 +368,5 @@ FodyWeavers.xsd
 !/shared-src/deps/spine-c-*/CMakeLists.txt
 /shared-src/deps/spine-cpp-*/*
 !/shared-src/deps/spine-cpp-*/CMakeLists.txt
+**/imgui.ini
+/shared-src/deps/imgui-docking/*

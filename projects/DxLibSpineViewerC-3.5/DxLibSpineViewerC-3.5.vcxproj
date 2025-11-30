@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;DXLIB_SPINE_C;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.5\include;$(SolutionDir)shared-src\deps\imgui-docking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -124,7 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;DXLIB_SPINE_C;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shared-src\deps\dxlib;$(SolutionDir)shared-src\deps\spine-c-3.5\include;$(SolutionDir)shared-src\deps\imgui-docking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -153,6 +153,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\..\shared-src\dxlib-imgui\dxlib_imgui.h" />
+    <ClInclude Include="..\..\shared-src\dxlib-imgui\spine_tool_dialogue.h" />
     <ClInclude Include="..\..\shared-src\dxlib_image_encoder.h" />
     <ClInclude Include="..\..\shared-src\dxlib_init.h" />
     <ClInclude Include="..\..\shared-src\dxlib_map.h" />
@@ -162,18 +164,16 @@
     <ClInclude Include="..\..\shared-src\main_window.h" />
     <ClInclude Include="..\..\shared-src\mf_video_encoder.h" />
     <ClInclude Include="..\..\shared-src\native-ui\dialogue_controls.h" />
-    <ClInclude Include="..\..\shared-src\native-ui\dialogue_layout.h" />
     <ClInclude Include="..\..\shared-src\native-ui\dialogue_template.h" />
-    <ClInclude Include="..\..\shared-src\native-ui\export_setting_dialogue.h" />
+    <ClInclude Include="..\..\shared-src\native-ui\font_setting_dialogue.h" />
     <ClInclude Include="..\..\shared-src\native-ui\spine_setting_dialogue.h" />
-    <ClInclude Include="..\..\shared-src\native-ui\spine_tool_dialogue.h" />
-    <ClInclude Include="..\..\shared-src\native-ui\spine_tool_tabs.h" />
     <ClInclude Include="..\..\shared-src\native-ui\window_menu.h" />
     <ClInclude Include="..\..\shared-src\spine_player_shared.h" />
     <ClInclude Include="..\..\shared-src\text_utility.h" />
     <ClInclude Include="..\..\shared-src\win_clock.h" />
     <ClInclude Include="..\..\shared-src\win_dialogue.h" />
     <ClInclude Include="..\..\shared-src\win_filesystem.h" />
+    <ClInclude Include="..\..\shared-src\win_font.h" />
     <ClInclude Include="..\..\shared-src\win_image.h" />
     <ClInclude Include="..\..\shared-src\win_text.h" />
     <ClInclude Include="pch.h" />
@@ -184,6 +184,14 @@
     <ClCompile Include="..\..\DxLibSpineC\spine_loader_c.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\spine_player_c.cpp" />
     <ClCompile Include="..\..\shared-src\cpu.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\backends\imgui_impl_dx9.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui_demo.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui_draw.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui_tables.cpp" />
+    <ClCompile Include="..\..\shared-src\deps\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="..\..\shared-src\deps\spine-c-3.5\src\spine\Animation.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -336,6 +344,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\shared-src\dxlib-imgui\dxlib_imgui.cpp" />
+    <ClCompile Include="..\..\shared-src\dxlib-imgui\spine_tool_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_image_encoder.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_init.cpp" />
     <ClCompile Include="..\..\shared-src\dxlib_map.cpp" />
@@ -346,14 +356,13 @@
     <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp" />
     <ClCompile Include="..\..\shared-src\native-ui\dialogue_controls.cpp" />
     <ClCompile Include="..\..\shared-src\native-ui\dialogue_template.cpp" />
-    <ClCompile Include="..\..\shared-src\native-ui\export_setting_dialogue.cpp" />
+    <ClCompile Include="..\..\shared-src\native-ui\font_setting_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\native-ui\spine_setting_dialogue.cpp" />
-    <ClCompile Include="..\..\shared-src\native-ui\spine_tool_dialogue.cpp" />
-    <ClCompile Include="..\..\shared-src\native-ui\spine_tool_tabs.cpp" />
     <ClCompile Include="..\..\shared-src\native-ui\window_menu.cpp" />
     <ClCompile Include="..\..\shared-src\win_clock.cpp" />
     <ClCompile Include="..\..\shared-src\win_dialogue.cpp" />
     <ClCompile Include="..\..\shared-src\win_filesystem.cpp" />
+    <ClCompile Include="..\..\shared-src\win_font.cpp" />
     <ClCompile Include="..\..\shared-src\win_image.cpp" />
     <ClCompile Include="..\..\shared-src\win_text.cpp" />
     <ClCompile Include="pch.cpp">

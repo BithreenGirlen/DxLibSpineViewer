@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "main_window.h"
+
 #include "win_filesystem.h"
 #include "win_dialogue.h"
 #include "win_text.h"
@@ -12,6 +13,24 @@
 #include "json_minimal.h"
 #include "text_utility.h"
 #include "native-ui/window_menu.h"
+
+#include "dxlib-imgui/dxlib_imgui.h"
+#include <imgui.h>
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+struct SDxLibRenderTarget
+{
+	SDxLibRenderTarget(int iGraphicHandle, bool toClear = true)
+	{
+		DxLib::SetDrawScreen(iGraphicHandle);
+		if (toClear)DxLib::ClearDrawScreen();
+	};
+	~SDxLibRenderTarget()
+	{
+		DxLib::SetDrawScreen(DX_SCREEN_BACK);
+	}
+};
 
 
 CMainWindow::CMainWindow()
@@ -122,6 +141,8 @@ LRESULT CMainWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 /*メッセージ処理*/
 LRESULT CMainWindow::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))return 1;
+
 	switch (uMsg)
 	{
 	case WM_CREATE:
@@ -163,8 +184,12 @@ LRESULT CMainWindow::OnCreate(HWND hWnd)
 {
 	m_hWnd = hWnd;
 
+	//DxLib::SetWaitVSyncFlag(DxLib::GetWaitVSyncFlag() ^ TRUE);
+
 	InitialiseMenuBar();
 	UpdateMenuItemState();
+
+	m_spineToolDatum.pSpinePlayer = &m_dxLibSpinePlayer;
 
 	return 0;
 }
@@ -213,11 +238,15 @@ LRESULT CMainWindow::OnSize(WPARAM wParam, LPARAM lParam)
 	int iGraphHeight = iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight;
 	DxLib::SetGraphMode(iGraphWidth, iGraphHeight, 32);
 
+	m_spineRenderTexture = DxLib::MakeScreen(iGraphWidth, iGraphHeight, 1);
+
 	return 0;
 }
 /*WM_KEYUP*/
 LRESULT CMainWindow::OnKeyUp(WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui::GetIO().WantCaptureKeyboard)return 0;
+
 	switch (wParam)
 	{
 	case VK_ESCAPE:
@@ -265,14 +294,14 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kImportCocos:
 			MenuOnImportCocos();
 			break;
-		case Menu::kSpineTool:
-			MenuOnSpineTool();
+		case Menu::kShowToolDialogue:
+			MenuOnShowToolDialogue();
 			break;
 		case Menu::kAddEffectFile:
 			MenuOnAddFile();
 			break;
-		case Menu::kExportSetting:
-			MenuOnExportSetting();
+		case Menu::kFontSetting:
+			MenuOnFont();
 			break;
 		case Menu::kSeeThroughImage:
 			MenuOnMakeWindowTransparent();
@@ -316,6 +345,8 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 /*WM_MOUSEMOVE */
 LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui::GetIO().WantCaptureMouse)return 0;
+
 	WORD usKey = LOWORD(wParam);
 	if (usKey == MK_LBUTTON)
 	{
@@ -323,16 +354,34 @@ LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 
 		POINT pt{};
 		::GetCursorPos(&pt);
-		int iX = m_lastCursorPos.x - pt.x;
-		int iY = m_lastCursorPos.y - pt.y;
-
 		if (m_hasLeftBeenDragged)
 		{
-			m_dxLibSpinePlayer.MoveViewPoint(iX, iY);
+			int deltaX = m_lastCursorPos.x - pt.x;
+			int deltaY = m_lastCursorPos.y - pt.y;
+			m_dxLibSpinePlayer.MoveViewPoint(deltaX, deltaY);
 		}
 
 		m_lastCursorPos = pt;
 		m_hasLeftBeenDragged = true;
+	}
+	else if ((usKey & MK_LBUTTON) && (usKey & MK_RBUTTON))
+	{
+		if (m_wasLeftCombinated || m_wasRightCombinated)return 0;
+
+		POINT pt{};
+		::GetCursorPos(&pt);
+		if (m_hasRightBeenDragged)
+		{
+			int deltaX = pt.x - m_lastCursorPos.x;
+			int deltaY = pt.y - m_lastCursorPos.y;
+
+			RECT windowRect{};
+			::GetWindowRect(m_hWnd, &windowRect);
+			::SetWindowPos(m_hWnd, nullptr, windowRect.left + deltaX, windowRect.top + deltaY, 0, 0, SWP_NOSIZE);
+		}
+
+		m_lastCursorPos = pt;
+		m_hasRightBeenDragged = true;
 	}
 
 	return 0;
@@ -340,6 +389,8 @@ LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 /*WM_MOUSEWHEEL*/
 LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui::GetIO().WantCaptureMouse)return 0;
+
 	int iScroll = -static_cast<short>(HIWORD(wParam)) / WHEEL_DELTA;
 	WORD usKey = LOWORD(wParam);
 
@@ -375,6 +426,8 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 /*WM_LBUTTONDOWN*/
 LRESULT CMainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui::GetIO().WantCaptureMouse)return 0;
+
 	::GetCursorPos(&m_lastCursorPos);
 
 	m_wasLeftPressed = true;
@@ -384,6 +437,8 @@ LRESULT CMainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 /*WM_LBUTTONUP*/
 LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui::GetIO().WantCaptureMouse)return 0;
+
 	if (m_wasLeftCombinated || m_hasLeftBeenDragged)
 	{
 		m_hasLeftBeenDragged = false;
@@ -394,18 +449,6 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 	}
 
 	WORD usKey = LOWORD(wParam);
-
-	if (usKey == MK_RBUTTON && m_isFramelessWindow)
-	{
-		::PostMessage(m_hWnd, WM_SYSCOMMAND, SC_MOVE, 0);
-		INPUT input{};
-		input.type = INPUT_KEYBOARD;
-		input.ki.wVk = VK_DOWN;
-		::SendInput(1, &input, sizeof(input));
-
-		m_wasRightCombinated = true;
-	}
-
 	if (usKey == 0 && m_wasLeftPressed)
 	{
 		POINT pt{};
@@ -416,7 +459,7 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 		if (iX == 0 && iY == 0)
 		{
 			const auto& recorderState = m_dxLibRecorder.GetState();
-			if (recorderState == CDxLibRecorder::EState::Idle || !m_exportSettingDialogue.IsToExportPerAnimation())
+			if (recorderState == CDxLibRecorder::EState::Idle || !m_spineToolDatum.toExportPerAnim)
 			{
 				m_dxLibSpinePlayer.ShiftAnimation();
 			}
@@ -430,9 +473,13 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 /*WM_RBUTTONUP*/
 LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 {
-	if (m_wasRightCombinated)
+	if (ImGui::GetIO().WantCaptureMouse)return 0;
+
+	if (m_wasRightCombinated || m_hasRightBeenDragged)
 	{
 		m_wasRightCombinated = false;
+		m_hasRightBeenDragged = false;
+
 		return 0;
 	}
 
@@ -441,36 +488,58 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 	WORD usKey = LOWORD(wParam);
 	if (usKey == 0)
 	{
-		const auto& recorderState = m_dxLibRecorder.GetState();
-
-		window_menu::CContextMenu contextMenu;
-		if (recorderState == CDxLibRecorder::EState::Idle)
-		{
-			contextMenu.AddItems(
-				{
-					{Menu::kSnapAsPNG, L"Snap as PNG"},
-					{Menu::kSnapAsJPG, L"Snap as JPG"},
-					{},
-					{Menu::kExportAsGif, L"Export as GIF"},
-					{Menu::kExportAsVideo, L"Export as H264"}
-				});
-
-			if (m_exportSettingDialogue.IsToExportPerAnimation())
+		const auto PreparePupupMenu = [this](HMENU* hMenu)
+			-> bool
 			{
-				contextMenu.AddItems(
-					{
-						{},
-						{Menu::kExportAsPngs, L"Export as PNGs"},
-						{Menu::kExportAsJpgs, L"Export as JPGs"}
-					});
-			}
-		}
-		else if (recorderState == CDxLibRecorder::EState::UnderRecording)
-		{
-			contextMenu.AddItems({ {Menu::kEndRecording, L"End recording"} });
-		}
+				if (hMenu == nullptr)return false;
+				HMENU hPopupMenu = *hMenu;
 
-		contextMenu.Display(m_hWnd);
+				const auto& recorderState = m_dxLibRecorder.GetState();
+				if (recorderState == CDxLibRecorder::EState::Idle)
+				{
+					int iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kSnapAsPNG, L"Snap as PNG");
+					if (iRet == 0)return false;
+					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kSnapAsJPG, L"Snap as JPG");
+					if (iRet == 0)return false;
+
+					iRet = ::AppendMenuW(hPopupMenu, MF_SEPARATOR, 0, nullptr);
+					if (iRet == 0)return false;
+					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsGif, L"Export as GIF");
+					if (iRet == 0)return false;
+					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsVideo, L"Export as H264");
+					if (iRet == 0)return false;
+
+					if (m_spineToolDatum.toExportPerAnim)
+					{
+						iRet = ::AppendMenuW(hPopupMenu, MF_SEPARATOR, 0, nullptr);
+						if (iRet == 0)return false;
+						iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsPngs, L"Export as PNGs");
+						if (iRet == 0)return false;
+						iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsJpgs, L"Export as JPGs");
+						if (iRet == 0)return false;
+					}
+				}
+				else if (recorderState == CDxLibRecorder::EState::UnderRecording)
+				{
+					int iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kEndRecording, L"End recording");
+					if (iRet == 0)return false;
+				}
+
+				return true;
+			};
+
+		HMENU hPopupMenu = ::CreatePopupMenu();
+		if (hPopupMenu != nullptr)
+		{
+			bool bRet = PreparePupupMenu(&hPopupMenu);
+			if (bRet)
+			{
+				POINT point{};
+				::GetCursorPos(&point);
+				::TrackPopupMenu(hPopupMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, point.x, point.y, 0, m_hWnd, nullptr);
+			}
+			::DestroyMenu(hPopupMenu);
+		}
 	}
 
 	return 0;
@@ -478,6 +547,8 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 /*WM_MBUTTONUP*/
 LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui::GetIO().WantCaptureMouse)return 0;
+
 	WORD usKey = LOWORD(wParam);
 
 	if (usKey == 0)
@@ -503,20 +574,35 @@ void CMainWindow::Tick()
 	const auto& recorderState = m_dxLibRecorder.GetState();
 	if (m_dxLibSpinePlayer.HasSpineBeenLoaded() && recorderState != CDxLibRecorder::EState::InitialisingVideoStream)
 	{
-		DxLib::ClearDrawScreen();
+		CDxLibImgui::NewFrame();
 
 		float fDelta = m_winclock.GetElapsedTime();
 		if (recorderState == CDxLibRecorder::EState::UnderRecording)
 		{
 			fDelta = m_dxLibRecorder.HasFrames() ? 1.f / m_dxLibRecorder.GetFps() : 0.f;
 		}
-
 		m_dxLibSpinePlayer.Update(fDelta);
-		m_dxLibSpinePlayer.Redraw();
+
+		DxLib::ClearDrawScreen();
+
+		if (!m_spineRenderTexture.Empty())
+		{
+			{
+				SDxLibRenderTarget dxLibRenderTarget(m_spineRenderTexture.Get());
+				m_dxLibSpinePlayer.Redraw();
+			}
+			DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+			DxLib::DrawGraph(0, 0, m_spineRenderTexture.Get(), TRUE);
+		}
 
 		StepRecording();
 
+		ImGuiSpineParameterDialogue();
+
 		m_winclock.Restart();
+
+		CDxLibImgui::Render();
+		CDxLibImgui::UpdateAndRenderViewPorts();
 
 		DxLib::ScreenFlip();
 	}
@@ -540,9 +626,9 @@ void CMainWindow::InitialiseMenuBar()
 			},
 			{0, L"Tool", window_menu::MenuBuilder(
 				{
-					{Menu::kSpineTool, L"Spine tool"},
+					{Menu::kShowToolDialogue, L"Show tool dialogue"},
 					{Menu::kAddEffectFile, L"Add animation effect"},
-					{Menu::kExportSetting, L"Export setting"}
+					{Menu::kFontSetting, L"Font"}
 				}).Get()
 			},
 			{0, L"Window", window_menu::MenuBuilder(
@@ -707,19 +793,10 @@ void CMainWindow::MenuOnImportCocos()
 	bRet = m_dxLibSpinePlayer.LoadSpineFromMemory(atlasData, textureDirectories, skeletonData, isBinarySkel);
 	PostSpineLoading(hadLoaded, bRet, wstrSelectedFilePath.c_str());
 }
-/*骨組み操作画面呼び出し*/
-void CMainWindow::MenuOnSpineTool()
-{
-	if (m_spineToolDialogue.GetHwnd() == nullptr)
-	{
-		HWND hWnd = m_spineToolDialogue.Create(m_hInstance, m_hWnd, L"Spine tool", &m_dxLibSpinePlayer);
 
-		::ShowWindow(hWnd, SW_SHOWNORMAL);
-	}
-	else
-	{
-		::SetFocus(m_spineToolDialogue.GetHwnd());
-	}
+void CMainWindow::MenuOnShowToolDialogue()
+{
+	m_toShowSpineParameter = true;
 }
 /*ファイル追加*/
 void CMainWindow::MenuOnAddFile()
@@ -739,11 +816,18 @@ void CMainWindow::MenuOnAddFile()
 	m_dxLibSpinePlayer.AddSpineFromFile(strAtlasFile.c_str(), strSkeletonFile.c_str(), bBinary);
 }
 
-void CMainWindow::MenuOnExportSetting()
+void CMainWindow::MenuOnFont()
 {
-	if (m_dxLibRecorder.GetState() != CDxLibRecorder::EState::Idle)return;
-
-	m_exportSettingDialogue.Open(::GetModuleHandleA(nullptr), m_hWnd, L"Export setting");
+	if (m_fontSettingDialogue.GetHwnd() == nullptr)
+	{
+		HWND hWnd = m_fontSettingDialogue.Open(::GetModuleHandleW(nullptr), m_hWnd, L"Font setting");
+		::SendMessage(hWnd, WM_SETICON, ICON_SMALL, ::GetClassLongPtr(m_hWnd, GCLP_HICON));
+		::ShowWindow(hWnd, SW_SHOWNORMAL);
+	}
+	else
+	{
+		::SetFocus(m_fontSettingDialogue.GetHwnd());
+	}
 }
 /*透過*/
 void CMainWindow::MenuOnMakeWindowTransparent()
@@ -791,9 +875,11 @@ void CMainWindow::MenuOnReverseZoomDirection()
 /* 現在の描画先の大きさに合わせる */
 void CMainWindow::MenuOnFiToManualSize()
 {
+	if (m_spineRenderTexture.Empty())return;
+
 	int iScreenWidth = 0;
 	int iScreenHeight = 0;
-	DxLib::GetDrawScreenSize(&iScreenWidth, &iScreenHeight);
+	DxLib::GetGraphSize(m_spineRenderTexture.Get(), &iScreenWidth, &iScreenHeight);
 
 	const float fSkeletonScale = m_dxLibSpinePlayer.GetSkeletonScale();
 	float fBaseWidth = iScreenWidth / fSkeletonScale;
@@ -836,7 +922,7 @@ void CMainWindow::MenuOnSaveAsJpg()
 	m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrackTime, nullptr, nullptr, nullptr);
 	wstrFilePath += FormatAnimationTime(fTrackTime) + L".jpg";
 
-	CDxLibImageEncoder::SaveScreenAsJpg(wstrFilePath.c_str());
+	CDxLibImageEncoder::SaveGraphicAsJpg(m_spineRenderTexture.Get(), wstrFilePath.c_str());
 }
 /*PNGとして保存*/
 void CMainWindow::MenuOnSaveAsPng()
@@ -848,7 +934,7 @@ void CMainWindow::MenuOnSaveAsPng()
 	m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrackTime, nullptr, nullptr, nullptr);
 	wstrFilePath += FormatAnimationTime(fTrackTime) + L".png";
 
-	CDxLibImageEncoder::SaveScreenAsPng(wstrFilePath.c_str());
+	CDxLibImageEncoder::SaveGraphicAsPng(m_spineRenderTexture.Get(), wstrFilePath.c_str());
 }
 /*記録開始*/
 void CMainWindow::MenuOnStartRecording(int menuKind)
@@ -876,8 +962,8 @@ void CMainWindow::MenuOnStartRecording(int menuKind)
 	if (outputType == CDxLibRecorder::EOutputType::Unknown)return;
 
 	unsigned short fps = menuKind == Menu::kExportAsVideo ?
-		m_exportSettingDialogue.GetVideoFps() :
-		m_exportSettingDialogue.GetImageFps();
+		m_spineToolDatum.iVideoFps :
+		m_spineToolDatum.iImageFps;
 
 	bool bRet = m_dxLibRecorder.Start(outputType, fps);
 	if (!bRet)return;
@@ -888,7 +974,7 @@ void CMainWindow::MenuOnStartRecording(int menuKind)
 		MenuOnAllowManualSizing();
 	}
 
-	if (m_exportSettingDialogue.IsToExportPerAnimation())
+	if (m_spineToolDatum.toExportPerAnim)
 	{
 		m_dxLibSpinePlayer.RestartAnimation();
 	}
@@ -960,13 +1046,13 @@ void CMainWindow::ToggleWindowFrameStyle()
 
 void CMainWindow::UpdateMenuItemState()
 {
-	constexpr const unsigned int toolMenuIndices[] = { Menu::kSpineTool, Menu::kAddEffectFile, Menu::kExportSetting };
-	constexpr const unsigned int windowMenuIndices[] = { Menu::kSeeThroughImage, Menu::kAllowManualSizing, Menu::kReverseZoomDirection, Menu::kFitToManualSize, Menu::kFitToDefaultSize };
+	constexpr const unsigned int toolMenuIndices[] = { Menu::kShowToolDialogue, Menu::kAddEffectFile };
+	constexpr const unsigned int windowIndices[] = { Menu::kSeeThroughImage, Menu::kAllowManualSizing, Menu::kReverseZoomDirection, Menu::kFitToManualSize, Menu::kFitToDefaultSize };
 
 	bool toEnable = m_dxLibSpinePlayer.HasSpineBeenLoaded();
 
 	window_menu::EnableMenuItems(window_menu::GetMenuInBar(m_hWnd, MenuBar::kTool), toolMenuIndices, toEnable);
-	window_menu::EnableMenuItems(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), windowMenuIndices, toEnable);
+	window_menu::EnableMenuItems(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), windowIndices, toEnable);
 }
 /*描画素材設定*/
 bool CMainWindow::LoadSpineFilesInFolder(const wchar_t* pwzFolderPath)
@@ -1026,7 +1112,7 @@ void CMainWindow::ClearFolderPathList()
 	m_folders.clear();
 	m_nFolderIndex = 0;
 }
-/* 読み込み後処理*/
+
 void CMainWindow::PostSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t* windowName)
 {
 	if (hasLoaded)
@@ -1034,14 +1120,9 @@ void CMainWindow::PostSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t
 		ResizeWindow();
 		ChangeWindowTitle(windowName);
 
-		if (CSpineSlotTab::HasSlotExclusionFilter())
+		if (spine_tool_dialogue::HasSlotExclusionFilter())
 		{
-			m_dxLibSpinePlayer.SetSlotExcludeCallback(CSpineSlotTab::GetSlotExcludeCallback());
-		}
-
-		if (m_spineToolDialogue.GetHwnd() != nullptr)
-		{
-			m_spineToolDialogue.OnRefresh();
+			m_dxLibSpinePlayer.SetSlotExcludeCallback(spine_tool_dialogue::GetSlotExcludeCallback());
 		}
 
 		m_winclock.Restart();
@@ -1079,7 +1160,7 @@ void CMainWindow::StepRecording()
 		float fEnd = 0.f;
 		m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrack, nullptr, nullptr, &fEnd);
 
-		if (m_exportSettingDialogue.IsToExportPerAnimation())
+		if (m_spineToolDatum.toExportPerAnim)
 		{
 			if (::isgreater(fTrack, fEnd))
 			{
@@ -1091,11 +1172,11 @@ void CMainWindow::StepRecording()
 		if (outputType == CDxLibRecorder::EOutputType::Pngs || outputType == CDxLibRecorder::EOutputType::Jpgs)
 		{
 			std::wstring wstrFrameName = FormatAnimationTime(fTrack);
-			m_dxLibRecorder.CaptureFrame(wstrFrameName.c_str());
+			m_dxLibRecorder.CommitFrame(m_spineRenderTexture.Get(), wstrFrameName.c_str());
 		}
 		else
 		{
-			m_dxLibRecorder.CaptureFrame();
+			m_dxLibRecorder.CommitFrame(m_spineRenderTexture.Get());
 		}
 	}
 }
@@ -1128,4 +1209,18 @@ void CMainWindow::ResizeWindow()
 
 	::AdjustWindowRect(&rect, lStyle, IsWidowBarHidden() ? FALSE : TRUE);
 	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
+}
+
+void CMainWindow::ImGuiSpineParameterDialogue()
+{
+	if (!m_dxLibSpinePlayer.HasSpineBeenLoaded())return;
+
+	if (!m_toShowSpineParameter)return;
+
+	if (!m_spineRenderTexture.Empty())
+	{
+		DxLib::GetGraphSize(m_spineRenderTexture.Get(), &m_spineToolDatum.iTextureWidth, &m_spineToolDatum.iTextureHeight);
+	}
+
+	spine_tool_dialogue::Display(m_spineToolDatum, &m_toShowSpineParameter);
 }

@@ -8,11 +8,13 @@
 
 #include "spine_player_shared.h"
 #include "dxlib_recorder.h"
+#include "dxlib_handle.h"
 #include "win_clock.h"
 
 #include "native-ui/spine_setting_dialogue.h"
-#include "native-ui/export_setting_dialogue.h"
-#include "native-ui/spine_tool_dialogue.h"
+#include "native-ui/font_setting_dialogue.h"
+
+#include "dxlib-imgui/spine_tool_dialogue.h"
 
 class CMainWindow
 {
@@ -52,7 +54,7 @@ private:
 		enum
 		{
 			kOpenFiles = 1, kOpenFolder,  kExtensionSetting, kImportCocos,
-			kSpineTool, kAddEffectFile, kExportSetting,
+			kShowToolDialogue, kAddEffectFile, kFontSetting,
 			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
 			kFitToManualSize, kFitToDefaultSize,
 			kSnapAsPNG, kSnapAsJPG,
@@ -74,6 +76,7 @@ private:
 	bool m_wasLeftPressed = false;
 	bool m_hasLeftBeenDragged = false;
 	bool m_wasRightCombinated = false;
+	bool m_hasRightBeenDragged = false;
 
 	HMENU m_hMenuBar = nullptr;
 
@@ -98,9 +101,9 @@ private:
 	void MenuOnExtensionSetting();
 	void MenuOnImportCocos();
 
-	void MenuOnSpineTool();
+	void MenuOnShowToolDialogue();
 	void MenuOnAddFile();
-	void MenuOnExportSetting();
+	void MenuOnFont();
 
 	void MenuOnMakeWindowTransparent();
 	void MenuOnAllowManualSizing();
@@ -132,15 +135,22 @@ private:
 	std::wstring FormatAnimationTime(float fAnimationTime);
 	void StepRecording();
 
+	using DxLibImageHandle = DxLibHandle<&DxLib::DeleteGraph>;
+	DxLibImageHandle m_spineRenderTexture = { DxLibImageHandle(-1)};
+
 	CDxLibSpinePlayer m_dxLibSpinePlayer;
 	CSpineSettingDialogue m_spineSettingDialogue;
-	CSpineToolDialogue m_spineToolDialogue;
 
 	CDxLibRecorder m_dxLibRecorder;
-	CExportSettingDialogue m_exportSettingDialogue;
+	spine_tool_dialogue::SSpineToolDatum m_spineToolDatum;
+
+	CFontSettingDialogue m_fontSettingDialogue;
 
 	void UpdateWindowResizableAttribute();
 	void ResizeWindow();
+
+	bool m_toShowSpineParameter = false;
+	void ImGuiSpineParameterDialogue();
 };
 
 #endif //MAIN_WINDOW_H_
