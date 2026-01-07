@@ -78,16 +78,6 @@ bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName, HICO
 		{
 			return true;
 		}
-		else
-		{
-			std::wstring wstrMessage = L"CreateWindowW failed; code: " + std::to_wstring(::GetLastError());
-			::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
-		}
-	}
-	else
-	{
-		std::wstring wstrMessage = L"RegisterClassExW failed; code: " + std::to_wstring(::GetLastError());
-		::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
 	}
 
 	return false;
@@ -633,16 +623,16 @@ void CMainWindow::InitialiseMenuBar()
 		}
 	).Get();
 
-	if (!::IsMenu(hMenu) || ::SetMenu(m_hWnd, hMenu) == 0)
+	if (::IsMenu(hMenu))
 	{
-		std::wstring wstrMessage = L"Failed to create menu; code: " + std::to_wstring(::GetLastError());
-		::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
-
-		if (::IsMenu(hMenu))::DestroyMenu(hMenu);
-	}
-	else
-	{
-		m_hMenuBar = hMenu;
+		if (::SetMenu(m_hWnd, hMenu) != 0)
+		{
+			m_hMenuBar = hMenu;
+		}
+		else
+		{
+			::DestroyMenu(hMenu);
+		}
 	}
 }
 /*ファイル選択*/

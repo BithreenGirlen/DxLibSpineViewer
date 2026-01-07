@@ -8,39 +8,6 @@
 
 namespace win_filesystem
 {
-	/*ファイルのメモリ展開*/
-	static char* LoadExistingFile(const wchar_t* pwzFilePath, unsigned long* ulSize)
-	{
-		HANDLE hFile = ::CreateFile(pwzFilePath, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-		if (hFile != INVALID_HANDLE_VALUE)
-		{
-			DWORD dwSize = ::GetFileSize(hFile, nullptr);
-			if (dwSize != INVALID_FILE_SIZE)
-			{
-				char* pBuffer = static_cast<char*>(malloc(static_cast<size_t>(dwSize + 1ULL)));
-				if (pBuffer != nullptr)
-				{
-					DWORD dwRead = 0;
-					BOOL iRet = ::ReadFile(hFile, pBuffer, dwSize, &dwRead, nullptr);
-					if (iRet)
-					{
-						::CloseHandle(hFile);
-						*(pBuffer + dwRead) = '\0';
-						*ulSize = dwRead;
-
-						return pBuffer;
-					}
-					else
-					{
-						free(pBuffer);
-					}
-				}
-			}
-			::CloseHandle(hFile);
-		}
-
-		return nullptr;
-	}
 	/*指定階層のファイル・フォルダ名一覧取得*/
 	static bool CreateFilaNameList(const wchar_t* pwzFolderPath, const wchar_t* pwzFileNamePattern, std::vector<std::wstring>& wstrNames)
 	{
@@ -60,9 +27,9 @@ namespace win_filesystem
 			wstrPath += L'*';
 		}
 
-		WIN32_FIND_DATA sFindData;
+		WIN32_FIND_DATAW sFindData;
 
-		HANDLE hFind = ::FindFirstFile(wstrPath.c_str(), &sFindData);
+		HANDLE hFind = ::FindFirstFileW(wstrPath.c_str(), &sFindData);
 		if (hFind != INVALID_HANDLE_VALUE)
 		{
 			if (pwzFileNamePattern != nullptr)
@@ -74,7 +41,7 @@ namespace win_filesystem
 					{
 						wstrNames.push_back(sFindData.cFileName);
 					}
-				} while (::FindNextFile(hFind, &sFindData));
+				} while (::FindNextFileW(hFind, &sFindData));
 			}
 			else
 			{
@@ -88,7 +55,7 @@ namespace win_filesystem
 							wstrNames.push_back(sFindData.cFileName);
 						}
 					}
-				} while (::FindNextFile(hFind, &sFindData));
+				} while (::FindNextFileW(hFind, &sFindData));
 			}
 
 			::FindClose(hFind);
@@ -193,19 +160,30 @@ bool win_filesystem::GetFilePathListAndIndex(const std::wstring& wstrPath, const
 /*文字列としてファイル読み込み*/
 std::string win_filesystem::LoadFileAsString(const wchar_t* pwzFilePath)
 {
-	DWORD ulSize = 0;
-	char* pBuffer = LoadExistingFile(pwzFilePath, &ulSize);
-	if (pBuffer != nullptr)
-	{
-		std::string str;
-		str.resize(ulSize);
-		memcpy(&str[0], pBuffer, ulSize);
+	std::string strResult;
+	HANDLE hFile = INVALID_HANDLE_VALUE;
+	DWORD ulSize = INVALID_FILE_SIZE;
+	DWORD ulRead = 0;
+	BOOL iRet = FALSE;
 
-		free(pBuffer);
-		return str;
+	hFile = ::CreateFileW(pwzFilePath, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if (hFile == INVALID_HANDLE_VALUE)goto end;
+
+	ulSize = ::GetFileSize(hFile, nullptr);
+	if (ulSize == INVALID_FILE_SIZE)goto end;
+
+	strResult.resize(ulSize);
+	iRet = ::ReadFile(hFile, &strResult[0], ulSize, &ulRead, nullptr);
+	/* To suppress warning C28193 */
+	if (iRet == FALSE)goto end;
+
+end:
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		::CloseHandle(hFile);
 	}
 
-	return std::string();
+	return strResult;
 }
 
 std::wstring win_filesystem::GetCurrentProcessPath()
