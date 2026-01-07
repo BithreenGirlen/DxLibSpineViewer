@@ -318,21 +318,7 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kFitToDefaultSize:
 			MenuOnFitToDefaultSize();
 			break;
-		case Menu::kSnapAsPNG:
-			MenuOnSaveAsPng();
-			break;
-		case Menu::kSnapAsJPG:
-			MenuOnSaveAsJpg();
-			break;
-		case Menu::kExportAsGif:
-		case Menu::kExportAsVideo:
-		case Menu::kExportAsPngs:
-		case Menu::kExportAsJpgs:
-			MenuOnStartRecording(wmId);
-			break;
-		case Menu::kEndRecording:
-			MenuOnEndRecording();
-			break;
+		default: break;
 		}
 	}
 	else
@@ -488,57 +474,57 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 	WORD usKey = LOWORD(wParam);
 	if (usKey == 0)
 	{
-		const auto PreparePupupMenu = [this](HMENU* hMenu)
-			-> bool
-			{
-				if (hMenu == nullptr)return false;
-				HMENU hPopupMenu = *hMenu;
+		const auto& recorderState = m_dxLibRecorder.GetState();
 
-				const auto& recorderState = m_dxLibRecorder.GetState();
-				if (recorderState == CDxLibRecorder::EState::Idle)
-				{
-					int iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kSnapAsPNG, L"Snap as PNG");
-					if (iRet == 0)return false;
-					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kSnapAsJPG, L"Snap as JPG");
-					if (iRet == 0)return false;
-
-					iRet = ::AppendMenuW(hPopupMenu, MF_SEPARATOR, 0, nullptr);
-					if (iRet == 0)return false;
-					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsGif, L"Export as GIF");
-					if (iRet == 0)return false;
-					iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsVideo, L"Export as H264");
-					if (iRet == 0)return false;
-
-					if (m_spineToolDatum.toExportPerAnim)
-					{
-						iRet = ::AppendMenuW(hPopupMenu, MF_SEPARATOR, 0, nullptr);
-						if (iRet == 0)return false;
-						iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsPngs, L"Export as PNGs");
-						if (iRet == 0)return false;
-						iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kExportAsJpgs, L"Export as JPGs");
-						if (iRet == 0)return false;
-					}
-				}
-				else if (recorderState == CDxLibRecorder::EState::UnderRecording)
-				{
-					int iRet = ::AppendMenuW(hPopupMenu, MF_STRING, Menu::kEndRecording, L"End recording");
-					if (iRet == 0)return false;
-				}
-
-				return true;
-			};
-
-		HMENU hPopupMenu = ::CreatePopupMenu();
-		if (hPopupMenu != nullptr)
+		window_menu::CContextMenu contextMenu;
+		if (recorderState == CDxLibRecorder::EState::Idle)
 		{
-			bool bRet = PreparePupupMenu(&hPopupMenu);
-			if (bRet)
+			contextMenu.AddItems(
+				{
+					{PopupMenu::kSnapAsPNG, L"Snap as PNG"},
+					{PopupMenu::kSnapAsJPG, L"Snap as JPG"},
+					{},
+					{PopupMenu::kExportAsGif, L"Export as GIF"},
+					{PopupMenu::kExportAsVideo, L"Export as H264"}
+				});
+
+			if (m_spineToolDatum.toExportPerAnim)
 			{
-				POINT point{};
-				::GetCursorPos(&point);
-				::TrackPopupMenu(hPopupMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, point.x, point.y, 0, m_hWnd, nullptr);
+				contextMenu.AddItems(
+					{
+						{},
+						{PopupMenu::kExportAsPngs, L"Export as PNGs"},
+						{PopupMenu::kExportAsJpgs, L"Export as JPGs"}
+					});
 			}
-			::DestroyMenu(hPopupMenu);
+		}
+		else if (recorderState == CDxLibRecorder::EState::UnderRecording)
+		{
+			contextMenu.AddItems({ {PopupMenu::kEndRecording, L"End recording"} });
+		}
+
+		BOOL menuIndex = contextMenu.Display(m_hWnd);
+		if (menuIndex > 0)
+		{
+			switch (menuIndex)
+			{
+			case PopupMenu::kSnapAsPNG:
+				MenuOnSaveAsPng();
+				break;
+			case PopupMenu::kSnapAsJPG:
+				MenuOnSaveAsJpg();
+				break;
+			case PopupMenu::kExportAsGif:
+			case PopupMenu::kExportAsVideo:
+			case PopupMenu::kExportAsPngs:
+			case PopupMenu::kExportAsJpgs:
+				MenuOnStartRecording(menuIndex);
+				break;
+			case PopupMenu::kEndRecording:
+				MenuOnEndRecording();
+				break;
+			default: break;
+			}
 		}
 	}
 
@@ -920,7 +906,7 @@ void CMainWindow::MenuOnSaveAsJpg()
 	std::wstring wstrFilePath = BuildExportFilePath();
 	float fTrackTime = 0.f;
 	m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrackTime, nullptr, nullptr, nullptr);
-	wstrFilePath += FormatAnimationTime(fTrackTime) + L".jpg";
+	wstrFilePath += FormatAnimationTime(fTrackTime).append(L".jpg");
 
 	CDxLibImageEncoder::SaveGraphicAsJpg(m_spineRenderTexture.Get(), wstrFilePath.c_str());
 }
@@ -932,7 +918,7 @@ void CMainWindow::MenuOnSaveAsPng()
 	std::wstring wstrFilePath = BuildExportFilePath();
 	float fTrackTime = 0.f;
 	m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrackTime, nullptr, nullptr, nullptr);
-	wstrFilePath += FormatAnimationTime(fTrackTime) + L".png";
+	wstrFilePath += FormatAnimationTime(fTrackTime).append(L".png");
 
 	CDxLibImageEncoder::SaveGraphicAsPng(m_spineRenderTexture.Get(), wstrFilePath.c_str());
 }
@@ -944,16 +930,16 @@ void CMainWindow::MenuOnStartRecording(int menuKind)
 	CDxLibRecorder::EOutputType outputType = CDxLibRecorder::EOutputType::Unknown;
 	switch (menuKind)
 	{
-	case Menu::kExportAsGif:
+	case PopupMenu::kExportAsGif:
 		outputType = CDxLibRecorder::EOutputType::Gif;
 		break;
-	case Menu::kExportAsVideo:
+	case PopupMenu::kExportAsVideo:
 		outputType = CDxLibRecorder::EOutputType::Video;
 		break;
-	case Menu::kExportAsPngs:
+	case PopupMenu::kExportAsPngs:
 		outputType = CDxLibRecorder::EOutputType::Pngs;
 		break;
-	case Menu::kExportAsJpgs:
+	case PopupMenu::kExportAsJpgs:
 		outputType = CDxLibRecorder::EOutputType::Jpgs;
 	default:
 		break;
@@ -961,7 +947,7 @@ void CMainWindow::MenuOnStartRecording(int menuKind)
 
 	if (outputType == CDxLibRecorder::EOutputType::Unknown)return;
 
-	unsigned short fps = menuKind == Menu::kExportAsVideo ?
+	unsigned short fps = menuKind == PopupMenu::kExportAsVideo ?
 		m_spineToolDatum.iVideoFps :
 		m_spineToolDatum.iImageFps;
 
