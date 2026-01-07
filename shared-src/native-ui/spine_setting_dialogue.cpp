@@ -32,12 +32,9 @@ bool CSpineSettingDialogue::Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	//wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON_APP));
-	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
 	wcex.hbrBackground = ::GetSysColorBrush(COLOR_BTNFACE);
-	//wcex.lpszMenuName = MAKEINTRESOURCEW(IDI_ICON_APP);
 	wcex.lpszClassName = m_swzClassName;
-	//wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_ICON_APP));
 
 	if (::RegisterClassExW(&wcex))
 	{
@@ -59,16 +56,6 @@ bool CSpineSettingDialogue::Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 			MessageLoop();
 			return true;
 		}
-		else
-		{
-			std::wstring wstrMessage = L"CreateWindowW failed; code: " + std::to_wstring(::GetLastError());
-			::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
-		}
-	}
-	else
-	{
-		std::wstring wstrMessage = L"RegisterClassExW failed; code: " + std::to_wstring(::GetLastError());
-		::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
 	}
 
 	return false;
@@ -100,7 +87,7 @@ int CSpineSettingDialogue::MessageLoop()
 		BOOL iRet = ::GetMessageW(&msg, 0, 0, 0);
 		if (iRet > 0)
 		{
-			if (!::IsDialogMessage(m_hWnd, &msg))
+			if (!::IsDialogMessageW(m_hWnd, &msg))
 			{
 				::TranslateMessage(&msg);
 				::DispatchMessageW(&msg);
@@ -108,14 +95,10 @@ int CSpineSettingDialogue::MessageLoop()
 		}
 		else if (iRet == 0)
 		{
-			/*ループ終了*/
 			return static_cast<int>(msg.wParam);
 		}
 		else
 		{
-			/*ループ異常*/
-			std::wstring wstrMessage = L"GetMessageW failed; code: " + std::to_wstring(::GetLastError());
-			::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
 			return -1;
 		}
 	}
@@ -313,7 +296,7 @@ void CSpineSettingDialogue::GetInputs()
 
 bool CSpineSettingDialogue::IsLikelyBinary(const std::wstring& wstrFileName) const
 {
-	const wchar_t* binaryCandidates[] =
+	constexpr const wchar_t* const binaryCandidates[] =
 	{
 		L".skel", L".bin", L".bytes"
 	};
@@ -321,12 +304,13 @@ bool CSpineSettingDialogue::IsLikelyBinary(const std::wstring& wstrFileName) con
 	size_t nPos = wstrFileName.find_last_of(L"\\/");
 	nPos = nPos == std::wstring::npos ? 0 : nPos + 1;
 
-	for (size_t i = 0; i < sizeof(binaryCandidates) / sizeof(binaryCandidates[0]); ++i)
+	for (const auto& binaryCandidate : binaryCandidates)
 	{
-		if (wcsstr(&wstrFileName[nPos], binaryCandidates[i]) != nullptr)
+		if (wcsstr(&wstrFileName[nPos], binaryCandidate) != nullptr)
 		{
 			return true;
 		}
 	}
+
 	return false;
 }

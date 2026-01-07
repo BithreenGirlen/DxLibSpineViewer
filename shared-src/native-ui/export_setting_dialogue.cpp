@@ -49,16 +49,6 @@ bool CExportSettingDialogue::Open(HINSTANCE hInstance,HWND hOwnerWnd, const wcha
 			MessageLoop();
 			return true;
 		}
-		else
-		{
-			std::wstring wstrMessage = L"CreateWindowW failed; code: " + std::to_wstring(::GetLastError());
-			::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
-		}
-	}
-	else
-	{
-		std::wstring wstrMessage = L"RegisterClassExW failed; code: " + std::to_wstring(::GetLastError());
-		::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
 	}
 
 	return false;
@@ -81,14 +71,10 @@ int CExportSettingDialogue::MessageLoop()
 		}
 		else if (iRet == 0)
 		{
-			/*ループ終了*/
 			return static_cast<int>(msg.wParam);
 		}
 		else
 		{
-			/*ループ異常*/
-			std::wstring wstrMessage = L"GetMessageW failed; code: " + std::to_wstring(::GetLastError());
-			::MessageBoxW(nullptr, wstrMessage.c_str(), L"Error", MB_ICONERROR);
 			return -1;
 		}
 	}
