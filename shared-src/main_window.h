@@ -47,7 +47,7 @@ private:
 	LRESULT OnRButtonUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMButtonUp(WPARAM wParam, LPARAM lParam);
 
-	struct Menu abstract final
+	struct Menu
 	{
 		enum
 		{
@@ -55,16 +55,16 @@ private:
 			kSpineTool, kAddEffectFile, kExportSetting,
 			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
 			kFitToManualSize, kFitToDefaultSize,
-			kSnapAsPNG, kSnapAsJPG,
-			kExportAsGif, kExportAsVideo, kExportAsPngs, kExportAsJpgs,
-			kEndRecording
 		};
 	};
-	struct MenuBar abstract final
+	struct MenuBar { enum { kFile, kTool, kWindow }; };
+	struct PopupMenu
 	{
 		enum
 		{
-			kFile, kTool, kWindow
+			kSnapAsPNG = 1, kSnapAsJPG,
+			kExportAsGif, kExportAsVideo, kExportAsPngs, kExportAsJpgs,
+			kEndRecording
 		};
 	};
 

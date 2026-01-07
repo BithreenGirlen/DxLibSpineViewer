@@ -289,21 +289,6 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kFitToDefaultSize:
 			MenuOnFitToDefaultSize();
 			break;
-		case Menu::kSnapAsPNG:
-			MenuOnSaveAsPng();
-			break;
-		case Menu::kSnapAsJPG:
-			MenuOnSaveAsJpg();
-			break;
-		case Menu::kExportAsGif:
-		case Menu::kExportAsVideo:
-		case Menu::kExportAsPngs:
-		case Menu::kExportAsJpgs:
-			MenuOnStartRecording(wmId);
-			break;
-		case Menu::kEndRecording:
-			MenuOnEndRecording();
-			break;
 		}
 	}
 	else
@@ -448,11 +433,11 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 		{
 			contextMenu.AddItems(
 				{
-					{Menu::kSnapAsPNG, L"Snap as PNG"},
-					{Menu::kSnapAsJPG, L"Snap as JPG"},
+					{PopupMenu::kSnapAsPNG, L"Snap as PNG"},
+					{PopupMenu::kSnapAsJPG, L"Snap as JPG"},
 					{},
-					{Menu::kExportAsGif, L"Export as GIF"},
-					{Menu::kExportAsVideo, L"Export as H264"}
+					{PopupMenu::kExportAsGif, L"Export as GIF"},
+					{PopupMenu::kExportAsVideo, L"Export as H264"}
 				});
 
 			if (m_exportSettingDialogue.IsToExportPerAnimation())
@@ -460,17 +445,39 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 				contextMenu.AddItems(
 					{
 						{},
-						{Menu::kExportAsPngs, L"Export as PNGs"},
-						{Menu::kExportAsJpgs, L"Export as JPGs"}
+						{PopupMenu::kExportAsPngs, L"Export as PNGs"},
+						{PopupMenu::kExportAsJpgs, L"Export as JPGs"}
 					});
 			}
 		}
 		else if (recorderState == CDxLibRecorder::EState::UnderRecording)
 		{
-			contextMenu.AddItems({ {Menu::kEndRecording, L"End recording"} });
+			contextMenu.AddItems({ {PopupMenu::kEndRecording, L"End recording"} });
 		}
 
-		contextMenu.Display(m_hWnd);
+		BOOL menuIndex = contextMenu.Display(m_hWnd);
+		if (menuIndex > 0)
+		{
+			switch (menuIndex)
+			{
+			case PopupMenu::kSnapAsPNG:
+				MenuOnSaveAsPng();
+				break;
+			case PopupMenu::kSnapAsJPG:
+				MenuOnSaveAsJpg();
+				break;
+			case PopupMenu::kExportAsGif:
+			case PopupMenu::kExportAsVideo:
+			case PopupMenu::kExportAsPngs:
+			case PopupMenu::kExportAsJpgs:
+				MenuOnStartRecording(menuIndex);
+				break;
+			case PopupMenu::kEndRecording:
+				MenuOnEndRecording();
+				break;
+			default: break;
+			}
+		}
 	}
 
 	return 0;
@@ -834,7 +841,7 @@ void CMainWindow::MenuOnSaveAsJpg()
 	std::wstring wstrFilePath = BuildExportFilePath();
 	float fTrackTime = 0.f;
 	m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrackTime, nullptr, nullptr, nullptr);
-	wstrFilePath += FormatAnimationTime(fTrackTime) + L".jpg";
+	wstrFilePath += FormatAnimationTime(fTrackTime).append(L".jpg");
 
 	CDxLibImageEncoder::SaveScreenAsJpg(wstrFilePath.c_str());
 }
@@ -846,7 +853,7 @@ void CMainWindow::MenuOnSaveAsPng()
 	std::wstring wstrFilePath = BuildExportFilePath();
 	float fTrackTime = 0.f;
 	m_dxLibSpinePlayer.GetCurrentAnimationTime(&fTrackTime, nullptr, nullptr, nullptr);
-	wstrFilePath += FormatAnimationTime(fTrackTime) + L".png";
+	wstrFilePath += FormatAnimationTime(fTrackTime).append(L".png");
 
 	CDxLibImageEncoder::SaveScreenAsPng(wstrFilePath.c_str());
 }
@@ -858,16 +865,16 @@ void CMainWindow::MenuOnStartRecording(int menuKind)
 	CDxLibRecorder::EOutputType outputType = CDxLibRecorder::EOutputType::Unknown;
 	switch (menuKind)
 	{
-	case Menu::kExportAsGif:
+	case PopupMenu::kExportAsGif:
 		outputType = CDxLibRecorder::EOutputType::Gif;
 		break;
-	case Menu::kExportAsVideo:
+	case PopupMenu::kExportAsVideo:
 		outputType = CDxLibRecorder::EOutputType::Video;
 		break;
-	case Menu::kExportAsPngs:
+	case PopupMenu::kExportAsPngs:
 		outputType = CDxLibRecorder::EOutputType::Pngs;
 		break;
-	case Menu::kExportAsJpgs:
+	case PopupMenu::kExportAsJpgs:
 		outputType = CDxLibRecorder::EOutputType::Jpgs;
 	default:
 		break;
@@ -875,7 +882,7 @@ void CMainWindow::MenuOnStartRecording(int menuKind)
 
 	if (outputType == CDxLibRecorder::EOutputType::Unknown)return;
 
-	unsigned short fps = menuKind == Menu::kExportAsVideo ?
+	unsigned short fps = menuKind == PopupMenu::kExportAsVideo ?
 		m_exportSettingDialogue.GetVideoFps() :
 		m_exportSettingDialogue.GetImageFps();
 

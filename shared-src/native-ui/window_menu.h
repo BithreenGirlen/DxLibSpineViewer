@@ -42,12 +42,13 @@ namespace window_menu
 					}
 					else
 					{
-						::AppendMenuW(m_hMenu, MF_POPUP, reinterpret_cast<UINT_PTR>(menuItem.child), menuItem.name);
+						m_lastResult = ::AppendMenuW(m_hMenu, MF_POPUP, reinterpret_cast<UINT_PTR>(menuItem.child), menuItem.name);
 					}
 				}
 				else
 				{
 					Destroy();
+					break;
 				}
 			}
 		}
@@ -115,12 +116,13 @@ namespace window_menu
 					}
 					else
 					{
-						::AppendMenuW(m_hPopupMenu, MF_POPUP, reinterpret_cast<UINT_PTR>(menuItem.child), menuItem.name);
+						m_lastResult = ::AppendMenuW(m_hPopupMenu, MF_POPUP, reinterpret_cast<UINT_PTR>(menuItem.child), menuItem.name);
 					}
 				}
 				else
 				{
 					Destroy();
+					break;
 				}
 			}
 		}
@@ -131,13 +133,14 @@ namespace window_menu
 			AddItems(menuItems, itemCount);
 		}
 
-		void Display(HWND hOwnerWindow) const
+		/// @return Selected menu item identifier; 0 when cancelled and -1 when failed. 
+		BOOL Display(HWND hOwnerWindow) const
 		{
-			if (!::IsMenu(m_hPopupMenu) || !::IsWindow(hOwnerWindow))return;
+			if (!::IsMenu(m_hPopupMenu) || !::IsWindow(hOwnerWindow))return - 1;
 
 			POINT point{};
 			::GetCursorPos(&point);
-			::TrackPopupMenu(m_hPopupMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, point.x, point.y, 0, hOwnerWindow, nullptr);
+			return ::TrackPopupMenu(m_hPopupMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, point.x, point.y, 0, hOwnerWindow, nullptr);
 		}
 
 	private:
