@@ -31,10 +31,6 @@ public:
 
 	void Update(float fDelta);
 
-	void RescaleSkeleton(bool upscale);
-	void RescaleCanvas(bool upscale);
-	void RescaleTime(bool hasten);
-
 	void ResetScale();
 
 	void MoveViewPoint(int iX, int iY);
@@ -102,8 +98,6 @@ public:
 	float GetTimeScale() const noexcept;
 	void SetTimeScale(float fTimeScale);
 protected:
-	static constexpr float kfScalePortion = 0.025f;
-	static constexpr float kfMinScale = 0.15f;
 	enum Constants { kBaseWidth = 1280, kBaseHeight = 720, kMinAtlas = 1024 };
 
 	CTextureLoader m_textureLoader;

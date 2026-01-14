@@ -116,46 +116,6 @@ void CSpinePlayerC::Update(float fDelta)
 		drawable->Update(fDelta * m_fTimeScale);
 	}
 }
-/*拡縮変更*/
-void CSpinePlayerC::RescaleSkeleton(bool bUpscale)
-{
-	if (bUpscale)
-	{
-		m_fSkeletonScale += kfScaleFactor;
-	}
-	else
-	{
-		m_fSkeletonScale -= kfScaleFactor;
-		if (m_fSkeletonScale < kfMinScale)m_fSkeletonScale = kfMinScale;
-	}
-}
-
-void CSpinePlayerC::RescaleCanvas(bool bUpscale)
-{
-	if (bUpscale)
-	{
-		m_fCanvasScale += kfScaleFactor;
-	}
-	else
-	{
-		m_fCanvasScale -= kfScaleFactor;
-		if (m_fCanvasScale < kfMinScale)m_fCanvasScale = kfMinScale;
-	}
-}
-/*時間尺度変更*/
-void CSpinePlayerC::RescaleTime(bool bHasten)
-{
-	constexpr float kfTimeScalePortion = 0.05f;
-	if (bHasten)
-	{
-		m_fTimeScale += kfTimeScalePortion;
-	}
-	else
-	{
-		m_fTimeScale -= kfTimeScalePortion;
-	}
-	if (m_fTimeScale < 0.f)m_fTimeScale = 0.f;
-}
 
 void CSpinePlayerC::ResetScale()
 {
