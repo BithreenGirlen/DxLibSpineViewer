@@ -367,12 +367,16 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 {
 	if (ImGui::GetIO().WantCaptureMouse)return 0;
 
-	int iScroll = -static_cast<short>(HIWORD(wParam)) / WHEEL_DELTA;
+	short scroll = -static_cast<short>(HIWORD(wParam)) / WHEEL_DELTA;
 	WORD usKey = LOWORD(wParam);
-
 	if (usKey == MK_LBUTTON)
 	{
-		m_dxLibSpinePlayer.RescaleTime(iScroll > 0);
+		static constexpr float kTimeScaleDelta = 0.05f;
+		const float scrollSign = scroll > 0 ? 1.f : -1.f;
+
+		float timeScale = m_dxLibSpinePlayer.GetTimeScale() + kTimeScaleDelta * scrollSign;
+		timeScale = (std::max)(timeScale, 0.f);
+		m_dxLibSpinePlayer.SetTimeScale(timeScale);
 
 		m_wasLeftCombinated = true;
 	}
@@ -386,12 +390,21 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 	{
 		if (m_dxLibSpinePlayer.HasSpineBeenLoaded())
 		{
-			m_dxLibSpinePlayer.RescaleSkeleton((iScroll > 0) ^ m_isZoomDirectionReversed);
+			static constexpr float kScaleDelta = 0.025f;
+			static constexpr float kMinScale = 0.15f;
+			const float scrollSign = (scroll > 0) ^ m_isZoomDirectionReversed ? 1.f : -1.f;
 
-			bool bWindowToBeResized = !(usKey & MK_CONTROL) && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording;
-			if (bWindowToBeResized)
+			float skeletonScale = m_dxLibSpinePlayer.GetSkeletonScale() + kScaleDelta * scrollSign;
+			skeletonScale = (std::max)(kMinScale, skeletonScale);
+			m_dxLibSpinePlayer.SetSkeletonScale(skeletonScale);
+
+			bool isWindowToBeResized = !(usKey & MK_CONTROL) && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording;
+			if (isWindowToBeResized)
 			{
-				m_dxLibSpinePlayer.RescaleCanvas((iScroll > 0) ^ m_isZoomDirectionReversed);
+				float canvasScale = m_dxLibSpinePlayer.GetCanvasScale() + kScaleDelta * scrollSign;
+				canvasScale = (std::max)(kMinScale, canvasScale);
+				m_dxLibSpinePlayer.SetCanvasScale(canvasScale);
+
 				ResizeWindow();
 			}
 		}

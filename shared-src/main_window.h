@@ -53,7 +53,7 @@ private:
 	{
 		enum
 		{
-			kOpenFiles = 1, kOpenFolder,  kExtensionSetting, kImportCocos,
+			kOpenFiles = 1, kOpenFolder, kExtensionSetting, kImportCocos,
 			kShowToolDialogue, kAddEffectFile, kFontSetting,
 			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
 			kFitToManualSize, kFitToDefaultSize,
