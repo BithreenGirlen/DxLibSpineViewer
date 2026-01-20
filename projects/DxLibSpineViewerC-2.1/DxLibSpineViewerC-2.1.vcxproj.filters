@@ -78,7 +78,7 @@
     <ClInclude Include="..\..\DxLibSpineC\spine_loader_c.h">
       <Filter>Header File</Filter>
     </ClInclude>
-    <ClInclude Include="dxlib_spine_c_21.h">
+    <ClInclude Include="..\..\DxLibSpineC\Spine21\dxlib_spine_c_21.h">
       <Filter>Header File</Filter>
     </ClInclude>
     <ClInclude Include="..\..\shared-src\mf_video_encoder.h">
@@ -167,7 +167,7 @@
     <ClCompile Include="..\..\DxLibSpineC\spine_loader_c.cpp">
       <Filter>Source File</Filter>
     </ClCompile>
-    <ClCompile Include="dxlib_spine_c_21.cpp">
+    <ClCompile Include="..\..\DxLibSpineC\Spine21\dxlib_spine_c_21.cpp">
       <Filter>Source File</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared-src\mf_video_encoder.cpp">

@@ -175,7 +175,7 @@ Visual Studio is required.
   - [dxlib_spine.cpp](/DxLibSpineCpp/dxlib_spine.cpp) is to be used with `spine-cpp`. (`3.8` to `4.2`)
   - [dxlib_spine_c.cpp](/DxLibSpineC/dxlib_spine_c.cpp) is to be used with `spine-c`. (`3.5` to `4.2`)
     - Class is used because DxLib is C++ library, but STL is avoided.
-  - There is a runtime for Spine `2.1` under [projects/DxLibSpineViewerC-2.1](/projects/DxLibSpineViewerC-2.1). But note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
+  - There is a runtime for [`2.1`](/DxLibSpineC/Spine21) though, note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
 - For more functionalities, use all the files under `DxLibSpineCpp` or `DxLibSpineC`.
   - The functionalities are as follows:
 
