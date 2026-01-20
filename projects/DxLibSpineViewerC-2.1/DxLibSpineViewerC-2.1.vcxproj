@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\DxLibSpineC\Spine21\dxlib_spine_c_21.h" />
     <ClInclude Include="..\..\DxLibSpineC\dxlib_spine_player_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\spine_loader_c.h" />
     <ClInclude Include="..\..\DxLibSpineC\spine_player_c.h" />
@@ -171,10 +172,10 @@
     <ClInclude Include="..\..\shared-src\win_filesystem.h" />
     <ClInclude Include="..\..\shared-src\win_image.h" />
     <ClInclude Include="..\..\shared-src\win_text.h" />
-    <ClInclude Include="dxlib_spine_c_21.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\DxLibSpineC\Spine21\dxlib_spine_c_21.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\dxlib_spine_player_c.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\spine_loader_c.cpp" />
     <ClCompile Include="..\..\DxLibSpineC\spine_player_c.cpp" />
@@ -311,7 +312,6 @@
     <ClCompile Include="..\..\shared-src\win_filesystem.cpp" />
     <ClCompile Include="..\..\shared-src\win_image.cpp" />
     <ClCompile Include="..\..\shared-src\win_text.cpp" />
-    <ClCompile Include="dxlib_spine_c_21.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
