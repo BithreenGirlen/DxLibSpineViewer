@@ -15,6 +15,8 @@ namespace spine_tool_dialogue
 		int iImageFps = kDefaultImageFps;
 		int iVideoFps = kDefaultVideoFps;
 		bool toExportPerAnim = true;
+
+		bool isWindowToBeResized = false;
 	};
 
 	void Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen);

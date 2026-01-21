@@ -30,7 +30,7 @@ namespace spine_tool_dialogue
 	{
 		unsigned int selectedIndex = 0;
 
-		void Update(const std::vector<std::string>& itemNames, const char* comboLabel)
+		void update(const std::vector<std::string>& itemNames, const char* comboLabel)
 		{
 			if (selectedIndex >= itemNames.size())
 			{
@@ -38,7 +38,7 @@ namespace spine_tool_dialogue
 				return;
 			}
 
-			if (ImGui::BeginCombo(comboLabel, itemNames[selectedIndex].c_str()))
+			if (ImGui::BeginCombo(comboLabel, itemNames[selectedIndex].c_str(), ImGuiComboFlags_HeightLarge))
 			{
 				for (size_t i = 0; i < itemNames.size(); ++i)
 				{
@@ -60,11 +60,11 @@ namespace spine_tool_dialogue
 		std::basic_string<bool> checks;
 		ImGuiMultiSelectFlags flags = ImGuiMultiSelectFlags_NoAutoSelect | ImGuiMultiSelectFlags_NoAutoClear | ImGuiMultiSelectFlags_ClearOnEscape;
 
-		void Update(const std::vector<std::string>& itemNames, const char* windowLabel)
+		void update(const std::vector<std::string>& itemNames, const char* windowLabel)
 		{
 			if (checks.size() != itemNames.size())
 			{
-				Clear(itemNames);
+				clear(itemNames);
 			}
 
 			ImVec2 childWindowSize = { ImGui::GetWindowWidth() * 3 / 4.f, ImGui::GetFontSize() * (checks.size() / 4 + 2LL) };
@@ -88,7 +88,7 @@ namespace spine_tool_dialogue
 			ImGui::EndChild();
 		}
 
-		void PickupCheckedItems(const std::vector<std::string>& itemNames, std::vector<std::string>& selectedItems)
+		void pickupCheckedItems(const std::vector<std::string>& itemNames, std::vector<std::string>& selectedItems)
 		{
 			if (itemNames.size() != checks.size())return;
 
@@ -101,7 +101,7 @@ namespace spine_tool_dialogue
 			}
 		}
 
-		void Clear(const std::vector<std::string>& itemNames)
+		void clear(const std::vector<std::string>& itemNames)
 		{
 			checks = std::basic_string<bool>(itemNames.size(), false);
 		}
@@ -170,20 +170,20 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 		{
 			ImGui::Text("Texture size: (%d, %d)", spineToolDatum.iTextureWidth, spineToolDatum.iTextureHeight);
 
-			const auto& baseSize = pDxLibSpinePlayer->GetBaseSize();
-			const auto& offset = pDxLibSpinePlayer->GetOffset();
+			const auto& baseSize = pDxLibSpinePlayer->getBaseSize();
+			const auto& offset = pDxLibSpinePlayer->getOffset();
 
 			ImGui::Text("Skeleton size: (%.2f, %.2f)", baseSize.x, baseSize.y);
 			ImGui::Text("Offset: (%.2f, %.2f)", offset.x, offset.y);
-			ImGui::Text("Skeleton scale: %.2f", pDxLibSpinePlayer->GetSkeletonScale());
-			ImGui::Text("Canvas scale: %.2f", pDxLibSpinePlayer->GetCanvasScale());
+			ImGui::Text("Skeleton scale: %.2f", pDxLibSpinePlayer->getSkeletonScale());
+			ImGui::Text("Canvas scale: %.2f", pDxLibSpinePlayer->getCanvasScale());
 
 			if (ImGui::TreeNode("Slot bounding"))
 			{
-				const std::vector<std::string>& slotNames = pDxLibSpinePlayer->GetSlotNames();
+				const std::vector<std::string>& slotNames = pDxLibSpinePlayer->getSlotNames();
 				static ImGuiComboBox slotsComboBox;
-				slotsComboBox.Update(slotNames, "Slot##SlotBounding");
-				const auto& slotBounding = pDxLibSpinePlayer->GetCurrentBoundingOfSlot(slotNames[slotsComboBox.selectedIndex]);
+				slotsComboBox.update(slotNames, "Slot##SlotBounding");
+				const auto& slotBounding = pDxLibSpinePlayer->getCurrentBoundingOfSlot(slotNames[slotsComboBox.selectedIndex]);
 				if (slotBounding.z == 0.f)
 				{
 					ImGui::TextColored(ImVec4{1.f, 0.f, 0.f, 1.f}, "Slot not found in this animation.");
@@ -197,7 +197,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 					if (toDrawRect)
 					{
 						static constexpr float fMinThickness = 1.f;
-						static constexpr float fMaxThickness = 10.f;
+						static constexpr float fMaxThickness = 14.f;
 						static float fThickness = 2.f;
 						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.4f);
 						ScrollableSliderFloat("Thickness", &fThickness, fMinThickness, fMaxThickness);
@@ -211,10 +211,26 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 						rectangleColour = ((rectangleColour & 0x000000ff) << 16) | ((rectangleColour & 0x00ff0000) >> 16) | ((rectangleColour & 0xff00ff00));
 
 						DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-						DxLib::MATRIX matrix = pDxLibSpinePlayer->CalculateTransformMatrix();
+						DxLib::MATRIX matrix = pDxLibSpinePlayer->calculateTransformMatrix();
 						DxLib::SetTransformTo2D(&matrix);
 						DxLib::DrawBoxAA(slotBounding.x, slotBounding.y, slotBounding.x + slotBounding.z, slotBounding.y + slotBounding.w, rectangleColour, 0, fThickness);
 						DxLib::ResetTransformTo2D();
+
+						if (ImGui::Button("Fit to this slot"))
+						{
+							pDxLibSpinePlayer->setBaseSize(slotBounding.z, slotBounding.w);
+							pDxLibSpinePlayer->update(0.f);
+							const auto& updatedSlotBounding = pDxLibSpinePlayer->getCurrentBoundingOfSlot(slotNames[slotsComboBox.selectedIndex]);
+							if (updatedSlotBounding.z != 0)
+							{
+								auto offsetToBe = pDxLibSpinePlayer->getOffset();
+								offsetToBe.x += updatedSlotBounding.x;
+								offsetToBe.y += updatedSlotBounding.y;
+								pDxLibSpinePlayer->setOffset(offsetToBe.x, offsetToBe.y);
+								pDxLibSpinePlayer->setBaseSize(slotBounding.z, slotBounding.w);
+							}
+							spineToolDatum.isWindowToBeResized = true;
+						}
 					}
 				}
 
@@ -265,44 +281,44 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 		/* 動作名・動作指定・動作合成 */
 		if (ImGui::BeginTabItem("Animation"))
 		{
-			const std::string& animationName = pDxLibSpinePlayer->GetCurrentAnimationName();
+			const std::string& animationName = pDxLibSpinePlayer->getCurrentAnimationName();
 			DxLib::FLOAT4 animationWatch{};
-			pDxLibSpinePlayer->GetCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
+			pDxLibSpinePlayer->getCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
 
 			ImGui::SliderFloat(animationName.c_str(), &animationWatch.y, animationWatch.z, animationWatch.w, "%0.2f");
-			ImGui::Text("Time scale: %.2f", pDxLibSpinePlayer->GetTimeScale());
+			ImGui::Text("Time scale: %.2f", pDxLibSpinePlayer->getTimeScale());
 
-			const std::vector<std::string>& animationNames = pDxLibSpinePlayer->GetAnimationNames();
+			const std::vector<std::string>& animationNames = pDxLibSpinePlayer->getAnimationNames();
 			/* 動作指定 */
 			if (ImGui::TreeNode("Set animation"))
 			{
 				static ImGuiComboBox animationComboBox;
-				animationComboBox.Update(animationNames, "##AnimationToSet");
+				animationComboBox.update(animationNames, "##AnimationToSet");
 
 				if (ImGui::Button("Apply##SetAnimation"))
 				{
-					pDxLibSpinePlayer->SetAnimationByIndex(animationComboBox.selectedIndex);
+					pDxLibSpinePlayer->setAnimationByIndex(animationComboBox.selectedIndex);
 				}
 
 				ImGui::TreePop();
 			}
-			/* 動作合成 */
-			if (ImGui::TreeNode("Mix animation"))
+			/* 動作予約 */
+			if (ImGui::TreeNode("Add tracks"))
 			{
-				HelpMarker("Mixing animations will overwrite animation state.\n"
+				HelpMarker("Adding tracks will overwrite animation state.\n"
 					"Uncheck all the items and then apply to reset the state.");
 
 				static ImGuiListview animationsListView;
-				animationsListView.Update(animationNames, "Animation to mix##AnimationsToMix");
+				animationsListView.update(animationNames, "Animation to mix##AnimationsToMix");
 
-				static bool toBeLooped = false;
-				ImGui::Checkbox("Loop", &toBeLooped);
+				static bool looped = false;
+				ImGui::Checkbox("Loop", &looped);
 
-				if (ImGui::Button("Apply##MixAnimations"))
+				if (ImGui::Button("Add##AddAnimationTracks"))
 				{
 					std::vector<std::string> checkedItems;
-					animationsListView.PickupCheckedItems(animationNames, checkedItems);
-					pDxLibSpinePlayer->MixAnimations(checkedItems, toBeLooped);
+					animationsListView.pickupCheckedItems(animationNames, checkedItems);
+					pDxLibSpinePlayer->addAnimationTracks(checkedItems, looped);
 				}
 
 				ImGui::TreePop();
@@ -313,16 +329,16 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 		/* 装い指定・合成 */
 		if (ImGui::BeginTabItem("Skin"))
 		{
-			const std::vector<std::string>& skinNames = pDxLibSpinePlayer->GetSkinNames();
+			const std::vector<std::string>& skinNames = pDxLibSpinePlayer->getSkinNames();
 			/* 装い指定 */
 			if (ImGui::TreeNode("Set Skin"))
 			{
 				static ImGuiComboBox skinComboBox;
-				skinComboBox.Update(skinNames, "##SkinToSet");
+				skinComboBox.update(skinNames, "##SkinToSet");
 
 				if (ImGui::Button("Apply##SetSkin"))
 				{
-					pDxLibSpinePlayer->SetSkinByIndex(skinComboBox.selectedIndex);
+					pDxLibSpinePlayer->setSkinByIndex(skinComboBox.selectedIndex);
 				}
 
 				ImGui::TreePop();
@@ -334,13 +350,13 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 					"The state cannnot be gotten back to the original state unless reloaded.");
 
 				static ImGuiListview skinListView;
-				skinListView.Update(skinNames, "Skins to mix##SkinsToMix");
+				skinListView.update(skinNames, "Skins to mix##SkinsToMix");
 
 				if (ImGui::Button("Apply##MixSkins"))
 				{
 					std::vector<std::string> checkedItems;
-					skinListView.PickupCheckedItems(skinNames, checkedItems);
-					pDxLibSpinePlayer->MixSkins(checkedItems);
+					skinListView.pickupCheckedItems(skinNames, checkedItems);
+					pDxLibSpinePlayer->mixSkins(checkedItems);
 				}
 				ImGui::TreePop();
 			}
@@ -350,28 +366,28 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 		/* 槽溝 */
 		if (ImGui::BeginTabItem("Slot"))
 		{
-			const std::vector<std::string>& slotNames = pDxLibSpinePlayer->GetSlotNames();
+			const std::vector<std::string>& slotNames = pDxLibSpinePlayer->getSlotNames();
 			/* 描画対象から除外 */
 			if (ImGui::TreeNode("Exclude slot by items"))
 			{
 				HelpMarker("Checked slots will be excluded from rendering.");
 
 				static ImGuiListview slotListView;
-				slotListView.Update(slotNames, "Slots to exclude##SlotsToExclude");
+				slotListView.update(slotNames, "Slots to exclude##SlotsToExclude");
 
 				if (ImGui::Button("Apply##ExcludeSlots"))
 				{
 					std::vector<std::string> checkedItems;
-					slotListView.PickupCheckedItems(slotNames, checkedItems);
-					pDxLibSpinePlayer->SetSlotsToExclude(checkedItems);
-					pDxLibSpinePlayer->SetSlotExcludeCallback(nullptr);
+					slotListView.pickupCheckedItems(slotNames, checkedItems);
+					pDxLibSpinePlayer->setSlotsToExclude(checkedItems);
+					pDxLibSpinePlayer->setSlotExcludeCallback(nullptr);
 				}
 
 				ImGui::SameLine();
 				if (ImGui::Button("Clear##ExcludeSlots"))
 				{
-					slotListView.Clear(slotNames);
-					pDxLibSpinePlayer->SetSlotsToExclude({});
+					slotListView.clear(slotNames);
+					pDxLibSpinePlayer->setSlotsToExclude({});
 				}
 
 				ImGui::TreePop();
@@ -384,7 +400,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 					if (ImGui::Button("Apply##ExcludeSlotByFilter"))
 					{
 						s_nFilterLength = strlen(s_szFilter);
-						pDxLibSpinePlayer->SetSlotExcludeCallback(s_nFilterLength == 0 ? nullptr : &IsSlotToBeExcluded);
+						pDxLibSpinePlayer->setSlotExcludeCallback(s_nFilterLength == 0 ? nullptr : &IsSlotToBeExcluded);
 					}
 				}
 
@@ -398,7 +414,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 					"Even if it is permitted to replace slot, it does not gurantee the consistency in timeline.");
 
 				/* 滅多に利用機会がないので、非効率なのは承知でこのまま。 */
-				const auto& slotAttachmentMap = pDxLibSpinePlayer->GetSlotNamesWithTheirAttachments();
+				const auto& slotAttachmentMap = pDxLibSpinePlayer->getSlotNamesWithTheirAttachments();
 				if (!slotAttachmentMap.empty())
 				{
 					std::vector<std::string> slotCandidates;
@@ -409,17 +425,17 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 					}
 
 					static ImGuiComboBox slotsComboBox;
-					slotsComboBox.Update(slotCandidates, "Slot##SlotCandidates");
+					slotsComboBox.update(slotCandidates, "Slot##SlotCandidates");
 
 					const auto& iter = slotAttachmentMap.find(slotCandidates[slotsComboBox.selectedIndex]);
 					if (iter != slotAttachmentMap.cend())
 					{
 						static ImGuiComboBox attachmentComboBox;
-						attachmentComboBox.Update(iter->second, "Attachment##AssociatesAttachments");
+						attachmentComboBox.update(iter->second, "Attachment##AssociatesAttachments");
 
 						if (ImGui::Button("Apply##ReplaceAttachment"))
 						{
-							pDxLibSpinePlayer->ReplaceAttachment(
+							pDxLibSpinePlayer->replaceAttachment(
 								slotCandidates[slotsComboBox.selectedIndex].c_str(),
 								iter->second[attachmentComboBox.selectedIndex].c_str()
 							);
@@ -439,7 +455,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			HelpMarker("For Spine 3.8 and older, PMA should be configured manually.\n"
 				"For Spine 4.0 and later, PMA property of atlas page is applied.");
 
-			bool pma = pDxLibSpinePlayer->IsAlphaPremultiplied();
+			bool pma = pDxLibSpinePlayer->isAlphaPremultiplied();
 			bool pmaChecked = pma;
 #if defined(SPINE_4_0) || defined(SPINE_4_1_OR_LATER) || defined(SPINE_4_2_OR_LATER)
 			ImGui::BeginDisabled();
@@ -450,29 +466,29 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 #endif
 			if (pmaChecked != pma)
 			{
-				pDxLibSpinePlayer->TogglePma();
+				pDxLibSpinePlayer->togglePma();
 			}
 			ImGui::SeparatorText("Blend-mode");
 
 			HelpMarker("Force if blend-mode-multiply is not well rendered.");
 
-			bool toForceBlendModeNormal = pDxLibSpinePlayer->IsBlendModeNormalForced();
+			bool toForceBlendModeNormal = pDxLibSpinePlayer->isBlendModeNormalForced();
 			bool blendModeChecked = toForceBlendModeNormal;
 			ImGui::Checkbox("Force blend-mode-normal", &blendModeChecked);
 			if (blendModeChecked != toForceBlendModeNormal)
 			{
-				pDxLibSpinePlayer->ToggleBlendModeAdoption();
+				pDxLibSpinePlayer->toggleBlendModeAdoption();
 			}
 
 			ImGui::SeparatorText("Draw order");
 			HelpMarker("Draw order is crutial only when rendering multiple Spines.\n"
 				"Be sure to make it appropriate in prior to add animation effect.");
 
-			if (pDxLibSpinePlayer->GetNumberOfSpines() > 1)
+			if (pDxLibSpinePlayer->getNumberOfSpines() > 1)
 			{
-				bool drawOrder = pDxLibSpinePlayer->IsDrawOrderReversed();
+				bool drawOrder = pDxLibSpinePlayer->isDrawOrderReversed();
 				ImGui::Checkbox("Reverse draw order", &drawOrder);
-				pDxLibSpinePlayer->SetDrawOrder(drawOrder);
+				pDxLibSpinePlayer->setDrawOrder(drawOrder);
 			}
 
 			ImGui::EndTabItem();

@@ -6,7 +6,7 @@
 #define DX_NON_USING_NAMESPACE_DXLIB
 #include <DxLib.h>
 
-/*Backport from spine-c 4.1*/
+/* Backport from spine-c 4.1 */
 #ifndef _SP_ARRAY_IMPLEMENT_TYPE_NO_CONTAINS
 #define _SP_ARRAY_IMPLEMENT_TYPE_NO_CONTAINS(name, itemType) \
 	name* name##_create(int initialCapacity) { \
@@ -76,22 +76,30 @@ public:
 	CDxLibSpineDrawableC(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData = nullptr);
 	~CDxLibSpineDrawableC();
 
-	spSkeleton* skeleton = nullptr;
-	spAnimationState* animationState = nullptr;
+	spSkeleton* skeleton() const noexcept;
+	spAnimationState* animationState() const noexcept;
 
-	bool isAlphaPremultiplied = true;
-	bool isToForceBlendModeNormal = false;
+	void premultiplyAlpha(bool premultiplied) noexcept;
+	bool isAlphaPremultiplied() const noexcept;
 
-	void Update(float fDelta);
-	void Draw();
+	void forceBlendModeNormal(bool toForce) noexcept;
+	bool isBlendModeNormalForced() const noexcept;
 
-	void SetLeaveOutList(const char** list, int listCount);
-	void SetLeaveOutCallback(bool (*pFunc)(const char*, size_t)) { m_pLeaveOutCallback = pFunc; }
+	void update(float fDelta);
+	void draw();
 
-	DxLib::FLOAT4 GetBoundingBox() const;
-	DxLib::FLOAT4 GetBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr) const;
+	void setLeaveOutList(const char** list, int listCount);
+	void setLeaveOutCallback(bool (*pFunc)(const char*, size_t)) { m_pLeaveOutCallback = pFunc; }
+
+	DxLib::FLOAT4 getBoundingBox() const;
+	DxLib::FLOAT4 getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr) const;
 private:
 	bool m_hasOwnAnimationStateData = false;
+	bool m_isAlphaPremultiplied = true;
+	bool m_isToForceBlendModeNormal = false;
+
+	spSkeleton* m_skeleton = nullptr;
+	spAnimationState* m_animationState = nullptr;
 
 	spFloatArray* m_worldVertices = nullptr;
 	spDxLibVertexArray* m_dxLibVertices = nullptr;
@@ -102,7 +110,7 @@ private:
 	int m_leaveOutListCount = 0;
 	bool (*m_pLeaveOutCallback)(const char*, size_t) = nullptr;
 
-	void ClearLeaveOutList();
-	bool IsToBeLeftOut(const char* slotName);
+	void clearLeaveOutList();
+	bool isSlotToBeLeftOut(const char* slotName);
 };
 #endif // !DXLIB_SPINE_C_H_

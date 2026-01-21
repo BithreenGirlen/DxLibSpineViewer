@@ -1,7 +1,4 @@
 ﻿
-#include <Windows.h>
-#include <CommCtrl.h>
-
 #include "dialogue_controls.h"
 
 
@@ -14,14 +11,14 @@ CListView::~CListView()
 {
 
 }
-/*ListView作成*/
+/* ListView作成 */
 bool CListView::Create(HWND hParentWnd, const wchar_t** columnNames, size_t columnCount, bool hasCheckBox)
 {
 	m_hWnd = ::CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"", WS_VISIBLE | WS_CHILD | LVS_REPORT | LVS_ALIGNLEFT | WS_TABSTOP | LVS_SINGLESEL, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(nullptr), nullptr);
 	if (m_hWnd != nullptr)
 	{
 		::SendMessageW(m_hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | (hasCheckBox ? LVS_EX_CHECKBOXES : 0) | LVS_EX_HEADERDRAGDROP);
-		
+
 		LVCOLUMNW lvColumn{};
 		lvColumn.mask = LVCF_TEXT | LVCF_SUBITEM | LVCF_FMT | LVCF_WIDTH;
 		lvColumn.fmt = LVCFMT_LEFT;
@@ -34,7 +31,7 @@ bool CListView::Create(HWND hParentWnd, const wchar_t** columnNames, size_t colu
 	}
 	return m_hWnd != nullptr;
 }
-/*ListView幅調整*/
+/* ListView幅調整 */
 void CListView::AdjustWidth()
 {
 	if (m_hWnd != nullptr)
@@ -56,7 +53,7 @@ void CListView::AdjustWidth()
 		}
 	}
 }
-/*項目追加*/
+/* 項目追加 */
 bool CListView::Add(const wchar_t** columns, size_t columnCount, bool toBottom)
 {
 	if (m_hWnd == nullptr)return false;
@@ -105,7 +102,7 @@ bool CListView::Add(const std::vector<std::wstring>& columns, bool toBottom)
 
 	return bRet;
 }
-/*リスト項目消去*/
+/* リスト項目消去 */
 void CListView::Clear() const
 {
 	if (m_hWnd != nullptr)
@@ -113,7 +110,7 @@ void CListView::Clear() const
 		::SendMessageW(m_hWnd, LVM_DELETEALLITEMS, 0, 0);
 	}
 }
-/*単要素リスト構築*/
+/* 単要素リスト構築 */
 void CListView::CreateSingleList(const std::vector<std::wstring>& items)
 {
 	if (m_hWnd != nullptr)
@@ -139,7 +136,7 @@ void CListView::CreateSingleList(const wchar_t** items, size_t itemCount)
 		}
 	}
 }
-/*全選択項目文字列拾い上げ*/
+/* 全選択項目文字列拾い上げ */
 std::vector<std::wstring> CListView::PickupCheckedItems()
 {
 	std::vector<std::wstring> checkedItems;
@@ -165,7 +162,7 @@ std::vector<std::wstring> CListView::PickupCheckedItems()
 	}
 	return checkedItems;
 }
-/*名称総数取得*/
+/* 名称総数取得 */
 int CListView::GetColumnCount() const
 {
 	if (m_hWnd != nullptr)
@@ -181,7 +178,7 @@ int CListView::GetColumnCount() const
 	}
 	return -1;
 }
-/*項目数取得*/
+/* 項目数取得 */
 int CListView::GetItemCount() const
 {
 	if (m_hWnd != nullptr)
@@ -191,10 +188,10 @@ int CListView::GetItemCount() const
 	}
 	return -1;
 }
-/*指定項目の文字列取得*/
+/* 指定項目の文字列取得 */
 std::wstring CListView::GetItemText(int iRow, int iColumn) const
 {
-	std::wstring wstrResult;
+	std::wstring result;
 	if (m_hWnd != nullptr)
 	{
 		LV_ITEMW lvItem{};
@@ -202,23 +199,23 @@ std::wstring CListView::GetItemText(int iRow, int iColumn) const
 
 		for (int iSize = 256; iSize < 1025; iSize *= 2)
 		{
-			std::vector<wchar_t> vBuffer(iSize, L'\0');
+			result.resize(iSize, L'\0');
 
 			lvItem.cchTextMax = iSize;
-			lvItem.pszText = vBuffer.data();
+			lvItem.pszText = &result[0];
 			int iLen = static_cast<int>(::SendMessageW(m_hWnd, LVM_GETITEMTEXT, iRow, reinterpret_cast<LPARAM>(&lvItem)));
 			if (iLen < iSize - 1)
 			{
-				wstrResult = vBuffer.data();
+				result.resize(iLen);
 				break;
 			}
 		}
 	}
-	return wstrResult;
+	return result;
 }
 
 /* ==================== ListBox ====================
-* 
+*
 * ListBox lacks the equivalent to ListView's LVS_EX_DOUBLEBUFFER,
 * so takes longer time than ListView in its scrolling.
 */
@@ -233,13 +230,13 @@ CListBox::~CListBox()
 {
 
 }
-/*ListBox作成*/
+/* ListBox作成 */
 bool CListBox::Create(HWND hParentWnd)
 {
 	m_hWnd = ::CreateWindowExW(0, WC_LISTBOX, L"ListBox", WS_VISIBLE | WS_CHILD | WS_BORDER | LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(nullptr), nullptr);
 	return m_hWnd != nullptr;
 }
-/*項目追加*/
+/* 項目追加 */
 void CListBox::Add(const wchar_t* szText, bool toBottom) const
 {
 	if (m_hWnd != nullptr)
@@ -254,7 +251,7 @@ void CListBox::Add(const wchar_t* szText, bool toBottom) const
 		}
 	}
 }
-/*全消去*/
+/* 全消去 */
 void CListBox::Clear() const
 {
 	if (m_hWnd != nullptr)
@@ -262,29 +259,30 @@ void CListBox::Clear() const
 		::SendMessageW(m_hWnd, LB_RESETCONTENT, 0, 0);
 	}
 }
-/*選択項目文字列取得*/
+/* 選択項目文字列取得 */
 std::wstring CListBox::GetSelectedItemName()
 {
 	if (m_hWnd != nullptr)
 	{
 		long long llSelected = GetSelectedItemIndex();
-		if (llSelected != -1)
+		if (llSelected != LB_ERR)
 		{
-			LRESULT lResult = ::SendMessageW(m_hWnd, LB_GETTEXTLEN, 0, llSelected);
-			if (lResult != LB_ERR)
+			LRESULT length = ::SendMessageW(m_hWnd, LB_GETTEXTLEN, static_cast<WPARAM>(llSelected), 0);
+			if (length != LB_ERR)
 			{
-				std::vector<wchar_t> vBuffer(lResult + 1LL, L'\0');
-				lResult = ::SendMessageW(m_hWnd, LB_GETTEXT, 0, reinterpret_cast<LPARAM>(vBuffer.data()));
-				if (lResult != LB_ERR)
+				std::wstring result(static_cast<size_t>(length) + 1, L'\0');
+				LRESULT written = ::SendMessageW(m_hWnd, LB_GETTEXT, static_cast<WPARAM>(llSelected), reinterpret_cast<LPARAM>(&result[0]));
+				if (written != LB_ERR)
 				{
-					return vBuffer.data();
+					result.resize(written);
+					return result;
 				}
 			}
 		}
 	}
-	return std::wstring();
+	return {};
 }
-/*選択項目番号取得*/
+/* 選択項目番号取得 */
 long long CListBox::GetSelectedItemIndex() const
 {
 	if (m_hWnd != nullptr)
@@ -307,13 +305,13 @@ CComboBox::~CComboBox()
 {
 
 }
-/*作成*/
+/* 作成 */
 bool CComboBox::Create(HWND hParentWnd)
 {
 	m_hWnd = ::CreateWindowExW(0, WC_COMBOBOXW, L"", WS_VISIBLE | WS_CHILD | WS_VSCROLL | CBS_DROPDOWNLIST | CBS_SORT, 0, 0, 0, 0, hParentWnd, nullptr, ::GetModuleHandle(NULL), nullptr);
 	return m_hWnd != nullptr;
 }
-/*項目構築*/
+/* 項目構築 */
 void CComboBox::Setup(const std::vector<std::wstring>& itemTexts)
 {
 	Clear();
@@ -327,7 +325,21 @@ void CComboBox::Setup(const std::vector<std::wstring>& itemTexts)
 		SetSelectedItem(0);
 	}
 }
-/*選択項目番号取得*/
+
+void CComboBox::Setup(const wchar_t** itemTexts, size_t itemCount)
+{
+	Clear();
+
+	if (m_hWnd != nullptr)
+	{
+		for (size_t i = 0; i < itemCount; ++i)
+		{
+			::SendMessageW(m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(*itemTexts));
+		}
+		SetSelectedItem(0);
+	}
+}
+/* 選択項目番号取得 */
 int CComboBox::GetSelectedItemIndex() const
 {
 	if (m_hWnd != nullptr)
@@ -337,27 +349,29 @@ int CComboBox::GetSelectedItemIndex() const
 	}
 	return CB_ERR;
 }
-/*選択項目文字列取得*/
+/* 選択項目文字列取得 */
 std::wstring CComboBox::GetSelectedItemText() const
 {
 	if (m_hWnd != nullptr)
 	{
-		int iIndex = GetSelectedItemIndex();
-		if (iIndex != CB_ERR)
+		int selected = GetSelectedItemIndex();
+		if (selected != CB_ERR)
 		{
-			LRESULT lResult = ::SendMessageW(m_hWnd, CB_GETLBTEXTLEN, iIndex, 0);
-			if (lResult != CB_ERR)
+			LRESULT length = ::SendMessageW(m_hWnd, CB_GETLBTEXTLEN, static_cast<WPARAM>(selected), 0);
+			if (length != CB_ERR)
 			{
-				std::vector<wchar_t> vBuffer(lResult + 1, L'\0');
-				lResult = ::SendMessageW(m_hWnd, CB_GETLBTEXT, iIndex, reinterpret_cast<LPARAM>(vBuffer.data()));
-				if (lResult != CB_ERR)
+				std::wstring result(length + 1, L'\0');
+				LRESULT written = ::SendMessageW(m_hWnd, CB_GETLBTEXT, static_cast<WPARAM>(selected), reinterpret_cast<LPARAM>(&result[0]));
+				if (written != CB_ERR)
 				{
-					return vBuffer.data();
+					result.resize(written);
+					return result;
 				}
 			}
 		}
 	}
-	return std::wstring();
+
+	return {};
 }
 
 int CComboBox::FindIndex(const wchar_t* szName) const
@@ -368,7 +382,7 @@ int CComboBox::FindIndex(const wchar_t* szName) const
 	}
 	return CB_ERR;
 }
-/*選択項目指定*/
+/* 選択項目指定 */
 bool CComboBox::SetSelectedItem(int iIndex) const
 {
 	if (m_hWnd != nullptr)
@@ -378,7 +392,7 @@ bool CComboBox::SetSelectedItem(int iIndex) const
 	}
 	return false;
 }
-/*消去*/
+/* 消去 */
 void CComboBox::Clear() const
 {
 	if (m_hWnd != nullptr)
@@ -405,12 +419,12 @@ bool CButton::Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool h
 	return m_hWnd != nullptr;
 }
 
-void CButton::SetCheckBox(bool bToBeChecked) const
+void CButton::SetCheckBox(bool checked) const
 {
 	if (m_hWnd != nullptr)
 	{
-		/*BM_SETCHECK always return 0*/
-		::SendMessageW(m_hWnd, BM_SETCHECK, bToBeChecked ? BST_CHECKED : BST_UNCHECKED, 0);
+		/*B M_SETCHECK always return 0 */
+		::SendMessageW(m_hWnd, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
 	}
 }
 
@@ -573,14 +587,13 @@ bool CEdit::Create(const wchar_t* initialText, HWND hParentWnd, bool bReadOnly, 
 std::wstring CEdit::GetText() const
 {
 	int iLen = ::GetWindowTextLengthW(m_hWnd); // 終端を含まない
-	if (iLen > 0)
-	{
-		std::vector<wchar_t> vBuffer(iLen + 1LL, L'\0');
-		LRESULT lResult = ::SendMessageW(m_hWnd, WM_GETTEXT, static_cast<WPARAM>(vBuffer.size()), reinterpret_cast<LPARAM>(vBuffer.data()));
-		return vBuffer.data();
-	}
+	if (iLen == 0)return {};
+	++iLen;
+	std::wstring result(iLen, L'\0');
+	LRESULT lWritten = ::SendMessageW(m_hWnd, WM_GETTEXT, static_cast<WPARAM>(result.size()), reinterpret_cast<LPARAM>(&result[0]));
+	result.resize(lWritten);
 
-	return std::wstring();
+	return result;
 }
 
 bool CEdit::SetText(size_t textLength, const wchar_t* text) const
@@ -683,9 +696,9 @@ bool CTab::Add(const wchar_t* name)
 		TCITEMW tcItem{};
 		tcItem.mask = TCIF_TEXT;
 		tcItem.pszText = const_cast<wchar_t*>(name);
-		
+
 		int index = GetTabCount();
-		
+
 		return ::SendMessageW(m_hWnd, TCM_INSERTITEM, static_cast<WPARAM>(index), reinterpret_cast<LPARAM>(&tcItem)) != -1;
 	}
 	return false;

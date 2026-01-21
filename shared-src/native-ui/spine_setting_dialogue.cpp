@@ -1,4 +1,4 @@
-﻿/*Dialog-box like behaviour input window*/
+﻿/* Dialog-box like behaviour input window */
 
 #include <Windows.h>
 #include <CommCtrl.h>
@@ -105,7 +105,7 @@ int CSpineSettingDialogue::MessageLoop()
 
 	return 0;
 }
-/*C CALLBACK*/
+/* C CALLBACK */
 LRESULT CSpineSettingDialogue::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CSpineSettingDialogue* pThis = nullptr;
@@ -124,7 +124,7 @@ LRESULT CSpineSettingDialogue::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 
 	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
-/*メッセージ処理*/
+/* メッセージ処理 */
 LRESULT CSpineSettingDialogue::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -145,7 +145,7 @@ LRESULT CSpineSettingDialogue::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam
 
 	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
-/*WM_CREATE*/
+/* WM_CREATE */
 LRESULT CSpineSettingDialogue::OnCreate(HWND hWnd)
 {
 	m_hWnd = hWnd;
@@ -167,14 +167,14 @@ LRESULT CSpineSettingDialogue::OnCreate(HWND hWnd)
 
 	return 0;
 }
-/*WM_DESTROY*/
+/* WM_DESTROY */
 LRESULT CSpineSettingDialogue::OnDestroy()
 {
 	::PostQuitMessage(0);
 
 	return 0;
 }
-/*WM_CLOSE*/
+/* WM_CLOSE */
 LRESULT CSpineSettingDialogue::OnClose()
 {
 	GetInputs();
@@ -188,7 +188,7 @@ LRESULT CSpineSettingDialogue::OnClose()
 
 	return 0;
 }
-/*WM_PAINT*/
+/* WM_PAINT */
 LRESULT CSpineSettingDialogue::OnPaint()
 {
 	PAINTSTRUCT ps;
@@ -198,7 +198,7 @@ LRESULT CSpineSettingDialogue::OnPaint()
 
 	return 0;
 }
-/*WM_SIZE*/
+/* WM_SIZE */
 LRESULT CSpineSettingDialogue::OnSize()
 {
 	RECT rect;
@@ -244,16 +244,16 @@ LRESULT CSpineSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 	int wmKind = LOWORD(lParam);
 	if (wmKind == 0)
 	{
-		/*Menus*/
+		/* Menus */
 	}
 	else
 	{
-		/*Controls*/
+		/* Controls */
 
 		WORD usCode = HIWORD(wParam);
 		if (usCode == CBN_SELCHANGE)
 		{
-			/*Notification code*/
+			/* Notification code */
 			if (reinterpret_cast<HWND>(lParam) == m_binarySkelComboBox.GetHwnd())
 			{
 				OnSkeletonFormatSelect();
@@ -263,11 +263,11 @@ LRESULT CSpineSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
-/*EnumChildWindows CALLBACK*/
+/* EnumChildWindows CALLBACK */
 BOOL CSpineSettingDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 {
 	::SendMessage(hWnd, WM_SETFONT, static_cast<WPARAM>(lParam), 0);
-	/*TRUE: 続行, FALSE: 終了*/
+	/* TRUE: 続行, FALSE: 終了 */
 	return TRUE;
 }
 
@@ -279,19 +279,11 @@ void CSpineSettingDialogue::OnSkeletonFormatSelect()
 		m_skeletonFormat = static_cast<ESkeletonFormat>(iIndex);
 	}
 }
-/*入力値取得*/
+/* 入力値取得 */
 void CSpineSettingDialogue::GetInputs()
 {
-	std::wstring wstrTemp = m_atlasEdit.GetText();
-	if (!wstrTemp.empty())
-	{
-		m_wstrAtlasExtension = wstrTemp;
-	}
-	wstrTemp = m_skelEdit.GetText();
-	if (!wstrTemp.empty())
-	{
-		m_wstrSkelExtension = wstrTemp;
-	}
+	m_wstrAtlasExtension.assign(m_atlasEdit.GetText());
+	m_wstrSkelExtension.assign(m_skelEdit.GetText());
 }
 
 bool CSpineSettingDialogue::IsLikelyBinary(const std::wstring& wstrFileName) const
