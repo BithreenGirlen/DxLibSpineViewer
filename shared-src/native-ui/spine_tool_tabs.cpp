@@ -225,10 +225,10 @@ void CSpineSlotTab::ResizeControls()
 void CSpineSlotTab::RefreshControls()
 {
 	std::vector<std::wstring> temp;
-	controls_util::WidenList(m_pDxLibSpinePlayer->GetSlotNames(), temp);
+	controls_util::WidenList(m_pDxLibSpinePlayer->getSlotNames(), temp);
 	m_slotListView.CreateSingleList(temp);
 
-	m_slotAttachmentMap = m_pDxLibSpinePlayer->GetSlotNamesWithTheirAttachments();
+	m_slotAttachmentMap = m_pDxLibSpinePlayer->getSlotNamesWithTheirAttachments();
 
 	std::vector<std::wstring> wstrSlotNames;
 	wstrSlotNames.reserve(m_slotAttachmentMap.size());
@@ -250,16 +250,16 @@ void CSpineSlotTab::OnExcludeButton()
 		slot_exclusion::s_filter = win_text::NarrowUtf8(wstrSlotExclusionRegex);
 		if (!slot_exclusion::s_filter.empty())
 		{
-			m_pDxLibSpinePlayer->SetSlotExcludeCallback(&slot_exclusion::IsSlotToBeExcluded);
+			m_pDxLibSpinePlayer->setSlotExcludeCallback(&slot_exclusion::IsSlotToBeExcluded);
 		}
 		else
 		{
-			m_pDxLibSpinePlayer->SetSlotExcludeCallback(nullptr);
+			m_pDxLibSpinePlayer->setSlotExcludeCallback(nullptr);
 
 			const std::vector<std::wstring> wstrCheckedItems = m_slotListView.PickupCheckedItems();
 			std::vector<std::string> strCheckedItems;
 			controls_util::NarrowList(wstrCheckedItems, strCheckedItems);
-			m_pDxLibSpinePlayer->SetSlotsToExclude(strCheckedItems);
+			m_pDxLibSpinePlayer->setSlotsToExclude(strCheckedItems);
 		}
 	}
 }
@@ -289,7 +289,7 @@ void CSpineSlotTab::OnReplaceButton()
 	{
 		const std::string strSlotName = win_text::NarrowUtf8(wstrSlotName);
 		const std::string strAtlasRegionName = win_text::NarrowUtf8(wstrAtlasRegionName);
-		m_pDxLibSpinePlayer->ReplaceAttachment(strSlotName.c_str(), strAtlasRegionName.c_str());
+		m_pDxLibSpinePlayer->replaceAttachment(strSlotName.c_str(), strAtlasRegionName.c_str());
 	}
 }
 
@@ -297,7 +297,7 @@ void CSpineSlotTab::OnBoundButton()
 {
 	const std::wstring wstrSlotName = m_slotBoundComboBox.GetSelectedItemText();
 	const std::string strSlotName = win_text::NarrowUtf8(wstrSlotName);
-	DxLib::FLOAT4 bound = m_pDxLibSpinePlayer->GetCurrentBoundingOfSlot(strSlotName);
+	DxLib::FLOAT4 bound = m_pDxLibSpinePlayer->getCurrentBoundingOfSlot(strSlotName);
 	if (bound.z == 0.f)
 	{
 		::SetWindowTextW(m_slotBoundStatic.GetHwnd(), L"The slot not found in this animation");
@@ -328,8 +328,8 @@ LRESULT CSpineAnimationTab::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Controls::kSetAnimationButton:
 			OnSetAnimationButton();
 			break;
-		case Controls::kMixAnimationButton:
-			OnMixAnimationButton();
+		case Controls::kAddAnimationTracksButton:
+			OnAddAnimationTracksButton();
 			break;
 		default:
 			break;
@@ -344,10 +344,10 @@ void CSpineAnimationTab::CreateControls()
 	m_animationComboBox.Create(m_hWnd);
 	m_setAnimationButton.Create(L"Set animation", m_hWnd, reinterpret_cast<HMENU>(Controls::kSetAnimationButton));
 
-	m_mixAnimationSeparator.Create(L"", m_hWnd, true);
+	m_addAnimationTracksSeparator.Create(L"", m_hWnd, true);
 
-	m_animationListView.Create(m_hWnd, { L"Animations to mix" }, true);
-	m_mixAnimationButton.Create(L"Mix animations", m_hWnd, reinterpret_cast<HMENU>(Controls::kMixAnimationButton));
+	m_animationListView.Create(m_hWnd, { L"Animation tracks to add" }, true);
+	m_addAnimationTracksButton.Create(L"Add", m_hWnd, reinterpret_cast<HMENU>(Controls::kAddAnimationTracksButton));
 }
 
 void CSpineAnimationTab::ResizeControls()
@@ -357,17 +357,17 @@ void CSpineAnimationTab::ResizeControls()
 		{
 			{m_animationComboBox.GetHwnd(), WidthOption::Auto, HeightOption::Combo},
 			{m_setAnimationButton.GetHwnd(), WidthOption::Quarter},
-			{m_mixAnimationSeparator.GetHwnd(), WidthOption::Auto, HeightOption::Fixed, 0, 1},
+			{m_addAnimationTracksSeparator.GetHwnd(), WidthOption::Auto, HeightOption::Fixed, 0, 1},
 
 			{m_animationListView.GetHwnd(), WidthOption::Auto, HeightOption::List},
-			{m_mixAnimationButton.GetHwnd(), WidthOption::Quarter},
+			{m_addAnimationTracksButton.GetHwnd(), WidthOption::Quarter},
 		});
 	m_animationListView.AdjustWidth();
 }
 
 void CSpineAnimationTab::RefreshControls()
 {
-	const auto& animationNames = m_pDxLibSpinePlayer->GetAnimationNames();
+	const auto& animationNames = m_pDxLibSpinePlayer->getAnimationNames();
 	std::vector<std::wstring> temp;
 	controls_util::WidenList(animationNames, temp);
 
@@ -379,15 +379,15 @@ void CSpineAnimationTab::OnSetAnimationButton()
 {
 	const std::wstring wstrAnimationName = m_animationComboBox.GetSelectedItemText();
 	const std::string strAnimationName = win_text::NarrowUtf8(wstrAnimationName);
-	m_pDxLibSpinePlayer->SetAnimationByName(strAnimationName.c_str());
+	m_pDxLibSpinePlayer->setAnimationByName(strAnimationName.c_str());
 }
 
-void CSpineAnimationTab::OnMixAnimationButton()
+void CSpineAnimationTab::OnAddAnimationTracksButton()
 {
 	const std::vector<std::wstring> wstrCheckedItems = m_animationListView.PickupCheckedItems();
 	std::vector<std::string> strCheckedItems;
 	controls_util::NarrowList(wstrCheckedItems, strCheckedItems);
-	m_pDxLibSpinePlayer->MixAnimations(strCheckedItems);
+	m_pDxLibSpinePlayer->addAnimationTracks(strCheckedItems);
 }
 
 /* ==================== Skin tab ==================== */
@@ -447,7 +447,7 @@ void CSpineSkinTab::ResizeControls()
 
 void CSpineSkinTab::RefreshControls()
 {
-	const auto& skinNames = m_pDxLibSpinePlayer->GetSkinNames();
+	const auto& skinNames = m_pDxLibSpinePlayer->getSkinNames();
 	std::vector<std::wstring> temp;
 	controls_util::WidenList(skinNames, temp);
 
@@ -459,7 +459,7 @@ void CSpineSkinTab::OnSetSkinButton()
 {
 	const std::wstring wstrSkinnName = m_skinComboBox.GetSelectedItemText();
 	const std::string strSkinName = win_text::NarrowUtf8(wstrSkinnName);
-	m_pDxLibSpinePlayer->SetSkinByName(strSkinName.c_str());
+	m_pDxLibSpinePlayer->setSkinByName(strSkinName.c_str());
 }
 
 void CSpineSkinTab::OnMixSkinButton()
@@ -467,7 +467,7 @@ void CSpineSkinTab::OnMixSkinButton()
 	const std::vector<std::wstring> wstrCheckedItems = m_skinListView.PickupCheckedItems();
 	std::vector<std::string> strCheckedItems;
 	controls_util::NarrowList(wstrCheckedItems, strCheckedItems);
-	m_pDxLibSpinePlayer->MixSkins(strCheckedItems);
+	m_pDxLibSpinePlayer->mixSkins(strCheckedItems);
 }
 
 /* ==================== Rendering tab ==================== */
@@ -513,7 +513,7 @@ void CSpineRenderingTab::CreateControls()
 #if defined(SPINE_4_0) || defined(SPINE_4_1_OR_LATER) || defined(SPINE_4_2_OR_LATER)
 	::EnableWindow(m_pmaButton.GetHwnd(), FALSE);
 #endif
-	::EnableWindow(m_drawOrderButton.GetHwnd(), m_pDxLibSpinePlayer->GetNumberOfSpines() > 1 ? TRUE : FALSE);
+	::EnableWindow(m_drawOrderButton.GetHwnd(), m_pDxLibSpinePlayer->getNumberOfSpines() > 1 ? TRUE : FALSE);
 }
 
 void CSpineRenderingTab::ResizeControls()
@@ -532,25 +532,25 @@ void CSpineRenderingTab::ResizeControls()
 
 void CSpineRenderingTab::RefreshControls()
 {
-	m_pmaButton.SetCheckBox(m_pDxLibSpinePlayer->IsAlphaPremultiplied());
-	m_blemdModeButton.SetCheckBox(m_pDxLibSpinePlayer->IsBlendModeNormalForced());
-	m_drawOrderButton.SetCheckBox(m_pDxLibSpinePlayer->IsDrawOrderReversed());
+	m_pmaButton.SetCheckBox(m_pDxLibSpinePlayer->isAlphaPremultiplied());
+	m_blemdModeButton.SetCheckBox(m_pDxLibSpinePlayer->isBlendModeNormalForced());
+	m_drawOrderButton.SetCheckBox(m_pDxLibSpinePlayer->isDrawOrderReversed());
 }
 
 void CSpineRenderingTab::OnPmaButton()
 {
-	m_pDxLibSpinePlayer->TogglePma();
+	m_pDxLibSpinePlayer->togglePma();
 	RefreshControls();
 }
 
 void CSpineRenderingTab::OnBlendModeButton()
 {
-	m_pDxLibSpinePlayer->ToggleBlendModeAdoption();
+	m_pDxLibSpinePlayer->toggleBlendModeAdoption();
 	RefreshControls();
 }
 
 void CSpineRenderingTab::OnDrawOrderButton()
 {
-	m_pDxLibSpinePlayer->SetDrawOrder(!m_pDxLibSpinePlayer->IsDrawOrderReversed());
+	m_pDxLibSpinePlayer->setDrawOrder(!m_pDxLibSpinePlayer->isDrawOrderReversed());
 	RefreshControls();
 }

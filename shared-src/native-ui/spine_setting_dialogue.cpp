@@ -282,16 +282,8 @@ void CSpineSettingDialogue::OnSkeletonFormatSelect()
 /*入力値取得*/
 void CSpineSettingDialogue::GetInputs()
 {
-	std::wstring wstrTemp = m_atlasEdit.GetText();
-	if (!wstrTemp.empty())
-	{
-		m_wstrAtlasExtension = wstrTemp;
-	}
-	wstrTemp = m_skelEdit.GetText();
-	if (!wstrTemp.empty())
-	{
-		m_wstrSkelExtension = wstrTemp;
-	}
+	m_wstrAtlasExtension.assign(m_atlasEdit.GetText());
+	m_wstrSkelExtension.assign(m_skelEdit.GetText());
 }
 
 bool CSpineSettingDialogue::IsLikelyBinary(const std::wstring& wstrFileName) const

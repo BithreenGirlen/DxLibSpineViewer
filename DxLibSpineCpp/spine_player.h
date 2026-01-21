@@ -21,89 +21,90 @@ public:
 	CSpinePlayer();
 	virtual ~CSpinePlayer();
 
-	bool LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel);
-	bool LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool isBinarySkel);
+	bool loadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel);
+	bool loadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool isBinarySkel);
 
-	bool AddSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool isBinarySkel);
+	bool addSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool isBinarySkel);
 
-	size_t GetNumberOfSpines() const noexcept;
-	bool HasSpineBeenLoaded() const noexcept;
+	size_t getNumberOfSpines() const noexcept;
+	bool hasSpineBeenLoaded() const noexcept;
 
-	void Update(float fDelta);
+	void update(float fDelta);
 
-	void ResetScale();
+	void resetScale();
 
-	void MoveViewPoint(int iX, int iY);
+	void addOffset(int iX, int iY);
 
-	void ShiftAnimation();
-	void ShiftSkin();
+	void shiftAnimation();
+	void shiftSkin();
 
-	void SetAnimationByIndex(size_t nIndex);
-	void SetAnimationByName(const char* szAnimationName);
-	void RestartAnimation(bool loop = true);
+	void setAnimationByIndex(size_t nIndex);
+	void setAnimationByName(const char* szAnimationName);
+	void restartAnimation(bool loop = true);
 
-	void SetSkinByIndex(size_t nIndex);
-	void SetSkinByName(const char* szSkinName);
-	void SetupSkin();
+	void setSkinByIndex(size_t nIndex);
+	void setSkinByName(const char* szSkinName);
+	void setupSkin();
 
 	/// @brief Toggle the state of all drawables
-	void TogglePma();
-	void ToggleBlendModeAdoption();
+	void togglePma();
+	void toggleBlendModeAdoption();
 
 	/// @return current state. If it were out of range, return false.
-	bool IsAlphaPremultiplied(size_t nDrawableIndex = 0);
-	bool IsBlendModeNormalForced(size_t nDrawableIndex = 0);
-	bool IsDrawOrderReversed() const noexcept;
+	bool isAlphaPremultiplied(size_t nDrawableIndex = 0);
+	bool isBlendModeNormalForced(size_t nDrawableIndex = 0);
+	bool isDrawOrderReversed() const noexcept;
 
 	/// @return false if it were out of range.
-	bool PremultiplyAlpha(bool isToBePremultiplied, size_t nDrawableIndex = 0);
-	bool ForceBlendModeNormal(bool isToForce, size_t nDrawableIndex = 0);
-	void SetDrawOrder(bool isToBeReversed);
+	bool premultiplyAlpha(bool premultiplied, size_t nDrawableIndex = 0);
+	bool forceBlendModeNormal(bool toForce, size_t nDrawableIndex = 0);
+	void setDrawOrder(bool reversed);
 
-	std::string GetCurrentAnimationName();
+	std::string getCurrentAnimationName();
 	/// @brief Get animation time actually entried in track.
 	/// @param fTrack elapsed time since the track was entried.
 	/// @param fLast current timeline position.
 	/// @param fStart timeline start position.
 	/// @param fEnd timeline end position.
-	void GetCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd);
+	void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd);
 
-	const std::vector<std::string>& GetSlotNames() const noexcept;
-	const std::vector<std::string>& GetSkinNames() const noexcept;
-	const std::vector<std::string>& GetAnimationNames() const noexcept;
+	const std::vector<std::string>& getSlotNames() const noexcept;
+	const std::vector<std::string>& getSkinNames() const noexcept;
+	const std::vector<std::string>& getAnimationNames() const noexcept;
 
-	void SetSlotsToExclude(const std::vector<std::string>& slotNames);
-	void MixSkins(const std::vector<std::string>& skinNames);
-	void MixAnimations(const std::vector<std::string>& animationNames, bool loop = false);
+	void setSlotsToExclude(const std::vector<std::string>& slotNames);
+	void mixSkins(const std::vector<std::string>& skinNames);
+	void addAnimationTracks(const std::vector<std::string>& animationNames, bool loop = false);
 
-	void SetSlotExcludeCallback(bool (*pFunc)(const char*, size_t));
+	void setSlotExcludeCallback(bool (*pFunc)(const char*, size_t));
 
 	/// @brief Searches slots having multiple attachments. If each slot is associated with only single attachment, returns empty.
 	/// @return slot name as key and attachment names as values.
-	std::unordered_map<std::string, std::vector<std::string>> GetSlotNamesWithTheirAttachments();
-	bool ReplaceAttachment(const char* szSlotName, const char* szAttachmentName);
+	std::unordered_map<std::string, std::vector<std::string>> getSlotNamesWithTheirAttachments();
+	bool replaceAttachment(const char* szSlotName, const char* szAttachmentName);
 
-	FPoint2 GetBaseSize() const noexcept;
-	void SetBaseSize(float fWidth, float fHeight);
-	void ResetBaseSize();
+	FPoint2 getBaseSize() const noexcept;
+	void setBaseSize(float fWidth, float fHeight);
+	void resetBaseSize();
 
-	FPoint2 GetOffset() const noexcept;
+	FPoint2 getOffset() const noexcept;
+	void setOffset(float fX, float fY) noexcept;
 
-	float GetSkeletonScale() const noexcept;
-	void SetSkeletonScale(float fScale);
+	float getSkeletonScale() const noexcept;
+	void setSkeletonScale(float fScale);
 
-	float GetCanvasScale() const noexcept;
-	void SetCanvasScale(float fScale);
+	float getCanvasScale() const noexcept;
+	void setCanvasScale(float fScale) noexcept;
 
-	float GetTimeScale() const noexcept;
-	void SetTimeScale(float fTimeScale);
+	float getTimeScale() const noexcept;
+	void setTimeScale(float fTimeScale) noexcept;
 protected:
 	enum Constants { kBaseWidth = 1280, kBaseHeight = 720, kMinAtlas = 1024 };
 
 	CTextureLoader m_textureLoader;
 	std::vector<std::unique_ptr<spine::Atlas>> m_atlases;
 	std::vector<std::shared_ptr<spine::SkeletonData>> m_skeletonData;
-	std::vector<std::shared_ptr<CSpineDrawable>> m_drawables;
+	std::vector<std::unique_ptr<CSpineDrawable>> m_drawables;
 
 	FPoint2 m_fBaseSize = FPoint2{ kBaseWidth, kBaseHeight };
 
@@ -125,17 +126,17 @@ protected:
 
 	bool m_isDrawOrderReversed = false;
 
-	void ClearDrawables();
-	bool AddDrawable(spine::SkeletonData* const pSkeletonData);
-	bool SetupDrawables();
+	void clearDrawables();
+	bool addDrawable(spine::SkeletonData* pSkeletonData);
+	bool setupDrawables();
 
-	void WorkOutDefaultSize();
-	virtual void WorkOutDefaultScale() = 0;
-	virtual void WorkOutDefaultOffset() = 0;
+	void workOutDefaultSize();
+	virtual void workOutDefaultScale() = 0;
+	virtual void workOutDefaultOffset() = 0;
 
-	void UpdatePosition();
+	void updatePosition();
 
-	void ClearAnimationTracks();
+	void clearAnimationTracks();
 };
 
 #endif // !SPINE_PLAYER_H_

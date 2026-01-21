@@ -12,25 +12,25 @@ CDxLibSpinePlayerC::~CDxLibSpinePlayerC()
 
 }
 
-void CDxLibSpinePlayerC::Redraw()
+void CDxLibSpinePlayerC::redraw()
 {
 	if (!m_drawables.empty())
 	{
-		DxLib::MATRIX matrix = CalculateTransformMatrix();
+		DxLib::MATRIX matrix = calculateTransformMatrix();
 		DxLib::SetTransformTo2D(&matrix);
 
 		if (!m_isDrawOrderReversed)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
 			{
-				m_drawables[i]->Draw();
+				m_drawables[i]->draw();
 			}
 		}
 		else
 		{
 			for (long long i = m_drawables.size() - 1; i >= 0; --i)
 			{
-				m_drawables[i]->Draw();
+				m_drawables[i]->draw();
 			}
 		}
 
@@ -38,7 +38,7 @@ void CDxLibSpinePlayerC::Redraw()
 	}
 }
 
-DxLib::MATRIX CDxLibSpinePlayerC::CalculateTransformMatrix() const
+DxLib::MATRIX CDxLibSpinePlayerC::calculateTransformMatrix() const noexcept
 {
 	int iScreenWidth = 0;
 	int iScreenHeight = 0;
@@ -52,12 +52,12 @@ DxLib::MATRIX CDxLibSpinePlayerC::CalculateTransformMatrix() const
 	return DxLib::MMult(matrix, tranlateMatrix);
 }
 
-DxLib::FLOAT4 CDxLibSpinePlayerC::GetCurrentBoundingOfSlot(const std::string& slotName) const
+DxLib::FLOAT4 CDxLibSpinePlayerC::getCurrentBoundingOfSlot(const std::string& slotName) const
 {
 	bool found = false;
 	for (const auto& drawable : m_drawables)
 	{
-		const auto& rect = drawable->GetBoundingBoxOfSlot(slotName.c_str(), slotName.size(), &found);
+		const auto& rect = drawable->getBoundingBoxOfSlot(slotName.c_str(), slotName.size(), &found);
 		if (found)
 		{
 			return rect;
@@ -67,7 +67,7 @@ DxLib::FLOAT4 CDxLibSpinePlayerC::GetCurrentBoundingOfSlot(const std::string& sl
 }
 
 /*標準尺度算出*/
-void CDxLibSpinePlayerC::WorkOutDefaultScale()
+void CDxLibSpinePlayerC::workOutDefaultScale()
 {
 	m_fDefaultScale = 1.f;
 
@@ -101,14 +101,14 @@ void CDxLibSpinePlayerC::WorkOutDefaultScale()
 	}
 }
 
-void CDxLibSpinePlayerC::WorkOutDefaultOffset()
+void CDxLibSpinePlayerC::workOutDefaultOffset()
 {
 	float fMinX = FLT_MAX;
 	float fMinY = FLT_MAX;
 
 	for (const auto& pDrawable : m_drawables)
 	{
-		const auto& rect = pDrawable->GetBoundingBox();
+		const auto& rect = pDrawable->getBoundingBox();
 		fMinX = (std::min)(fMinX, rect.x);
 		fMinY = (std::min)(fMinY, rect.y);
 	}

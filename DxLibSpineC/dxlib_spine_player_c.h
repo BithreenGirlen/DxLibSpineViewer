@@ -9,12 +9,12 @@ public:
 	CDxLibSpinePlayerC();
 	~CDxLibSpinePlayerC();
 
-	void Redraw();
+	void redraw();
 
-	DxLib::MATRIX CalculateTransformMatrix() const;
-	DxLib::FLOAT4 GetCurrentBoundingOfSlot(const std::string& slotName) const;
+	DxLib::MATRIX calculateTransformMatrix() const noexcept;
+	DxLib::FLOAT4 getCurrentBoundingOfSlot(const std::string& slotName) const;
 private:
-	virtual void WorkOutDefaultScale();
-	virtual void WorkOutDefaultOffset();
+	void workOutDefaultScale() override;
+	void workOutDefaultOffset() override;
 };
 #endif // !DXLIB_SPINE_PLAYER_C_H_

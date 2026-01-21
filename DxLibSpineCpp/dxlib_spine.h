@@ -15,25 +15,31 @@ public:
 	CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData, spine::AnimationStateData* pAnimationStateData = nullptr);
 	~CDxLibSpineDrawable();
 
-	spine::Skeleton* skeleton = nullptr;
-	spine::AnimationState* animationState = nullptr;
+	spine::Skeleton* skeleton() const noexcept;
+	spine::AnimationState* animationState() const noexcept;
 
-	/// @brief Whether alpha is premultiplied or not. For Spine 4.0 and later, this property is exported with atlas file,
-	///	       but for Spine 3.8, should be configured based on other means.
-	bool isAlphaPremultiplied = true; 
-	bool isToForceBlendModeNormal = false;
+	void premultiplyAlpha(bool premultiplied) noexcept;
+	bool isAlphaPremultiplied() const noexcept;
 
-	void Update(float fDelta);
-	void Draw();
+	void forceBlendModeNormal(bool toForce) noexcept;
+	bool isBlendModeNormalForced() const noexcept;
+
+	void update(float fDelta);
+	void draw();
 
 	/// @brief Set slots to be excluded from rendering
-	void SetLeaveOutList(spine::Vector<spine::String> &list);
-	void SetLeaveOutCallback(bool (*pFunc)(const char*, size_t)) { m_pLeaveOutCallback = pFunc; }
+	void setLeaveOutList(spine::Vector<spine::String> &list);
+	void setLeaveOutCallback(bool (*pFunc)(const char*, size_t)) { m_pLeaveOutCallback = pFunc; }
 
-	DxLib::FLOAT4 GetBoundingBox() const;
-	DxLib::FLOAT4 GetBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr) const;
+	DxLib::FLOAT4 getBoundingBox() const;
+	DxLib::FLOAT4 getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr) const;
 private:
 	bool m_hasOwnAnimationStateData = false;
+	bool m_isAlphaPremultiplied = true;
+	bool m_isToForceBlendModeNormal = false;
+
+	spine::Skeleton* m_skeleton = nullptr;
+	spine::AnimationState* m_animationState = nullptr;
 
 	spine::Vector<float> m_worldVertices;
 	spine::Vector<DxLib::VERTEX2D> m_dxLibVertices;
@@ -51,11 +57,8 @@ private:
 class CDxLibTextureLoader : public spine::TextureLoader
 {
 public:
-	CDxLibTextureLoader() {};
-	virtual ~CDxLibTextureLoader() {};
-
-	virtual void load(spine::AtlasPage& page, const spine::String& path);
-	virtual void unload(void* texture);
+	void load(spine::AtlasPage& page, const spine::String& path) override;
+	void unload(void* texture) override;
 };
 
 #endif // DXLIB_SPINE_H_

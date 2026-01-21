@@ -74,6 +74,12 @@ public:
 	HWND GetHwnd()const { return m_hWnd; }
 
 	void Setup(const std::vector<std::wstring>& itemTexts);
+	void Setup(const wchar_t** itemTexts, size_t itemCount);
+	template<size_t itemCount>
+	void Setup(const wchar_t* (&& itemTexts)[itemCount])
+	{
+		Setup(itemTexts, itemCount);
+	}
 
 	int GetSelectedItemIndex() const;
 	std::wstring GetSelectedItemText() const;
@@ -95,7 +101,7 @@ public:
 	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool hasCheckBox = false);
 	HWND GetHwnd()const { return m_hWnd; }
 
-	void SetCheckBox(bool bToBeChecked) const;
+	void SetCheckBox(bool checked) const;
 	bool IsChecked() const;
 private:
 	HWND m_hWnd = nullptr;

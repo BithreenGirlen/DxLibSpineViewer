@@ -17,7 +17,7 @@ public:
 	void OnRefresh();
 
 protected:
-	HWND m_hWnd;
+	HWND m_hWnd = nullptr;
 
 	static LRESULT CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -78,7 +78,7 @@ private:
 	std::unordered_map<std::string, std::vector<std::string>> m_slotAttachmentMap;
 };
 
-/// @brief Set/Mix animation
+/// @brief Set/Add animation
 class CSpineAnimationTab : public CTabBase
 {
 public:
@@ -88,23 +88,23 @@ private:
 
 	struct Controls
 	{
-		enum { kSetAnimationButton = 1, kMixAnimationButton };
+		enum { kSetAnimationButton = 1, kAddAnimationTracksButton };
 	};
 
 	CComboBox m_animationComboBox;
 	CButton m_setAnimationButton;
 
-	CStatic m_mixAnimationSeparator;
+	CStatic m_addAnimationTracksSeparator;
 
 	CListView m_animationListView;
-	CButton m_mixAnimationButton;
+	CButton m_addAnimationTracksButton;
 
 	void CreateControls() override;
 	void ResizeControls() override;
 	void RefreshControls() override;
 
 	void OnSetAnimationButton();
-	void OnMixAnimationButton();
+	void OnAddAnimationTracksButton();
 };
 
 /// @brief Set/Mix skin
