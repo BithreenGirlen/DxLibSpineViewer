@@ -308,8 +308,8 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 				HelpMarker("Adding tracks will overwrite animation state.\n"
 					"Uncheck all the items and then apply to reset the state.");
 
-				static ImGuiListview animationsListView;
-				animationsListView.update(animationNames, "Animation to mix##AnimationsToMix");
+				static ImGuiListview animationTracksListView;
+				animationTracksListView.update(animationNames, "Tracks to add##AnimationTracksToAdd");
 
 				static bool looped = false;
 				ImGui::Checkbox("Loop", &looped);
@@ -317,13 +317,58 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 				if (ImGui::Button("Add##AddAnimationTracks"))
 				{
 					std::vector<std::string> checkedItems;
-					animationsListView.pickupCheckedItems(animationNames, checkedItems);
+					animationTracksListView.pickupCheckedItems(animationNames, checkedItems);
 					pDxLibSpinePlayer->addAnimationTracks(checkedItems, looped);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Clear##ClearAnimationTracks"))
+				{
+					animationTracksListView.clear(animationNames);
+					pDxLibSpinePlayer->addAnimationTracks({});
 				}
 
 				ImGui::TreePop();
 			}
 
+			/* 動作遷移時間 */
+			if (ImGui::TreeNode("Mix animations"))
+			{
+				static ImGuiComboBox fadeOutAnimationComboBox;
+				fadeOutAnimationComboBox.update(animationNames, "##AnimationToFadeOut");
+				ImGui::SameLine();
+				ImGui::Text("Fade out");
+
+				static ImGuiComboBox fadeInAnimationComboBox;
+				fadeInAnimationComboBox.update(animationNames, "##AnimationToFadeIn");
+				ImGui::SameLine();
+				ImGui::Text("Fade in");
+
+				const std::string& fadeOut = animationNames[fadeOutAnimationComboBox.selectedIndex];
+				const std::string& fadeIn = animationNames[fadeInAnimationComboBox.selectedIndex];
+
+				float duration = pDxLibSpinePlayer->getAnimationDuration(fadeOut.c_str());
+				if (duration != 0.f)
+				{
+					static float mixTime = 0.1f;
+					ImGui::SliderFloat("Mix time", &mixTime, 0.f, duration, "%0.2f");
+
+					if (ImGui::Button("Mix##MixAnimations"))
+					{
+						pDxLibSpinePlayer->mixAnimations(fadeOut.c_str(), fadeIn.c_str(), mixTime);
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Clear##ClearMixedAnimations"))
+					{
+#if defined (DXLIB_SPINE_CPP) && (defined (SPINE_4_1_OR_LATER) || defined (SPINE_4_2_OR_LATER))
+						pDxLibSpinePlayer->clearMixedAnimation();
+#else /* C runtime or C++ runtime older than Spine 4.0 */
+						pDxLibSpinePlayer->mixAnimations(fadeOut.c_str(), fadeIn.c_str(), 0.f);
+#endif
+					}
+				}
+
+				ImGui::TreePop();
+			}
 			ImGui::EndTabItem();
 		}
 		/* 装い指定・合成 */

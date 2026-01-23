@@ -296,8 +296,8 @@ LRESULT CMainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kSeeThroughImage:
 			MenuOnMakeWindowTransparent();
 			break;
-		case Menu::kAllowManualSizing:
-			MenuOnAllowManualSizing();
+		case Menu::kAllowDraggedResizing:
+			MenuOnAllowDraggedResizing();
 			break;
 		case Menu::kReverseZoomDirection:
 			MenuOnReverseZoomDirection();
@@ -623,7 +623,7 @@ void CMainWindow::InitialiseMenuBar()
 			{0, L"Window", window_menu::MenuBuilder(
 				{
 					{Menu::kSeeThroughImage, L"Make tranparent"},
-					{Menu::kAllowManualSizing, L"Allow manual sizing"},
+					{Menu::kAllowDraggedResizing, L"Allow dragged resizing"},
 					{Menu::kReverseZoomDirection, L"Reverse zoom direction"},
 					{0, L"Base size", window_menu::MenuBuilder(
 						{
@@ -800,9 +800,9 @@ void CMainWindow::MenuOnAddFile()
 
 	std::string strAtlasFile = win_text::NarrowUtf8(wstrAtlasFile);
 	std::string strSkeletonFile = win_text::NarrowUtf8(wstrSkeletonFile);
-	bool bBinary = m_spineSettingDialogue.IsSkelBinary(wstrSkeletonFile.c_str());
+	bool isBinary = m_spineSettingDialogue.IsSkelBinary(wstrSkeletonFile.c_str());
 
-	m_dxLibSpinePlayer.addSpineFromFile(strAtlasFile.c_str(), strSkeletonFile.c_str(), bBinary);
+	m_dxLibSpinePlayer.addSpineFromFile(strAtlasFile.c_str(), strSkeletonFile.c_str(), isBinary);
 }
 
 void CMainWindow::MenuOnFont()
@@ -842,13 +842,13 @@ void CMainWindow::MenuOnMakeWindowTransparent()
 	}
 }
 /*手動寸法変更許可切り替え*/
-void CMainWindow::MenuOnAllowManualSizing()
+void CMainWindow::MenuOnAllowDraggedResizing()
 {
-	bool isResizingAllowed = !m_isManuallyResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording;
-	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kAllowManualSizing, isResizingAllowed);
+	bool isResizingAllowed = !m_isDraggedResizingAllowed && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording;
+	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kAllowDraggedResizing, isResizingAllowed);
 	if (bRet)
 	{
-		m_isManuallyResizable = isResizingAllowed;
+		m_isDraggedResizingAllowed = isResizingAllowed;
 		UpdateWindowResizableAttribute();
 	}
 }
@@ -960,7 +960,7 @@ void CMainWindow::MenuOnStartRecording(int menuKind)
 	/* Disable manual resizing once video recording has started. */
 	if (outputType == CDxLibRecorder::EOutputType::Video)
 	{
-		MenuOnAllowManualSizing();
+		MenuOnAllowDraggedResizing();
 	}
 
 	if (m_spineToolDatum.toExportPerAnim)
@@ -1025,7 +1025,7 @@ void CMainWindow::ToggleWindowFrameStyle()
 	}
 	else
 	{
-		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle | WS_CAPTION | WS_SYSMENU | (m_isManuallyResizable ? WS_THICKFRAME : 0));
+		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle | WS_CAPTION | WS_SYSMENU | (m_isDraggedResizingAllowed ? WS_THICKFRAME : 0));
 		::SetMenu(m_hWnd, m_hMenuBar);
 	}
 
@@ -1035,7 +1035,7 @@ void CMainWindow::ToggleWindowFrameStyle()
 void CMainWindow::UpdateMenuItemState()
 {
 	constexpr const unsigned int toolMenuIndices[] = { Menu::kShowToolDialogue, Menu::kAddEffectFile };
-	constexpr const unsigned int windowIndices[] = { Menu::kSeeThroughImage, Menu::kAllowManualSizing, Menu::kReverseZoomDirection, Menu::kFitToManualSize, Menu::kFitToDefaultSize };
+	constexpr const unsigned int windowIndices[] = { Menu::kSeeThroughImage, Menu::kAllowDraggedResizing, Menu::kReverseZoomDirection, Menu::kFitToManualSize, Menu::kFitToDefaultSize };
 
 	bool toEnable = m_dxLibSpinePlayer.hasSpineBeenLoaded();
 
@@ -1172,7 +1172,7 @@ void CMainWindow::StepRecording()
 void CMainWindow::UpdateWindowResizableAttribute()
 {
 	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
-	::SetWindowLong(m_hWnd, GWL_STYLE, (m_dxLibSpinePlayer.hasSpineBeenLoaded() && m_isManuallyResizable) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
+	::SetWindowLong(m_hWnd, GWL_STYLE, (m_dxLibSpinePlayer.hasSpineBeenLoaded() && m_isDraggedResizingAllowed) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
 }
 /*窓寸法変更*/
 void CMainWindow::ResizeWindow()

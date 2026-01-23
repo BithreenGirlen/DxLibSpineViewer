@@ -345,6 +345,20 @@ void CSpinePlayerC::getCurrentAnimationTime(float* fTrack, float* fLast, float* 
 		}
 	}
 }
+
+float CSpinePlayerC::getAnimationDuration(const char* animationName)
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		spAnimation* pAnimation = spSkeletonData_findAnimation(pDrawable->skeleton()->data, animationName);
+		if (pAnimation != nullptr)
+		{
+			return pAnimation->duration;
+		}
+	}
+
+	return 0.f;
+}
 /*槽溝名称引き渡し*/
 const std::vector<std::string>& CSpinePlayerC::getSlotNames() const noexcept
 {
@@ -359,6 +373,27 @@ const std::vector<std::string>& CSpinePlayerC::getSkinNames() const noexcept
 const std::vector<std::string>& CSpinePlayerC::getAnimationNames() const noexcept
 {
 	return m_animationNames;
+}
+
+void CSpinePlayerC::mixAnimations(const char* fadeOutAnimationName, const char* fadeInAnimationName, float mixTime)
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		spAnimation* pFadeOutAnimation = spSkeletonData_findAnimation(pDrawable->skeleton()->data, fadeOutAnimationName);
+		spAnimation* pFadeInAnimation = spSkeletonData_findAnimation(pDrawable->skeleton()->data, fadeInAnimationName);
+		if (pFadeOutAnimation != nullptr && pFadeInAnimation != nullptr)
+		{
+			spAnimationStateData_setMix(pDrawable->animationState()->data, pFadeOutAnimation, pFadeInAnimation, mixTime);
+		}
+	}
+}
+
+void CSpinePlayerC::clearMixedAnimation()
+{
+	/*
+	* There is no equivalent API of AnimationStateData::clear() in spine-c even if it were Spine 4.1 and later.
+	* In addition, neither "_ToEntry" nor "_FromEntry" is accessible.
+	*/
 }
 /*描画除外リスト設定*/
 void CSpinePlayerC::setSlotsToExclude(const std::vector<std::string>& slotNames)

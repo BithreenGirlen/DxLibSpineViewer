@@ -332,6 +332,21 @@ void CSpinePlayer::getCurrentAnimationTime(float* fTrack, float* fLast, float* f
 		}
 	}
 }
+
+float CSpinePlayer::getAnimationDuration(const char* animationName)
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		spine::Animation* pAnimation = pDrawable->skeleton()->getData()->findAnimation(animationName);
+		if (pAnimation != nullptr)
+		{
+			return pAnimation->getDuration();
+		}
+	}
+
+	return 0.f;
+}
+
 /*槽溝名称引き渡し*/
 const std::vector<std::string>& CSpinePlayer::getSlotNames() const noexcept
 {
@@ -387,7 +402,7 @@ void CSpinePlayer::mixSkins(const std::vector<std::string>& skinNames)
 		pDrawble->skeleton()->setSlotsToSetupPose();
 	}
 }
-/*動作合成*/
+/* 動作予約 */
 void CSpinePlayer::addAnimationTracks(const std::vector<std::string>& animationNames, bool loop)
 {
 	clearAnimationTracks();
@@ -413,6 +428,30 @@ void CSpinePlayer::addAnimationTracks(const std::vector<std::string>& animationN
 			}
 		}
 	}
+}
+
+void CSpinePlayer::mixAnimations(const char* fadeOutAnimationName, const char* fadeInAnimationName, float mixTime)
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		spine::Animation* fadeOutAnimation = pDrawable->skeleton()->getData()->findAnimation(fadeOutAnimationName);
+		spine::Animation* fadeInAnimation = pDrawable->skeleton()->getData()->findAnimation(fadeInAnimationName);
+		if (fadeOutAnimation != nullptr && fadeInAnimation != nullptr)
+		{
+			const auto& animationStateData = pDrawable->animationState()->getData();
+			animationStateData->setMix(fadeOutAnimation, fadeInAnimation, mixTime);
+		}
+	}
+}
+
+void CSpinePlayer::clearMixedAnimation()
+{
+#ifdef SPINE_4_1_OR_LATER
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->animationState()->getData()->clear();
+	}
+#endif
 }
 
 void CSpinePlayer::setSlotExcludeCallback(bool(*pFunc)(const char*, size_t))
