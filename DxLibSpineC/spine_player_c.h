@@ -69,10 +69,13 @@ public:
 	/// @param fStart timeline start position.
 	/// @param fEnd timeline end position.
 	void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd);
+	float getAnimationDuration(const char* animationName);
 
 	const std::vector<std::string>& getSlotNames() const noexcept;
 	const std::vector<std::string>& getSkinNames() const noexcept;
 	const std::vector<std::string>& getAnimationNames() const noexcept;
+	void mixAnimations(const char* fadeOutAnimationName, const char* fadeInAnimationName, float mixTime);
+	void clearMixedAnimation();
 
 	void setSlotsToExclude(const std::vector<std::string>& slotNames);
 	void mixSkins(const std::vector<std::string>& skinNames);

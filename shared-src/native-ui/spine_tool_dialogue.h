@@ -18,6 +18,7 @@ public:
 
 	void OnRefresh();
 
+	void Destroy();
 private:
 	HWND m_hWnd = nullptr;
 
@@ -31,13 +32,8 @@ private:
 
 	struct Constants { enum { kFontSize = 16 }; };
 	struct BaseSize { enum { kWidth = 320, kHeight = 320 }; };
-	struct Tab
-	{
-		enum
-		{
-			Animation = 0, Skin, Slot, Rendering,
-		};
-	};
+
+	struct Tab { enum { Animation = 0, Skin, Slot, Rendering, };};
 	static constexpr const wchar_t* const m_tabNames[] = { L"Animation", L"Skin", L"Slot", L"Rendering" };
 
 	HFONT m_hFont = nullptr;

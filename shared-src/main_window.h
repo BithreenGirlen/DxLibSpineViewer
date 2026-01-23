@@ -53,7 +53,7 @@ private:
 		{
 			kOpenFiles = 1, kOpenFolder,  kExtensionSetting, kImportCocos,
 			kSpineTool, kAddEffectFile, kExportSetting,
-			kSeeThroughImage, kAllowManualSizing, kReverseZoomDirection,
+			kSeeThroughImage, kAllowDraggedResizing, kReverseZoomDirection,
 			kFitToManualSize, kFitToDefaultSize,
 		};
 	};
@@ -79,7 +79,7 @@ private:
 
 	bool m_isFramelessWindow = false;
 	bool m_isTransparentWindow = false;
-	bool m_isManuallyResizable = false;
+	bool m_isDraggedResizingAllowed = false;
 
 	bool m_isZoomDirectionReversed = false;
 
@@ -103,7 +103,7 @@ private:
 	void MenuOnExportSetting();
 
 	void MenuOnMakeWindowTransparent();
-	void MenuOnAllowManualSizing();
+	void MenuOnAllowDraggedResizing();
 	void MenuOnReverseZoomDirection();
 	void MenuOnFiToManualSize();
 	void MenuOnFitToDefaultSize();

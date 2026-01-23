@@ -15,6 +15,8 @@ CSpineToolDialogue::~CSpineToolDialogue()
 	{
 		::DeleteObject(m_hFont);
 	}
+
+	Destroy();
 }
 
 HWND CSpineToolDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName, CDxLibSpinePlayer* pPlayer)
@@ -31,6 +33,35 @@ HWND CSpineToolDialogue::Create(HINSTANCE hInstance, HWND hWndParent, const wcha
 void CSpineToolDialogue::OnRefresh()
 {
 	RefreshControls();
+}
+
+void CSpineToolDialogue::Destroy()
+{
+	if (m_spineAnimationTab.GetHwnd() != nullptr)
+	{
+		::SendMessage(m_spineAnimationTab.GetHwnd(), WM_CLOSE, 0, 0);
+	}
+
+	if (m_spineSkinTab.GetHwnd() != nullptr)
+	{
+		::SendMessage(m_spineSkinTab.GetHwnd(), WM_CLOSE, 0, 0);
+	}
+
+	if (m_spineSlotTab.GetHwnd() != nullptr)
+	{
+		::SendMessage(m_spineSlotTab.GetHwnd(), WM_CLOSE, 0, 0);
+	}
+
+	if (m_spineRenderingTab.GetHwnd() != nullptr)
+	{
+		::SendMessage(m_spineRenderingTab.GetHwnd(), WM_CLOSE, 0, 0);
+	}
+
+	if (m_hWnd != nullptr)
+	{
+		::DestroyWindow(m_hWnd);
+		m_hWnd = nullptr;
+	}
 }
 
 /*C CALLBACK*/
@@ -71,6 +102,8 @@ LRESULT CSpineToolDialogue::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, L
 /*WM_INITDIALOG*/
 LRESULT CSpineToolDialogue::OnInit(HWND hWnd)
 {
+	Destroy();
+
 	m_hWnd = hWnd;
 
 	m_tab.Create(m_hWnd);
@@ -99,28 +132,9 @@ LRESULT CSpineToolDialogue::OnInit(HWND hWnd)
 /*WM_CLOSE*/
 LRESULT CSpineToolDialogue::OnClose()
 {
-	if (m_spineAnimationTab.GetHwnd() != nullptr)
-	{
-		::SendMessage(m_spineAnimationTab.GetHwnd(), WM_CLOSE, 0, 0);
-	}
+	/* Simply hide because it consumes small memory but takes time to reconstruct. */
+	::ShowWindow(m_hWnd, SW_HIDE);
 
-	if (m_spineSkinTab.GetHwnd() != nullptr)
-	{
-		::SendMessage(m_spineSkinTab.GetHwnd(), WM_CLOSE, 0, 0);
-	}
-
-	if (m_spineSlotTab.GetHwnd() != nullptr)
-	{
-		::SendMessage(m_spineSlotTab.GetHwnd(), WM_CLOSE, 0, 0);
-	}
-
-	if (m_spineRenderingTab.GetHwnd() != nullptr)
-	{
-		::SendMessage(m_spineRenderingTab.GetHwnd(), WM_CLOSE, 0, 0);
-	}
-
-	::DestroyWindow(m_hWnd);
-	m_hWnd = nullptr;
 	return 0;
 }
 /*WM_SIZE*/
@@ -217,13 +231,13 @@ void CSpineToolDialogue::RefreshControls()
 
 void CSpineToolDialogue::OnTabSelect()
 {
-	int index = m_tab.GetSelectedTabIndex();
 	if (m_hLastTab != nullptr)
 	{
 		::ShowWindow(m_hLastTab, SW_HIDE);
 	}
 	HWND hWnd = nullptr;
-	switch (index)
+
+	switch (m_tab.GetSelectedTabIndex())
 	{
 	case Tab::Animation:
 		hWnd = m_spineAnimationTab.GetHwnd();

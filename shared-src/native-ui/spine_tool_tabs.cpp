@@ -190,7 +190,7 @@ void CSpineSlotTab::CreateControls()
 
 	m_replaceButton.Create(L"Replace slot", m_hWnd, reinterpret_cast<HMENU>(Controls::kReplaceButton));
 
-	m_slotBoundSeparator.Create(L"", m_hWnd, true);;
+	m_slotBoundSeparator.Create(L"", m_hWnd, true);
 	m_slotBoundComboBox.Create(m_hWnd);
 	m_slotBoundButton.Create(L"Bound", m_hWnd, reinterpret_cast<HMENU>(Controls::kBoundButton));
 	m_slotBoundStatic.Create(L"", m_hWnd);
@@ -504,7 +504,7 @@ LRESULT CSpineRenderingTab::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void CSpineRenderingTab::CreateControls()
 {
-	m_pmaButton.Create(L"Alpha premultiplied", m_hWnd, reinterpret_cast<HMENU>(Controls::kPmaButton), true);
+	m_pmaButton.Create(L"Premultiply Alpha", m_hWnd, reinterpret_cast<HMENU>(Controls::kPmaButton), true);
 	m_blendModeSeparator.Create(L"", m_hWnd, true);
 	m_blemdModeButton.Create(L"Force blend-mode-normal", m_hWnd, reinterpret_cast<HMENU>(Controls::kBlendModeButton), true);
 	m_drawOrderSeparator.Create(L"", m_hWnd, true);
