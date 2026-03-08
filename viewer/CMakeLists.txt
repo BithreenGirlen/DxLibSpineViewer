@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.20)
-project(DxLibSpinePlayer-dll)
+project(DxLibSpineViewer)
 
 set(DEPS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../deps")
 set(DXLIB_DIR "${DEPS_DIR}/dxlib")
@@ -8,7 +8,7 @@ set(IMGUI_DOCKING_DIR "${DEPS_DIR}/imgui-docking")
 set(OUTPUT_BIN_DIR "${CMAKE_BINARY_DIR}/bin")
 set(OUTPUT_ARCHIVE_DIR "${CMAKE_BINARY_DIR}/lib")
 
-set(TARGET_NAME "DxLibSpinePlayer-exe")
+set(TARGET_NAME "DxLibSpineViewer")
 
 file(GLOB DEAR_IMGUI_SRC "${IMGUI_DOCKING_DIR}/*.cpp" "${IMGUI_DOCKING_DIR}/*.h")
 
@@ -32,7 +32,7 @@ add_executable(${TARGET_NAME} WIN32
 	"../runtime/spine_file_verifier.h"
 )
 
-set(TARGETT_FILENAME "DxLibSpinePlayer")
+set(TARGETT_FILENAME "DxLibSpineViewer")
 
 set_target_properties(${TARGET_NAME} PROPERTIES
 	OUTPUT_NAME "${TARGETT_FILENAME}"

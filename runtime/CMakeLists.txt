@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.20)
-project(DxLibSpinePlayer-dll)
+project(DxLibSpineViewer-dll)
 
 set(DXLIB_SPINE_RUNTIME_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(DEPS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../deps")

@@ -15,7 +15,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	int iRet = 0;
 
 	CMainWindow mainWindow;
-	bool bRet = mainWindow.Create(hInstance, L"DxLibSpinePlayer");
+	bool bRet = mainWindow.Create(hInstance, L"DxLibSpineViewer");
 	if (bRet)
 	{
 		SDxLibInit dxLibInit(mainWindow.GetHwnd());
