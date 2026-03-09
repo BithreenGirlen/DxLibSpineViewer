@@ -1112,7 +1112,7 @@ bool CMainWindow::LoadSpinesFromMemory(const std::vector<std::string>& atlasData
 	SkeletonMetadata skeletonMetaData = VerifySkeletonFileData(reinterpret_cast<const unsigned char*>(skeldatum.data()), skeldatum.size());
 	if (skeletonMetaData.skeletonFormat == SkeletonFormat::Neither)
 	{
-		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"The data seems not to be valid Spine skeleton file.", m_hWnd);
+		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"The format of skeleton seems not to be valid one.", m_hWnd);
 		return false;
 	}
 
@@ -1122,6 +1122,11 @@ bool CMainWindow::LoadSpinesFromMemory(const std::vector<std::string>& atlasData
 	if (versionIndex == static_cast<long long>(CSpinePlayerDynamic::ESpineVersionIndex::NotImplemented))
 	{
 		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"The runtime for this version is not implemented.", m_hWnd);
+		return false;
+	}
+	if (m_dxLibSpinePlayer.getByIndex(versionIndex) == nullptr)
+	{
+		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"The dll for this version is not loaded.", m_hWnd);
 		return false;
 	}
 	m_dxLibSpinePlayer.setPlayerToUse(versionIndex);

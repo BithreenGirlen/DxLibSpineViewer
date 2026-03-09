@@ -446,7 +446,7 @@ void CSpinePlayer::mixAnimations(const char* fadeOutAnimationName, const char* f
 
 void CSpinePlayer::clearMixedAnimation()
 {
-#ifdef SPINE_4_1_OR_LATER
+#if defined(SPINE_41) || defined(SPINE42)
 	for (const auto& pDrawable : m_drawables)
 	{
 		pDrawable->animationState()->getData()->clear();

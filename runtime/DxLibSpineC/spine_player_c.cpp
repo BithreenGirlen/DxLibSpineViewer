@@ -393,7 +393,7 @@ void CSpinePlayerC::setSlotsToExclude(const std::vector<std::string>& slotNames)
 void CSpinePlayerC::mixSkins(const std::vector<std::string>& skinNames)
 {
 	/*spine-c 3.6 does not have spSkin_addSkin(). It was added since spine-c 3.8*/
-#ifdef SPINE_3_8_OR_LATER
+#if defined(SPINE_38) || defined(SPINE_40) || defined(SPINE_41) || defined(SPINE_42)
 	if (m_nSkinIndex >= m_skinNames.size())return;
 	const auto& currentSkinName = m_skinNames[m_nSkinIndex];
 
@@ -569,7 +569,7 @@ bool CSpinePlayerC::replaceAttachment(const char* szSlotName, const char* szAtta
 			spAnimation* pAnimation = spSkeletonData_findAnimation(pDrawable->skeleton()->data, animationName);
 			if (pAnimation == nullptr)continue;
 
-#ifndef SPINE_4_1_OR_LATER
+#if !defined(SPINE_41) && !defined(SPINE_42)
 			for (size_t i = 0; i < pAnimation->timelinesCount; ++i)
 			{
 				if (pAnimation->timelines[i]->type == SP_TIMELINE_ATTACHMENT)
