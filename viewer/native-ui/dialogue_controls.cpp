@@ -334,7 +334,7 @@ void CComboBox::Setup(const wchar_t** itemTexts, size_t itemCount)
 	{
 		for (size_t i = 0; i < itemCount; ++i)
 		{
-			::SendMessageW(m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(*itemTexts));
+			::SendMessageW(m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(itemTexts[i]));
 		}
 		SetSelectedItem(0);
 	}
