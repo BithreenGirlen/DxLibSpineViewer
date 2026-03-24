@@ -363,8 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Dependencies
-/shared-src/deps/dxlib
-/shared-src/deps/spine-c-*/*
-!/shared-src/deps/spine-c-*/CMakeLists.txt
-/shared-src/deps/spine-cpp-*/*
-!/shared-src/deps/spine-cpp-*/CMakeLists.txt
+**/deps/dxlib
+**/deps/spine-c-*/*
+**/deps/spine-cpp-*/*
+**/imgui.ini
+**/deps/imgui-docking/*

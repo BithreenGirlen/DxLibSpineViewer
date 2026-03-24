@@ -155,45 +155,49 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 
 - [DxLib](https://dxlib.xsrv.jp/)
 - [Spine Runtimes](https://github.com/EsotericSoftware/spine-runtimes)
+- [Dear ImGui](https://github.com/ocornut/imgui)
 
 ## Build Spine viewer
 
 Visual Studio is required.  
 
-1. Open `shared-src/deps` folder with Visual Studio.
-2. Wait for the CMake configuration to be done.
+0. If dependency libraries were updated, delete cache both for Visual Studio (`.vs`) and for CMake.
+1. Open `DxLibSpineViewer` directory with Visual Studio.
+2. Wait for dependency libraries downloading to be done.
     - The configuration downloads external libraries and modifies older Spine `extensions`.
       - For spine-c `3.5`, renames some of the functions which lack `sp` prefix so as to be consistent with `3.6` and later.
       - For spine-c `2.1`, supplies binary skeleton reader from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
-3. Install Spine generic runtimes both for `x64-debug` and `x64-release`.
-4. Open `DxLibSpineViewer.sln` and build.
+3. Build All `DxLibSpineViewer` project.
 
 ## Spine runtime for DxLib
 
 - For minimal integration, only `dxlib_spine.cpp/h` or `dxlib_spine_c.cpp` are suffice.
-  - [dxlib_spine.cpp](/DxLibSpineCpp/dxlib_spine.cpp) is to be used with `spine-cpp`. (`3.8` to `4.2`)
-  - [dxlib_spine_c.cpp](/DxLibSpineC/dxlib_spine_c.cpp) is to be used with `spine-c`. (`3.5` to `4.2`)
-    - Class is used because DxLib is C++ library, but STL is avoided.
-  - There is a runtime for [`2.1`](/DxLibSpineC/Spine21) though, note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
+  - [dxlib_spine.cpp](/runtime//DxLibSpineCpp/dxlib_spine.cpp) is to be used with `spine-cpp`. (`3.8` to `4.2`)
+  - [dxlib_spine_c.cpp](/runtime//DxLibSpineC/dxlib_spine_c.cpp) is to be used with `spine-c`. (`3.5` to `4.2`)
+    - Class is used because DxLib is C++ library, but STL is avoided in these files.
+  - There is a runtime for [`2.1`](/runtime/DxLibSpineC/Spine21) though, note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
 - For more functionalities, use all the files under `DxLibSpineCpp` or `DxLibSpineC`.
   - The functionalities are as follows:
 
 | File | Functionality | Dependency |
 | --- | --- | --- |
-| [dxlib_spine.cpp/h](/DxLibSpineCpp/dxlib_spine.h) | Load texture and render skeleton. | DxLib + Spine generic runtime |
-| [dxlib_spine_player.cpp/h](/DxLibSpineCpp/dxlib_spine_player.h) | Adjust scale and translation using matrix. | DxLib; derived from `CSpinePlayer` |
-| [spine_loader.cpp/h](/DxLibSpineCpp/spine_loader.h) | Load atlas or skeleton file. | C++14 STL + Spine generic runtime |
-| [spine_player.cpp/h](/DxLibSpineCpp/spine_player.h) | Manage Spine resources and manipulation. | C++14 STL + Spine generic runtime |
+| [dxlib_spine.cpp/h](/runtime/DxLibSpineCpp/dxlib_spine.h) | Load texture and render skeleton. | DxLib + Spine generic runtime |
+| [dxlib_spine_player.cpp/h](/runtime/DxLibSpineCpp/dxlib_spine_player.h) | Adjust scale and translation using matrix. | DxLib; derived from `CSpinePlayer` |
+| [spine_loader.cpp/h](/runtime/DxLibSpineCpp/spine_loader.h) | Load atlas or skeleton file. | C++14 STL + Spine generic runtime |
+| [spine_player.cpp/h](/runtime/DxLibSpineCpp/spine_player.h) | Manage Spine resources and manipulation. | C++14 STL + Spine generic runtime |
 
 - In order to build these files in a project using DxLib, it is required to define macro depending on versions of Spine generic runtime to be used with.
 
 | Version | Macro to be defined |
 | --- | --- |
-| `2.1` | `SPINE_2_1` |
+| `2.1` | `SPINE_21` |
 | `3.5` | - |
 | `3.6` | - |
 | `3.7` | - |
-| `3.8` | `SPINE_3_8_OR_LATER` provided that C runtime is to be used. |
-| `4.0` | `SPINE_4_0` |
-| `4.1` | `SPINE_4_1_OR_LATER` |
-| `4.2` | `SPINE_4_1_OR_LATER`, `SPINE_4_2_OR_LATER` |
+| `3.8` | `SPINE_38` provided that C runtime is to be used. |
+| `4.0` | `SPINE_40` |
+| `4.1` | `SPINE_41` |
+| `4.2` | `SPINE_42` |
+
+- Independently, `spine_file_verifier.cpp/h` can be used to find Spine version string in skeleton file and check if it is binary or JSON format.  
+- `dxlib_spine_dll.cpp/h` and `spine_player_dll.cpp/h` are for building dynamic library which depends on DxLib without linking it. So usually, these files will not be needed.
