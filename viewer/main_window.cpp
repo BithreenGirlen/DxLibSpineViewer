@@ -83,6 +83,8 @@ bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
 int CMainWindow::MessageLoop()
 {
 	MSG msg{};
+	/* Unlikely case though, dll for default Spine version is not loaded. */
+	if (m_dxLibSpinePlayer.get() == nullptr)return 0;
 
 	for (; msg.message != WM_QUIT;)
 	{
@@ -170,8 +172,6 @@ LRESULT CMainWindow::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 LRESULT CMainWindow::OnCreate(HWND hWnd)
 {
 	m_hWnd = hWnd;
-
-	//DxLib::SetWaitVSyncFlag(DxLib::GetWaitVSyncFlag() ^ TRUE);
 
 	InitialiseMenuBar();
 	UpdateMenuItemState();
@@ -1045,7 +1045,7 @@ void CMainWindow::UpdateMenuItemState()
 	constexpr const unsigned int toolMenuIndices[] = { Menu::kShowToolDialogue, Menu::kAddEffectFile };
 	constexpr const unsigned int windowIndices[] = { Menu::kSeeThroughImage, Menu::kAllowDraggedResizing, Menu::kReverseZoomDirection, Menu::kFitToManualSize, Menu::kFitToDefaultSize };
 
-	bool toEnable = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
+	bool toEnable = m_dxLibSpinePlayer.get() == nullptr ? false : m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
 
 	window_menu::EnableMenuItems(window_menu::GetMenuInBar(m_hWnd, MenuBar::kTool), toolMenuIndices, toEnable);
 	window_menu::EnableMenuItems(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), windowIndices, toEnable);
@@ -1164,6 +1164,7 @@ void CMainWindow::PostSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t
 		ChangeWindowTitle(nullptr);
 	}
 	if (hadLoaded != hasLoaded)UpdateMenuItemState();
+	m_spineToolDatum.hasJustBeenLoaded = hasLoaded;
 }
 
 std::wstring CMainWindow::BuildExportFilePath()
@@ -1218,7 +1219,7 @@ void CMainWindow::UpdateWindowResizableAttribute()
 	::SetWindowLong(m_hWnd, GWL_STYLE, (m_dxLibSpinePlayer.get()->hasSpineBeenLoaded() && m_isDraggedResizingAllowed) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
 }
 /*窓寸法変更*/
-void CMainWindow::ResizeWindow()
+void CMainWindow::ResizeWindow(bool toActivate)
 {
 	DxLib::FLOAT2 fBaseSize = m_dxLibSpinePlayer.get()->getBaseSize();
 	float fScale = m_dxLibSpinePlayer.get()->getCanvasScale();
@@ -1239,7 +1240,7 @@ void CMainWindow::ResizeWindow()
 		};
 
 	::AdjustWindowRect(&rect, lStyle, IsWidowBarHidden() ? FALSE : TRUE);
-	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
+	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER | (toActivate ? 0 : SWP_NOACTIVATE));
 }
 
 void CMainWindow::ImGuiSpineParameterDialogue()
@@ -1256,7 +1257,17 @@ void CMainWindow::ImGuiSpineParameterDialogue()
 	spine_tool_dialogue::Display(m_spineToolDatum, &m_toShowSpineParameter);
 	if (m_spineToolDatum.isWindowToBeResized)
 	{
-		ResizeWindow();
+		/*
+		* In the time of Imgui 1.92.2, viewport window was kept focused even if main window was resized.
+		* But in 1.92.6, focus is set to resized window. This might be correct behaviour though,
+		* it requires SWP_NOACTIVATE flag to retain the same behaviour as before.
+		*/
+		ResizeWindow(false);
+
 		m_spineToolDatum.isWindowToBeResized = false;
+	}
+	if (m_spineToolDatum.hasJustBeenLoaded)
+	{
+		m_spineToolDatum.hasJustBeenLoaded = false;
 	}
 }

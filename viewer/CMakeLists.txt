@@ -49,6 +49,14 @@ target_link_directories(${TARGET_NAME} PRIVATE ${DXLIB_DIR})
 
 target_compile_definitions(${TARGET_NAME} PRIVATE UNICODE _UNICODE)
 
+target_precompile_headers(${TARGET_NAME} PRIVATE
+	<string>
+	<vector>
+	<memory>
+	<algorithm>
+	<unordered_map>
+)
+
 if(MSVC)
 	target_compile_definitions(${TARGET_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS)
 	target_compile_options(${TARGET_NAME} PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/d1trimfile:${CMAKE_SOURCE_DIR}\\>")

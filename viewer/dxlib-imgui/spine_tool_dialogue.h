@@ -8,15 +8,16 @@ namespace spine_tool_dialogue
 
 	struct SSpineToolDatum
 	{
-		void* pSpinePlayer;
-		int iTextureWidth;
-		int iTextureHeight;
+		void* pSpinePlayer = nullptr;
+		int iTextureWidth = 0;
+		int iTextureHeight = 0;
 		
 		int iImageFps = kDefaultImageFps;
 		int iVideoFps = kDefaultVideoFps;
 		bool toExportPerAnim = true;
 
 		bool isWindowToBeResized = false;
+		bool hasJustBeenLoaded = false;
 	};
 
 	void Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen);

@@ -107,8 +107,9 @@ namespace spine_tool_dialogue
 		}
 	};
 
-	static void HelpMarker(const char* desc)
+	static void HelpMarker(const char* desc, bool sameLine = true)
 	{
+		if (sameLine)ImGui::SameLine();
 		ImGui::TextDisabled("(?)");
 		if (ImGui::BeginItemTooltip())
 		{
@@ -149,6 +150,24 @@ namespace spine_tool_dialogue
 				++(*v);
 			}
 			else if (wheel < 0 && *v > v_min)
+			{
+				--(*v);
+			}
+		}
+	}
+
+	static void ScrollableInputFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.0f", ImGuiInputTextFlags flags = 0)
+	{
+		ImGui::InputFloat(label, v, step, step_fast, format, flags);
+		ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY);
+		if (ImGui::IsItemHovered())
+		{
+			float wheel = ImGui::GetIO().MouseWheel;
+			if (wheel > 0 )
+			{
+				++(*v);
+			}
+			else if (wheel < 0)
 			{
 				--(*v);
 			}
@@ -239,9 +258,45 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 				ImGui::TreePop();
 			}
 
+			if (ImGui::TreeNode("Positioning"))
+			{
+				HelpMarker("This is to set specific base size and offset rather than fitting to bounding box.");
+				float windowWidth = ImGui::GetWindowWidth();
+
+				static DxLib::FLOAT4 rect{ offset.u, offset.v, baseSize.u, baseSize.v };
+				if (spineToolDatum.hasJustBeenLoaded)
+				{
+					rect = { offset.u, offset.v, baseSize.u, baseSize.v };
+				}
+
+				ImGui::SetNextItemWidth(windowWidth / 8);
+				ScrollableInputFloat("X", &rect.x);
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(windowWidth / 8);
+				ScrollableInputFloat("Y", &rect.y);
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(windowWidth / 8);
+				ScrollableInputFloat("Width", &rect.z);
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(windowWidth / 8);
+				ScrollableInputFloat("Height", &rect.w);
+
+				if (ImGui::Button("Get current size/offset"))
+				{
+					rect = { offset.u, offset.v, baseSize.u, baseSize.v };
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Apply"))
+				{
+					pDxLibSpinePlayer->setOffset(rect.x, rect.y);
+					pDxLibSpinePlayer->setBaseSize(rect.z, rect.w);
+					spineToolDatum.isWindowToBeResized = true;
+				}
+
+				ImGui::TreePop();
+			}
 
 			bool bRet = ImGui::TreeNode("Help##Size/Scale");
-			ImGui::SameLine();
 			/* Always show this help regardless of tree state. */
 			HelpMarker("Sizing/scaling can be done by mouse inputs on main window, not via tool window.");
 			if (bRet)
@@ -255,7 +310,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 						kMax
 					};
 				};
-				constexpr const char* const mouseHelps[][HelpText::kMax] =
+				static constexpr const char* const mouseHelps[][HelpText::kMax] =
 				{
 					{"L-drag", "Move view-point"},
 					{"Scroll", "Scale up/down."},
@@ -338,12 +393,12 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 				static ImGuiComboBox fadeOutAnimationComboBox;
 				fadeOutAnimationComboBox.update(animationNames, "##AnimationToFadeOut");
 				ImGui::SameLine();
-				ImGui::Text("Fade out");
+				ImGui::Text("Fade-out");
 
 				static ImGuiComboBox fadeInAnimationComboBox;
 				fadeInAnimationComboBox.update(animationNames, "##AnimationToFadeIn");
 				ImGui::SameLine();
-				ImGui::Text("Fade in");
+				ImGui::Text("Fade-in");
 
 				const std::string& fadeOut = animationNames[fadeOutAnimationComboBox.selectedIndex];
 				const std::string& fadeIn = animationNames[fadeInAnimationComboBox.selectedIndex];
@@ -361,11 +416,15 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 					ImGui::SameLine();
 					if (ImGui::Button("Clear##ClearMixedAnimations"))
 					{
-#if defined (DXLIB_SPINE_CPP) && (defined (SPINE_4_1_OR_LATER) || defined (SPINE_4_2_OR_LATER))
-						pDxLibSpinePlayer->clearMixedAnimation();
-#else /* C runtime or C++ runtime older than Spine 4.0 */
-						pDxLibSpinePlayer->mixAnimations(fadeOut.c_str(), fadeIn.c_str(), 0.f);
-#endif
+						size_t versionIndex = pDxLibSpinePlayerDynamic->versionIndexInUse();
+						if (versionIndex >= static_cast<size_t>(CSpinePlayerDynamic::ESpineVersionIndex::Spine40))
+						{
+							pDxLibSpinePlayer->clearMixedAnimation();
+						}
+						else
+						{
+							pDxLibSpinePlayer->mixAnimations(fadeOut.c_str(), fadeIn.c_str(), 0.f);
+						}
 					}
 				}
 
@@ -497,49 +556,64 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 		/* 描画 */
 		if (ImGui::BeginTabItem("Rendering"))
 		{
-			ImGui::SeparatorText("Premultiplied alpha");
-
-			HelpMarker("For Spine 3.8 and older, PMA should be configured manually.\n"
-				"For Spine 4.0 and later, PMA property of atlas page is applied.");
-
 			bool pma = pDxLibSpinePlayer->isAlphaPremultiplied();
 			bool pmaChecked = pma;
 			size_t versionIndex = pDxLibSpinePlayerDynamic->versionIndexInUse();
 			if (versionIndex >= static_cast<size_t>(CSpinePlayerDynamic::ESpineVersionIndex::Spine40))
 			{
 				ImGui::BeginDisabled();
-				ImGui::Checkbox("Alpha premultiplied", &pmaChecked);
+				ImGui::Checkbox("Premultiply alpha", &pmaChecked);
 				ImGui::EndDisabled();
 			}
 			else
 			{
-				ImGui::Checkbox("Alpha premultiplied", &pmaChecked);
+				if (ImGui::Checkbox("Premultiply alpha", &pmaChecked))
+				{
+					pDxLibSpinePlayer->togglePma();
+				}
 			}
-			if (pmaChecked != pma)
-			{
-				pDxLibSpinePlayer->togglePma();
-			}
-			ImGui::SeparatorText("Blend-mode");
-
-			HelpMarker("Force if blend-mode-multiply is not well rendered.");
+			HelpMarker("For Spine 3.8 and older, PMA should be configured manually.\n"
+				"For Spine 4.0 and later, PMA property of atlas page is applied.");
 
 			bool toForceBlendModeNormal = pDxLibSpinePlayer->isBlendModeNormalForced();
-			bool blendModeChecked = toForceBlendModeNormal;
-			ImGui::Checkbox("Force blend-mode-normal", &blendModeChecked);
-			if (blendModeChecked != toForceBlendModeNormal)
+			if (ImGui::Checkbox("Force blend-mode-normal", &toForceBlendModeNormal))
 			{
 				pDxLibSpinePlayer->toggleBlendModeAdoption();
 			}
+			HelpMarker("Force if the slot with blend-mode-multiply on non-PMA texture is not well rendered.");
 
-			ImGui::SeparatorText("Draw order");
-			HelpMarker("Draw order is crutial only when rendering multiple Spines.\n"
-				"Be sure to make it appropriate in prior to add animation effect.");
-
-			if (pDxLibSpinePlayer->getNumberOfSpines() > 1)
+			bool drawOrder = pDxLibSpinePlayer->isDrawOrderReversed();
+			bool drawOrderConfigureWorthy = pDxLibSpinePlayer->getNumberOfSpines() > 1;
+			if (drawOrderConfigureWorthy)
 			{
-				bool drawOrder = pDxLibSpinePlayer->isDrawOrderReversed();
+				if (ImGui::Checkbox("Reverse draw order", &drawOrder))
+				{
+					pDxLibSpinePlayer->setDrawOrder(drawOrder);
+				}
+			}
+			else
+			{
+				ImGui::BeginDisabled();
 				ImGui::Checkbox("Reverse draw order", &drawOrder);
-				pDxLibSpinePlayer->setDrawOrder(drawOrder);
+				ImGui::EndDisabled();
+			}
+
+			HelpMarker("Draw order is crutial only when rendering multiple Spines.\n"
+				"Be sure to make it appropriate in prior to adding animation effect.");
+
+			if (ImGui::TreeNode("Statictics"))
+			{
+				ImGui::Text("Draw calls: %d", DxLib::GetDrawCallCount());
+
+				bool isVsyncEnabled = DxLib::GetWaitVSyncFlag() == TRUE;
+				if (ImGui::Checkbox("VSync", &isVsyncEnabled))
+				{
+					DxLib::SetWaitVSyncFlag(isVsyncEnabled ? TRUE : FALSE);
+				}
+
+				ImGui::Text("FPS: %.0f", DxLib::GetFPS());
+
+				ImGui::TreePop();
 			}
 
 			ImGui::EndTabItem();
@@ -547,24 +621,24 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 		/* 書き出し */
 		if (ImGui::BeginTabItem("Export"))
 		{
-			HelpMarker("Export can be done via context menu on main window.");
+			HelpMarker("Export can be done via context menu on main window.", false);
 
 			ImGui::SeparatorText("Export FPS");
-			HelpMarker("GIF delay is defined in 10ms increments.\n Mind that fractional part will be discarded.");
 
-			constexpr int minFps = 15;
-			constexpr int maxImageFps = 60;
-			constexpr int maxVideoFps = 120;
+			static constexpr int minFps = 15;
+			static constexpr int maxImageFps = 60;
+			static constexpr int maxVideoFps = 120;
 
 			auto& imageFps = spineToolDatum.iImageFps;
 			auto& videoFps = spineToolDatum.iVideoFps;
 
 			ScrollableSliderInt("Image", &imageFps, minFps, maxImageFps);
+			HelpMarker("GIF delay is defined in 10ms increments.\n Mind that fractional part will be discarded.");
 			ScrollableSliderInt("Video", &spineToolDatum.iVideoFps, minFps, maxVideoFps);
 
 			ImGui::SeparatorText("Export method");
-			HelpMarker("If unchecked, when to start and end recording will be delegated to user.");
 			ImGui::Checkbox("Export per animation", &spineToolDatum.toExportPerAnim);
+			HelpMarker("If unchecked, when to start and end recording will be delegated to user.");
 
 			ImGui::EndTabItem();
 		}
