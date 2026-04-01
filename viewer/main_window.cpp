@@ -58,18 +58,18 @@ bool CMainWindow::Create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
 	wcex.hInstance = hInstance;
 	wcex.hCursor = ::LoadCursor(nullptr, IDC_ARROW);
 	wcex.hbrBackground = ::GetSysColorBrush(COLOR_BTNFACE);
-	wcex.lpszClassName = m_swzClassName;
+	wcex.lpszClassName = m_className;
 
 	if (::RegisterClassExW(&wcex))
 	{
 		m_hInstance = hInstance;
-		const wchar_t* windowName = pwzWindowName == nullptr ? m_swzDefaultWindowName : pwzWindowName;
+		const wchar_t* windowName = pwzWindowName == nullptr ? m_defaultWindowName : pwzWindowName;
 
 		UINT uiDpi = ::GetDpiForSystem();
 		int iWindowWidth = ::MulDiv(200, uiDpi, USER_DEFAULT_SCREEN_DPI);
 		int iWindowHeight = ::MulDiv(200, uiDpi, USER_DEFAULT_SCREEN_DPI);
 
-		m_hWnd = ::CreateWindowW(m_swzClassName, windowName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
+		m_hWnd = ::CreateWindowW(m_className, windowName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
 			CW_USEDEFAULT, CW_USEDEFAULT, iWindowWidth, iWindowHeight, nullptr, nullptr, hInstance, this);
 		if (m_hWnd != nullptr)
 		{
@@ -191,7 +191,7 @@ LRESULT CMainWindow::OnDestroy()
 LRESULT CMainWindow::OnClose()
 {
 	::DestroyWindow(m_hWnd);
-	::UnregisterClassW(m_swzClassName, m_hInstance);
+	::UnregisterClassW(m_className, m_hInstance);
 
 	return 0;
 }
@@ -212,20 +212,31 @@ LRESULT CMainWindow::OnPaint()
 
 	return 0;
 }
-/*WM_SIZE*/
+/* WM_SIZE */
 LRESULT CMainWindow::OnSize(WPARAM wParam, LPARAM lParam)
 {
 	int iClientWidth = LOWORD(lParam);
 	int iClientHeight = HIWORD(lParam);
 
-	int iDesktopWidth = ::GetSystemMetrics(SM_CXSCREEN);
-	int iDesktopHeight = ::GetSystemMetrics(SM_CYSCREEN);
+	HMONITOR hMonitor = ::MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+	if (hMonitor != nullptr)
+	{
+		MONITORINFO monitorInfo{};
+		monitorInfo.cbSize = sizeof(MONITORINFO);
+		BOOL iRet = ::GetMonitorInfoW(hMonitor, &monitorInfo);
+		if (iRet)
+		{
+			int iDisplayWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+			int iDisplayHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
 
-	int iGraphWidth = iClientWidth < iDesktopWidth ? iClientWidth : iDesktopWidth;
-	int iGraphHeight = iClientHeight < iDesktopHeight ? iClientHeight : iDesktopHeight;
-	DxLib::SetGraphMode(iGraphWidth, iGraphHeight, 32);
+			iClientWidth = (std::min)(iClientWidth, iDisplayWidth);
+			iClientHeight = (std::min)(iClientHeight, iDisplayHeight);
+		}
+	}
 
-	m_spineRenderTexture = DxLib::MakeScreen(iGraphWidth, iGraphHeight, 1);
+	DxLib::SetGraphMode(iClientWidth, iClientHeight, 32);
+
+	m_spineRenderTexture = DxLib::MakeScreen(iClientWidth, iClientHeight, 1);
 
 	return 0;
 }
@@ -323,38 +334,38 @@ LRESULT CMainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 	WORD usKey = LOWORD(wParam);
 	if (usKey == MK_LBUTTON)
 	{
-		if (m_wasLeftCombinated)return 0;
+		if (m_mouseState.wasLeftCombined)return 0;
 
 		POINT pt{};
 		::GetCursorPos(&pt);
-		if (m_hasLeftBeenDragged)
+		if (m_mouseState.wasLeftDragged)
 		{
-			int deltaX = m_lastCursorPos.x - pt.x;
-			int deltaY = m_lastCursorPos.y - pt.y;
-			m_dxLibSpinePlayer.get()->addOffset(deltaX, deltaY);
+			int deltaX = pt.x - m_mouseState.lastCursorPos.x;
+			int deltaY = pt.y - m_mouseState.lastCursorPos.y;
+			m_dxLibSpinePlayer.get()->addOffset(-deltaX, -deltaY);
 		}
 
-		m_lastCursorPos = pt;
-		m_hasLeftBeenDragged = true;
+		m_mouseState.lastCursorPos = pt;
+		m_mouseState.wasLeftDragged = true;
 	}
 	else if ((usKey & MK_LBUTTON) && (usKey & MK_RBUTTON))
 	{
-		if (m_wasLeftCombinated || m_wasRightCombinated)return 0;
+		if (m_mouseState.wasLeftCombined || m_mouseState.wasRightCombined)return 0;
 
 		POINT pt{};
 		::GetCursorPos(&pt);
-		if (m_hasRightBeenDragged)
+		if (m_mouseState.wasRightDragged)
 		{
-			int deltaX = pt.x - m_lastCursorPos.x;
-			int deltaY = pt.y - m_lastCursorPos.y;
+			int deltaX = pt.x - m_mouseState.lastCursorPos.x;
+			int deltaY = pt.y - m_mouseState.lastCursorPos.y;
 
 			RECT windowRect{};
 			::GetWindowRect(m_hWnd, &windowRect);
 			::SetWindowPos(m_hWnd, nullptr, windowRect.left + deltaX, windowRect.top + deltaY, 0, 0, SWP_NOSIZE);
 		}
 
-		m_lastCursorPos = pt;
-		m_hasRightBeenDragged = true;
+		m_mouseState.lastCursorPos = pt;
+		m_mouseState.wasRightDragged = true;
 	}
 
 	return 0;
@@ -375,13 +386,13 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 		timeScale = (std::max)(timeScale, 0.f);
 		m_dxLibSpinePlayer.get()->setTimeScale(timeScale);
 
-		m_wasLeftCombinated = true;
+		m_mouseState.wasLeftCombined = true;
 	}
 	else if (usKey == MK_RBUTTON)
 	{
 		m_dxLibSpinePlayer.get()->shiftSkin();
 
-		m_wasRightCombinated = true;
+		m_mouseState.wasRightCombined = true;
 	}
 	else
 	{
@@ -389,7 +400,7 @@ LRESULT CMainWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 		{
 			static constexpr float kScaleDelta = 0.025f;
 			static constexpr float kMinScale = 0.15f;
-			const float scrollSign = (scroll > 0) ^ m_isZoomDirectionReversed ? 1.f : -1.f;
+			const float scrollSign = (scroll > 0) ^ m_windowStyle.isZoomReversed ? 1.f : -1.f;
 
 			float skeletonScale = m_dxLibSpinePlayer.get()->getSkeletonScale() + kScaleDelta * scrollSign;
 			skeletonScale = (std::max)(kMinScale, skeletonScale);
@@ -414,9 +425,9 @@ LRESULT CMainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 {
 	if (ImGui::GetIO().WantCaptureMouse)return 0;
 
-	::GetCursorPos(&m_lastCursorPos);
+	::GetCursorPos(&m_mouseState.lastCursorPos);
 
-	m_wasLeftPressed = true;
+	m_mouseState.wasLeftPressed = true;
 
 	return 0;
 }
@@ -425,22 +436,22 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
 	if (ImGui::GetIO().WantCaptureMouse)return 0;
 
-	if (m_wasLeftCombinated || m_hasLeftBeenDragged)
+	if (m_mouseState.wasLeftCombined || m_mouseState.wasLeftDragged)
 	{
-		m_hasLeftBeenDragged = false;
-		m_wasLeftCombinated = false;
-		m_wasLeftPressed = false;
+		m_mouseState.wasLeftDragged = false;
+		m_mouseState.wasLeftCombined = false;
+		m_mouseState.wasLeftPressed = false;
 
 		return 0;
 	}
 
 	WORD usKey = LOWORD(wParam);
-	if (usKey == 0 && m_wasLeftPressed)
+	if (usKey == 0 && m_mouseState.wasLeftPressed)
 	{
 		POINT pt{};
 		::GetCursorPos(&pt);
-		int iX = m_lastCursorPos.x - pt.x;
-		int iY = m_lastCursorPos.y - pt.y;
+		int iX = m_mouseState.lastCursorPos.x - pt.x;
+		int iY = m_mouseState.lastCursorPos.y - pt.y;
 
 		if (iX == 0 && iY == 0)
 		{
@@ -452,7 +463,7 @@ LRESULT CMainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 		}
 	}
 
-	m_wasLeftPressed = false;
+	m_mouseState.wasLeftPressed = false;
 
 	return 0;
 }
@@ -461,10 +472,10 @@ LRESULT CMainWindow::OnRButtonUp(WPARAM wParam, LPARAM lParam)
 {
 	if (ImGui::GetIO().WantCaptureMouse)return 0;
 
-	if (m_wasRightCombinated || m_hasRightBeenDragged)
+	if (m_mouseState.wasRightCombined || m_mouseState.wasRightDragged)
 	{
-		m_wasRightCombinated = false;
-		m_hasRightBeenDragged = false;
+		m_mouseState.wasRightCombined = false;
+		m_mouseState.wasRightDragged = false;
 
 		return 0;
 	}
@@ -549,7 +560,7 @@ LRESULT CMainWindow::OnMButtonUp(WPARAM wParam, LPARAM lParam)
 	{
 		ToggleWindowFrameStyle();
 
-		m_wasRightCombinated = true;
+		m_mouseState.wasRightCombined = true;
 	}
 
 	return 0;
@@ -829,13 +840,13 @@ void CMainWindow::MenuOnFont()
 /*透過*/
 void CMainWindow::MenuOnMakeWindowTransparent()
 {
-	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kSeeThroughImage, !m_isTransparentWindow);
+	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kSeeThroughImage, !m_windowStyle.isTransparent);
 	if (bRet)
 	{
-		m_isTransparentWindow ^= true;
+		m_windowStyle.isTransparent ^= true;
 		LONG lStyleEx = ::GetWindowLong(m_hWnd, GWL_EXSTYLE);
 
-		if (m_isTransparentWindow)
+		if (m_windowStyle.isTransparent)
 		{
 			::SetWindowLong(m_hWnd, GWL_EXSTYLE, lStyleEx | WS_EX_LAYERED);
 			::SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), 255, LWA_COLORKEY);
@@ -852,21 +863,21 @@ void CMainWindow::MenuOnMakeWindowTransparent()
 /*手動寸法変更許可切り替え*/
 void CMainWindow::MenuOnAllowDraggedResizing()
 {
-	bool isResizingAllowed = !m_isDraggedResizingAllowed && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording;
+	bool isResizingAllowed = !m_windowStyle.isResizable && m_dxLibRecorder.GetState() != CDxLibRecorder::EState::UnderRecording;
 	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kAllowDraggedResizing, isResizingAllowed);
 	if (bRet)
 	{
-		m_isDraggedResizingAllowed = isResizingAllowed;
+		m_windowStyle.isResizable = isResizingAllowed;
 		UpdateWindowResizableAttribute();
 	}
 }
 /*拡縮方向反転*/
 void CMainWindow::MenuOnReverseZoomDirection()
 {
-	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kReverseZoomDirection, !m_isZoomDirectionReversed);
+	bool bRet = window_menu::SetMenuCheckState(window_menu::GetMenuInBar(m_hWnd, MenuBar::kWindow), Menu::kReverseZoomDirection, !m_windowStyle.isZoomReversed);
 	if (bRet)
 	{
-		m_isZoomDirectionReversed ^= true;
+		m_windowStyle.isZoomReversed ^= true;
 	}
 }
 /* 現在の描画先の大きさに合わせる */
@@ -999,7 +1010,7 @@ void CMainWindow::ChangeWindowTitle(const wchar_t* pwzTitle)
 		}
 	}
 
-	::SetWindowTextW(m_hWnd, pwzName == nullptr ? m_swzDefaultWindowName : pwzName);
+	::SetWindowTextW(m_hWnd, pwzName == nullptr ? m_defaultWindowName : pwzName);
 }
 /*表題取得*/
 std::wstring CMainWindow::GetWindowTitle() const
@@ -1023,9 +1034,9 @@ void CMainWindow::ToggleWindowFrameStyle()
 	::GetWindowRect(m_hWnd, &rect);
 	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
 
-	m_isFramelessWindow ^= true;
+	m_windowStyle.isFrameless ^= true;
 
-	if (m_isFramelessWindow)
+	if (m_windowStyle.isFrameless)
 	{
 		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle & ~WS_CAPTION & ~WS_SYSMENU & ~WS_THICKFRAME);
 		::SetWindowPos(m_hWnd, nullptr, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER);
@@ -1033,7 +1044,7 @@ void CMainWindow::ToggleWindowFrameStyle()
 	}
 	else
 	{
-		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle | WS_CAPTION | WS_SYSMENU | (m_isDraggedResizingAllowed ? WS_THICKFRAME : 0));
+		::SetWindowLong(m_hWnd, GWL_STYLE, lStyle | WS_CAPTION | WS_SYSMENU | (m_windowStyle.isResizable ? WS_THICKFRAME : 0));
 		::SetMenu(m_hWnd, m_hMenuBar);
 	}
 
@@ -1216,7 +1227,7 @@ void CMainWindow::StepRecording()
 void CMainWindow::UpdateWindowResizableAttribute()
 {
 	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
-	::SetWindowLong(m_hWnd, GWL_STYLE, (m_dxLibSpinePlayer.get()->hasSpineBeenLoaded() && m_isDraggedResizingAllowed) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
+	::SetWindowLong(m_hWnd, GWL_STYLE, (m_dxLibSpinePlayer.get()->hasSpineBeenLoaded() && m_windowStyle.isResizable) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
 }
 /*窓寸法変更*/
 void CMainWindow::ResizeWindow(bool toActivate)

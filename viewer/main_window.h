@@ -27,8 +27,8 @@ public:
 
 	HWND GetHwnd()const { return m_hWnd; }
 private:
-	const wchar_t* m_swzClassName = L"Dxlib-spine window";
-	const wchar_t* m_swzDefaultWindowName = L"DxLib spine";
+	const wchar_t* m_className = L"Dxlib-spine window";
+	const wchar_t* m_defaultWindowName = L"DxLib spine";
 
 	HINSTANCE m_hInstance = nullptr;
 	HWND m_hWnd = nullptr;
@@ -70,21 +70,31 @@ private:
 		};
 	};
 
-	POINT m_lastCursorPos{};
+	struct MouseState
+	{
+		bool wasLeftCombined = false;
+		bool wasLeftPressed = false;
+		bool wasLeftDragged = false;
 
-	bool m_wasLeftCombinated = false;
-	bool m_wasLeftPressed = false;
-	bool m_hasLeftBeenDragged = false;
-	bool m_wasRightCombinated = false;
-	bool m_hasRightBeenDragged = false;
+		bool wasRightCombined = false;
+		bool wasRightDragged = false;
+
+		POINT lastCursorPos{};
+	};
+
+	struct WindowStyle
+	{
+		bool isFrameless = false;
+		bool isTransparent = false;
+		bool isResizable = false;
+		
+		bool isZoomReversed = false;
+	};
+
+	MouseState m_mouseState;
+	WindowStyle m_windowStyle;
 
 	HMENU m_hMenuBar = nullptr;
-
-	bool m_isFramelessWindow = false;
-	bool m_isTransparentWindow = false;
-	bool m_isDraggedResizingAllowed = false;
-
-	bool m_isZoomDirectionReversed = false;
 
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
