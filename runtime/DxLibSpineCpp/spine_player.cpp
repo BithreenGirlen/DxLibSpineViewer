@@ -391,6 +391,29 @@ void CSpinePlayer::getCurrentAnimationTime(float* fTrack, float* fLast, float* f
 	}
 }
 
+void CSpinePlayer::setCurrentAnimationTime(float animationTime)
+{
+	restartAnimation();
+
+	for (const auto& pDrawable : m_drawables)
+	{
+		bool wasPaused = pDrawable->isPaused();
+		if (wasPaused)pDrawable->setPause(false);
+		pDrawable->update(animationTime);
+		if (wasPaused)pDrawable->setPause(true);
+
+		auto& tracks = pDrawable->animationState()->getTracks();
+		for (size_t i = 0; i < tracks.size(); ++i)
+		{
+			spine::TrackEntry* pTrackEntry = tracks[i];
+			if (pTrackEntry != nullptr)
+			{
+				pTrackEntry->setAnimationLast(animationTime);
+			}
+		}
+	}
+}
+
 float CSpinePlayer::getAnimationDuration(const char* animationName)
 {
 	for (const auto& pDrawable : m_drawables)

@@ -86,6 +86,7 @@ public:
 
 	std::string getCurrentAnimationName() override;
 	void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) override;
+	void setCurrentAnimationTime(float animationTime) override;
 	float getAnimationDuration(const char* animationName) override;
 
 	const std::vector<std::string>& getSlotNames() const noexcept override;
@@ -311,6 +312,11 @@ float SPCLASS::getAnimationDuration(const char* animationName)
 void SPCLASS::getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd)
 {
 	m_dxLibSpinePlayer.getCurrentAnimationTime(fTrack, fLast, fStart, fEnd);
+}
+
+void SPCLASS::setCurrentAnimationTime(float animationTime)
+{
+	m_dxLibSpinePlayer.setCurrentAnimationTime(animationTime);
 }
 
 const std::vector<std::string>& SPCLASS::getSlotNames() const noexcept

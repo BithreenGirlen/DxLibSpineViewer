@@ -342,7 +342,12 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			DxLib::FLOAT4 animationWatch{};
 			pDxLibSpinePlayer->getCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
 
-			ImGui::SliderFloat(animationName.c_str(), &animationWatch.y, animationWatch.z, animationWatch.w, "%0.2f");
+			/* 動作名と再生区間 */
+			if (ImGui::SliderFloat(animationName.c_str(), &animationWatch.y, animationWatch.z, animationWatch.w, "%0.2f"))
+			{
+				/* 再生位置変更 */
+				pDxLibSpinePlayer->setCurrentAnimationTime(animationWatch.y);
+			};
 			ImGui::Text("Time scale: %.2f", pDxLibSpinePlayer->getTimeScale());
 
 			const std::vector<std::string>& animationNames = pDxLibSpinePlayer->getAnimationNames();
@@ -604,15 +609,15 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			bool isVisible = pDxLibSpinePlayer->isVisible();
 			if (ImGui::Checkbox("Visible", &isVisible))
 			{
-				pDxLibSpinePlayer->setVisibility(isVisible);
+				pDxLibSpinePlayer->toggleVisibility();
 			}
 
-			HelpMarker("To be used to estimate draw calls comsumed to render Spine.");
+			HelpMarker("To be used to count draw calls to render Spine.");
 
 			bool isPaused = pDxLibSpinePlayer->isPaused();
 			if (ImGui::Checkbox("Paused", &isPaused))
 			{
-				pDxLibSpinePlayer->setPause(isPaused);
+				pDxLibSpinePlayer->togglePause();
 			}
 
 			if (ImGui::TreeNode("Statictics"))

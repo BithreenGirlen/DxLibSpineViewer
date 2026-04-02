@@ -78,6 +78,7 @@ public:
 	/// @param fStart timeline start position.
 	/// @param fEnd timeline end position.
 	void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd);
+	void setCurrentAnimationTime(float animationTime);
 	float getAnimationDuration(const char* animationName);
 
 	const std::vector<std::string>& getSlotNames() const noexcept;

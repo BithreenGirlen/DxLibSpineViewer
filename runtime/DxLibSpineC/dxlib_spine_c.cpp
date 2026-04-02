@@ -175,12 +175,12 @@ void CDxLibSpineDrawableC::update(float fDelta)
 {
 	if (m_skeleton == nullptr || m_animationState == nullptr)return;
 
-	if (m_isPaused)spAnimationState_update(m_animationState, fDelta);
+	if (!m_isPaused)spAnimationState_update(m_animationState, fDelta);
 	spAnimationState_apply(m_animationState, m_skeleton);
 
 	/* Spine 4.1 does not have "spSkeleton_update()" */
 #if !defined(SPINE_41)
-	if (m_isPaused)spSkeleton_update(m_skeleton, fDelta);
+	if (!m_isPaused)spSkeleton_update(m_skeleton, fDelta);
 #endif
 
 #if defined(SPINE_42)

@@ -75,6 +75,7 @@ public:
 
 	virtual std::string getCurrentAnimationName() = 0;
 	virtual void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) = 0;
+	virtual void setCurrentAnimationTime(float animationTime) = 0;
 	virtual float getAnimationDuration(const char* animationName) = 0;
 
 	virtual const std::vector<std::string>& getSlotNames() const noexcept = 0;
