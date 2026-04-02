@@ -139,20 +139,41 @@ bool CDxLibSpineDrawableC21::isBlendModeNormalForced() const noexcept
 	return m_isToForceBlendModeNormal;
 }
 
+void CDxLibSpineDrawableC21::setPause(bool paused) noexcept
+{
+	m_isPaused = paused;
+}
+
+bool CDxLibSpineDrawableC21::isPaused() const noexcept
+{
+	return m_isPaused;
+}
+
+void CDxLibSpineDrawableC21::setVisibility(bool visible) noexcept
+{
+	m_isVisible = visible;
+}
+
+bool CDxLibSpineDrawableC21::isVisible() const noexcept
+{
+	return m_isVisible;
+}
+
 void CDxLibSpineDrawableC21::update(float fDelta)
 {
 	if (m_skeleton == nullptr || m_animationState == nullptr)return;
 
-	spSkeleton_update(m_skeleton, fDelta);
-	spAnimationState_update(m_animationState, fDelta);
+	if (!m_isPaused)spAnimationState_update(m_animationState, fDelta);
 	spAnimationState_apply(m_animationState, m_skeleton);
+
+	if (!m_isPaused)spSkeleton_update(m_skeleton, fDelta);
 	spSkeleton_updateWorldTransform(m_skeleton);
 }
 
 void CDxLibSpineDrawableC21::draw()
 {
-	if (m_skeleton == nullptr || m_animationState == nullptr)return;
-
+	if (!m_isVisible) return;
+	if (m_skeleton == nullptr || m_animationState == nullptr) return;
 	if (m_skeleton->a == 0) return;
 
 	static int quadIndices[] = { 0, 1, 2, 2, 3, 0 };

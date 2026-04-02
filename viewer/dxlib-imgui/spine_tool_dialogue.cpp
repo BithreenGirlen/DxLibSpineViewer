@@ -601,6 +601,20 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			HelpMarker("Draw order is crutial only when rendering multiple Spines.\n"
 				"Be sure to make it appropriate in prior to adding animation effect.");
 
+			bool isVisible = pDxLibSpinePlayer->isVisible();
+			if (ImGui::Checkbox("Visible", &isVisible))
+			{
+				pDxLibSpinePlayer->setVisibility(isVisible);
+			}
+
+			HelpMarker("To be used to estimate draw calls comsumed to render Spine.");
+
+			bool isPaused = pDxLibSpinePlayer->isPaused();
+			if (ImGui::Checkbox("Paused", &isPaused))
+			{
+				pDxLibSpinePlayer->setPause(isPaused);
+			}
+
 			if (ImGui::TreeNode("Statictics"))
 			{
 				ImGui::Text("Draw calls: %d", DxLib::GetDrawCallCount());

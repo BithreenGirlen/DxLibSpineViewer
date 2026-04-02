@@ -1,7 +1,7 @@
 ﻿#ifndef DXLIB_SPINE_H_
 #define DXLIB_SPINE_H_
 
-/*avoid conflict between <MathUtils.h> and <Windows.h>*/
+/* Avoid conflict between <MathUtils.h> and <Windows.h> for Spine 4.0 and older */
 #undef min
 #undef max
 #include <spine/spine.h>
@@ -28,6 +28,14 @@ public:
 	void forceBlendModeNormal(bool toForce) noexcept;
 	bool isBlendModeNormalForced() const noexcept;
 
+	void setPause(bool paused) noexcept;
+	bool isPaused() const noexcept;
+
+	void setVisibility(bool visible) noexcept;
+	bool isVisible() const noexcept;
+
+	/// @brief Add animation time and update world transform.
+	/// @remark Even if it is paused or 0.0f is passed, world transform will be updated.
 	void update(float fDelta);
 	void draw();
 
@@ -41,6 +49,8 @@ private:
 	bool m_hasOwnAnimationStateData = false;
 	bool m_isAlphaPremultiplied = true;
 	bool m_isToForceBlendModeNormal = false;
+	bool m_isVisible = true;
+	bool m_isPaused = false;
 
 	spine::Skeleton* m_skeleton = nullptr;
 	spine::AnimationState* m_animationState = nullptr;

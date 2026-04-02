@@ -105,16 +105,36 @@ bool CDxLibSpineDrawable::isBlendModeNormalForced() const noexcept
 	return m_isToForceBlendModeNormal;
 }
 
+void CDxLibSpineDrawable::setPause(bool paused) noexcept
+{
+	m_isPaused = paused;
+}
+
+bool CDxLibSpineDrawable::isPaused() const noexcept
+{
+	return m_isPaused;
+}
+
+void CDxLibSpineDrawable::setVisibility(bool visible) noexcept
+{
+	m_isVisible = visible;
+}
+
+bool CDxLibSpineDrawable::isVisible() const noexcept
+{
+	return m_isVisible;
+}
+
 void CDxLibSpineDrawable::update(float fDelta)
 {
 	if (m_skeleton != nullptr && m_animationState != nullptr)
 	{
-		m_animationState->update(fDelta);
+		if (!m_isPaused)m_animationState->update(fDelta);
 		m_animationState->apply(*m_skeleton);
 
 		/* Spine 4.1 does not have "Skeleton::update()" */
 #if !defined(SPINE_41)
-		m_skeleton->update(fDelta);
+		if (!m_isPaused)m_skeleton->update(fDelta);
 #endif
 
 #if defined(SPINE_42)
@@ -127,8 +147,8 @@ void CDxLibSpineDrawable::update(float fDelta)
 
 void CDxLibSpineDrawable::draw()
 {
+	if (!m_isVisible)return;
 	if (m_skeleton == nullptr || m_animationState == nullptr)return;
-
 	if (m_skeleton->getColor().a == 0)return;
 
 	for (size_t i = 0; i < m_skeleton->getSlots().size(); ++i)

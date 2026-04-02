@@ -28,6 +28,12 @@ public:
 	void forceBlendModeNormal(bool toForce) noexcept;
 	bool isBlendModeNormalForced() const noexcept;
 
+	void setPause(bool paused) noexcept;
+	bool isPaused() const noexcept;
+
+	void setVisibility(bool visible) noexcept;
+	bool isVisible() const noexcept;
+
 	void update(float fDelta);
 	void draw();
 
@@ -40,6 +46,8 @@ private:
 	bool m_hasOwnAnimationStateData = false;
 	bool m_isAlphaPremultiplied = true;
 	bool m_isToForceBlendModeNormal = false;
+	bool m_isVisible = true;
+	bool m_isPaused = false;
 
 	spSkeleton* m_skeleton = nullptr;
 	spAnimationState* m_animationState = nullptr;

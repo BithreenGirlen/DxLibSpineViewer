@@ -49,15 +49,24 @@ public:
 	/// @brief Toggle the state of all drawables
 	void togglePma();
 	void toggleBlendModeAdoption();
+	void togglePause();
+	void toggleVisibility();
 
 	/// @return current state. If it were out of range, return false.
 	bool isAlphaPremultiplied(size_t nDrawableIndex = 0);
-	bool isBlendModeNormalForced(size_t nDrawableIndex = 0);
-	bool isDrawOrderReversed() const noexcept;
-
 	/// @return false if it were out of range.
 	bool premultiplyAlpha(bool premultiplied, size_t nDrawableIndex = 0);
+
+	bool isBlendModeNormalForced(size_t nDrawableIndex = 0);
 	bool forceBlendModeNormal(bool toForce, size_t nDrawableIndex = 0);
+
+	bool isPaused(size_t nDrawableIndex = 0);
+	bool setPause(bool paused, size_t nDrawableIndex = 0);
+
+	bool isVisible(size_t nDrawableIndex = 0);
+	bool setVisibility(bool visible, size_t nDrawableIndex = 0);
+
+	bool isDrawOrderReversed() const noexcept;
 	void setDrawOrder(bool reversed);
 
 	std::string getCurrentAnimationName();

@@ -151,16 +151,36 @@ bool CDxLibSpineDrawableC::isBlendModeNormalForced() const noexcept
 	return m_isToForceBlendModeNormal;
 }
 
+void CDxLibSpineDrawableC::setPause(bool paused) noexcept
+{
+	m_isPaused = paused;
+}
+
+bool CDxLibSpineDrawableC::isPaused() const noexcept
+{
+	return m_isPaused;
+}
+
+void CDxLibSpineDrawableC::setVisibility(bool visible) noexcept
+{
+	m_isVisible = visible;
+}
+
+bool CDxLibSpineDrawableC::isVisible() const noexcept
+{
+	return m_isVisible;
+}
+
 void CDxLibSpineDrawableC::update(float fDelta)
 {
 	if (m_skeleton == nullptr || m_animationState == nullptr)return;
 
-	spAnimationState_update(m_animationState, fDelta);
+	if (m_isPaused)spAnimationState_update(m_animationState, fDelta);
 	spAnimationState_apply(m_animationState, m_skeleton);
 
 	/* Spine 4.1 does not have "spSkeleton_update()" */
 #if !defined(SPINE_41)
-	spSkeleton_update(m_skeleton, fDelta);
+	if (m_isPaused)spSkeleton_update(m_skeleton, fDelta);
 #endif
 
 #if defined(SPINE_42)
@@ -172,6 +192,7 @@ void CDxLibSpineDrawableC::update(float fDelta)
 
 void CDxLibSpineDrawableC::draw()
 {
+	if (!m_isVisible)return;
 	if (m_skeleton == nullptr || m_animationState == nullptr)return;
 	if (m_skeleton->color.a == 0) return;
 

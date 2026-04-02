@@ -53,15 +53,25 @@ public:
 	/// @brief Toggle the state of all drawables
 	virtual void togglePma() = 0;
 	virtual void toggleBlendModeAdoption() = 0;
+	virtual void togglePause() = 0;
+	virtual void toggleVisibility() = 0;
 
 	/// @return current state. If it were out of range, return false.
 	virtual bool isAlphaPremultiplied(size_t nDrawableIndex = 0) = 0;
-	virtual bool isBlendModeNormalForced(size_t nDrawableIndex = 0) = 0;
-	virtual bool isDrawOrderReversed() const noexcept = 0;
-
+	/// @return false if it were out of range.
 	virtual bool premultiplyAlpha(bool isToBePremultiplied, size_t nDrawableIndex = 0) = 0;
+
+	virtual bool isBlendModeNormalForced(size_t nDrawableIndex = 0) = 0;
 	virtual bool forceBlendModeNormal(bool isToForce, size_t nDrawableIndex = 0) = 0;
+
+	virtual bool isDrawOrderReversed() const noexcept = 0;
 	virtual void setDrawOrder(bool isToBeReversed) = 0;
+
+	virtual bool isPaused(size_t nDrawableIndex = 0) = 0;
+	virtual bool setPause(bool paused, size_t nDrawableIndex = 0) = 0;
+
+	virtual bool isVisible(size_t nDrawableIndex = 0) = 0;
+	virtual bool setVisibility(bool visible, size_t nDrawableIndex = 0);
 
 	virtual std::string getCurrentAnimationName() = 0;
 	virtual void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) = 0;

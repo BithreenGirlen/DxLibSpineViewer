@@ -242,12 +242,39 @@ void CSpinePlayerC::toggleBlendModeAdoption()
 		pDrawable->forceBlendModeNormal(!pDrawable->isBlendModeNormalForced());
 	}
 }
+
+void CSpinePlayerC::togglePause()
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->setPause(!pDrawable->isPaused());
+	}
+}
+
+void CSpinePlayerC::toggleVisibility()
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->setVisibility(!pDrawable->isVisible());
+	}
+}
 /* 乗算済み是否 */
 bool CSpinePlayerC::isAlphaPremultiplied(size_t nDrawableIndex)
 {
 	if (nDrawableIndex < m_drawables.size())
 	{
 		return m_drawables[nDrawableIndex]->isAlphaPremultiplied();
+	}
+
+	return false;
+}
+
+bool CSpinePlayerC::premultiplyAlpha(bool premultiplied, size_t nDrawableIndex)
+{
+	if (nDrawableIndex < m_drawables.size())
+	{
+		m_drawables[nDrawableIndex]->premultiplyAlpha(premultiplied);
+		return true;
 	}
 
 	return false;
@@ -263,22 +290,6 @@ bool CSpinePlayerC::isBlendModeNormalForced(size_t nDrawableIndex)
 	return false;
 }
 
-bool CSpinePlayerC::isDrawOrderReversed() const noexcept
-{
-	return m_isDrawOrderReversed;
-}
-
-bool CSpinePlayerC::premultiplyAlpha(bool premultiplied, size_t nDrawableIndex)
-{
-	if (nDrawableIndex < m_drawables.size())
-	{
-		m_drawables[nDrawableIndex]->premultiplyAlpha(premultiplied);
-		return true;
-	}
-
-	return false;
-}
-
 bool CSpinePlayerC::forceBlendModeNormal(bool toForce, size_t nDrawableIndex)
 {
 	if (nDrawableIndex < m_drawables.size())
@@ -288,6 +299,53 @@ bool CSpinePlayerC::forceBlendModeNormal(bool toForce, size_t nDrawableIndex)
 	}
 
 	return false;
+}
+
+bool CSpinePlayerC::isPaused(size_t nDrawableIndex)
+{
+	if (nDrawableIndex < m_drawables.size())
+	{
+		return m_drawables[nDrawableIndex]->isPaused();
+	}
+
+	return false;
+}
+
+bool CSpinePlayerC::setPause(bool paused, size_t nDrawableIndex)
+{
+	if (nDrawableIndex < m_drawables.size())
+	{
+		m_drawables[nDrawableIndex]->setPause(paused);
+		return true;
+	}
+
+	return false;
+}
+
+bool CSpinePlayerC::isVisible(size_t nDrawableIndex)
+{
+	if (nDrawableIndex < m_drawables.size())
+	{
+		return m_drawables[nDrawableIndex]->isVisible();
+	}
+
+	return false;
+}
+
+bool CSpinePlayerC::setVisibility(bool visible, size_t nDrawableIndex)
+{
+	if (nDrawableIndex < m_drawables.size())
+	{
+		m_drawables[nDrawableIndex]->setVisibility(visible);
+		return true;
+	}
+
+	return false;
+}
+
+bool CSpinePlayerC::isDrawOrderReversed() const noexcept
+{
+	return m_isDrawOrderReversed;
 }
 
 void CSpinePlayerC::setDrawOrder(bool reversed)

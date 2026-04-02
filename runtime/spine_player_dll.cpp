@@ -66,14 +66,23 @@ public:
 
 	void togglePma() override;
 	void toggleBlendModeAdoption() override;
+	void togglePause() override;
+	void toggleVisibility() override;
 
 	bool isAlphaPremultiplied(size_t nDrawableIndex = 0) override;
-	bool isBlendModeNormalForced(size_t nDrawableIndex = 0) override;
-	bool isDrawOrderReversed() const noexcept override;
-
 	bool premultiplyAlpha(bool isToBePremultiplied, size_t nDrawableIndex = 0) override;
+
+	bool isBlendModeNormalForced(size_t nDrawableIndex = 0) override;
 	bool forceBlendModeNormal(bool isToForce, size_t nDrawableIndex = 0) override;
+
+	bool isPaused(size_t nDrawableIndex = 0) override;
+	bool setPause(bool paused, size_t nDrawableIndex = 0) override;
+
+	bool isVisible(size_t nDrawableIndex = 0) override;
+	bool setVisibility(bool visible, size_t nDrawableIndex = 0) override;
+
 	void setDrawOrder(bool isToBeReversed) override;
+	bool isDrawOrderReversed() const noexcept override;
 
 	std::string getCurrentAnimationName() override;
 	void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) override;
@@ -229,19 +238,19 @@ void SPCLASS::toggleBlendModeAdoption()
 	m_dxLibSpinePlayer.toggleBlendModeAdoption();
 }
 
+void SPCLASS::togglePause()
+{
+	m_dxLibSpinePlayer.togglePause();
+}
+
+void SPCLASS::toggleVisibility()
+{
+	m_dxLibSpinePlayer.toggleVisibility();
+}
+
 bool SPCLASS::isAlphaPremultiplied(size_t nDrawableIndex)
 {
 	return m_dxLibSpinePlayer.isAlphaPremultiplied(nDrawableIndex);
-}
-
-bool SPCLASS::isBlendModeNormalForced(size_t nDrawableIndex)
-{
-	return m_dxLibSpinePlayer.isBlendModeNormalForced(nDrawableIndex);
-}
-
-bool SPCLASS::isDrawOrderReversed() const noexcept
-{
-	return m_dxLibSpinePlayer.isDrawOrderReversed();
 }
 
 bool SPCLASS::premultiplyAlpha(bool isToBePremultiplied, size_t nDrawableIndex)
@@ -249,9 +258,39 @@ bool SPCLASS::premultiplyAlpha(bool isToBePremultiplied, size_t nDrawableIndex)
 	return m_dxLibSpinePlayer.premultiplyAlpha(isToBePremultiplied, nDrawableIndex);
 }
 
+bool SPCLASS::isBlendModeNormalForced(size_t nDrawableIndex)
+{
+	return m_dxLibSpinePlayer.isBlendModeNormalForced(nDrawableIndex);
+}
+
 bool SPCLASS::forceBlendModeNormal(bool isToForce, size_t nDrawableIndex)
 {
 	return m_dxLibSpinePlayer.forceBlendModeNormal(isToForce, nDrawableIndex);
+}
+
+bool SPCLASS::isPaused(size_t nDrawableIndex)
+{
+	return m_dxLibSpinePlayer.isPaused(nDrawableIndex);
+}
+
+bool SPCLASS::setPause(bool paused, size_t nDrawableIndex)
+{
+	return m_dxLibSpinePlayer.setPause(paused, nDrawableIndex);
+}
+
+bool SPCLASS::isVisible(size_t nDrawableIndex)
+{
+	return m_dxLibSpinePlayer.isVisible(nDrawableIndex);
+}
+
+bool SPCLASS::setVisibility(bool visible, size_t nDrawableIndex)
+{
+	return m_dxLibSpinePlayer.setVisibility(visible, nDrawableIndex);
+}
+
+bool SPCLASS::isDrawOrderReversed() const noexcept
+{
+	return m_dxLibSpinePlayer.isDrawOrderReversed();
 }
 
 void SPCLASS::setDrawOrder(bool isToBeReversed)
