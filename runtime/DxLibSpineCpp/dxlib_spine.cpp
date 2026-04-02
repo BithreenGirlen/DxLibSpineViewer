@@ -112,7 +112,7 @@ void CDxLibSpineDrawable::update(float fDelta)
 		m_animationState->update(fDelta);
 		m_animationState->apply(*m_skeleton);
 
-		/* Spine 4.1 Does not have "Skeleton::update()" */
+		/* Spine 4.1 does not have "Skeleton::update()" */
 #if !defined(SPINE_41)
 		m_skeleton->update(fDelta);
 #endif
@@ -396,34 +396,32 @@ bool CDxLibSpineDrawable::IsToBeLeftOut(const spine::String& slotName)
 	}
 }
 
-void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path)
+void CDxLibTextureLoader::load(spine::AtlasPage& atlasPage, const spine::String& path)
 {
 #if	defined(_WIN32) && defined(_UNICODE)
-	const auto WidenPath = [&path]()
-		-> spine::Vector<wchar_t>
+	const auto WidenPath = [](const char* charPath)
+		-> wchar_t*
 		{
 			int iCharCode = DxLib::GetUseCharCodeFormat();
 			int iWcharCode = DxLib::Get_wchar_t_CharCodeFormat();
 
-			spine::Vector<wchar_t> vBuffer;
-			vBuffer.setSize(path.length() * sizeof(wchar_t), L'\0');
+			int iByteLength = DxLib::ConvertStringCharCodeFormat(iCharCode, charPath, iWcharCode, nullptr);
+			if (iByteLength < sizeof(wchar_t))return nullptr;
 
-			int iLen = DxLib::ConvertStringCharCodeFormat
-			(
-				iCharCode,
-				path.buffer(),
-				iWcharCode,
-				vBuffer.buffer()
-			);
-			if (iLen != -1)
-			{
-				/*The defualt value is neglected when shrinking.*/
-				vBuffer.setSize(iLen, L'\0');
-			}
-			return vBuffer;
+			/* The length including null termination */
+			int iStringLength = iByteLength / sizeof(wchar_t);
+			wchar_t* pResult = static_cast<wchar_t*>(calloc(iStringLength, sizeof(wchar_t)));
+			if (pResult == nullptr)return nullptr;
+
+			int iRet = DxLib::ConvertStringCharCodeFormat(iCharCode, charPath, iWcharCode, pResult);
+
+			return pResult;
 		};
-	spine::Vector<wchar_t> wcharPath = WidenPath();
-	int iDxLibTexture = DxLib::LoadGraph(wcharPath.buffer());
+	wchar_t* wcharPath = WidenPath(path.buffer());
+	if (wcharPath == nullptr)return;
+	int iDxLibTexture = DxLib::LoadGraph(wcharPath);
+	free(wcharPath);
+	wcharPath = nullptr;
 #else
 	int iDxLibTexture = DxLib::LoadGraph(path.buffer());
 #endif
@@ -431,9 +429,9 @@ void CDxLibTextureLoader::load(spine::AtlasPage& page, const spine::String& path
 
 	void* p = reinterpret_cast<void*>(static_cast<unsigned long long>(iDxLibTexture));
 #if defined (SPINE_41) || defined (SPINE_42)
-	page.texture = p;
+	atlasPage.texture = p;
 #else
-	page.setRendererObject(p);
+	atlasPage.setRendererObject(p);
 #endif
 }
 

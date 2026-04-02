@@ -14,29 +14,15 @@ static wchar_t* WidenPath(const char* path)
 	int iCharCode = DxLib::GetUseCharCodeFormat();
 	int iWcharCode = DxLib::Get_wchar_t_CharCodeFormat();
 
-	size_t nLen = strlen(path);
-	wchar_t* pResult = static_cast<wchar_t*>(malloc((nLen + 1LL) * sizeof(wchar_t)));
+	int iByteLength = DxLib::ConvertStringCharCodeFormat(iCharCode, path, iWcharCode, nullptr);
+	if (iByteLength < sizeof(wchar_t))return nullptr;
+
+	/* The length including null termination */
+	int iStringLength = iByteLength / sizeof(wchar_t);
+	wchar_t* pResult = static_cast<wchar_t*>(calloc(iStringLength, sizeof(wchar_t)));
 	if (pResult == nullptr)return nullptr;
-	memset(pResult, L'\0', nLen * sizeof(wchar_t));
 
-	int iLen = DxLib::ConvertStringCharCodeFormat
-	(
-		iCharCode,
-		path,
-		iWcharCode,
-		pResult
-	);
-	if (iLen == -1)
-	{
-		free(pResult);
-		return nullptr;
-	}
-
-	wchar_t* pTemp = static_cast<wchar_t*>(realloc(pResult, iLen));
-	if (pTemp != nullptr)
-	{
-		pResult = pTemp;
-	}
+	int iRet = DxLib::ConvertStringCharCodeFormat(iCharCode, path, iWcharCode, pResult);
 
 	return pResult;
 }
@@ -172,7 +158,7 @@ void CDxLibSpineDrawableC::update(float fDelta)
 	spAnimationState_update(m_animationState, fDelta);
 	spAnimationState_apply(m_animationState, m_skeleton);
 
-	/* Spine 4.1 Does not have "spSkeleton_update()" */
+	/* Spine 4.1 does not have "spSkeleton_update()" */
 #if !defined(SPINE_41)
 	spSkeleton_update(m_skeleton, fDelta);
 #endif
