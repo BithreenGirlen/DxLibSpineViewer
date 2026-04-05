@@ -1230,7 +1230,7 @@ void CMainWindow::UpdateWindowResizableAttribute()
 	::SetWindowLong(m_hWnd, GWL_STYLE, (m_dxLibSpinePlayer.get()->hasSpineBeenLoaded() && m_windowStyle.isResizable) ? (lStyle | WS_THICKFRAME) : (lStyle & ~WS_THICKFRAME));
 }
 /*窓寸法変更*/
-void CMainWindow::ResizeWindow(bool toActivate)
+void CMainWindow::ResizeWindow()
 {
 	DxLib::FLOAT2 fBaseSize = m_dxLibSpinePlayer.get()->getBaseSize();
 	float fScale = m_dxLibSpinePlayer.get()->getCanvasScale();
@@ -1251,7 +1251,7 @@ void CMainWindow::ResizeWindow(bool toActivate)
 		};
 
 	::AdjustWindowRect(&rect, lStyle, IsWidowBarHidden() ? FALSE : TRUE);
-	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER | (toActivate ? 0 : SWP_NOACTIVATE));
+	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void CMainWindow::ImGuiSpineParameterDialogue()
@@ -1268,12 +1268,7 @@ void CMainWindow::ImGuiSpineParameterDialogue()
 	spine_tool_dialogue::Display(m_spineToolDatum, &m_toShowSpineParameter);
 	if (m_spineToolDatum.isWindowToBeResized)
 	{
-		/*
-		* In the time of Imgui 1.92.2, viewport window was kept focused even if main window was resized.
-		* But in 1.92.6, focus is set to resized window. This might be correct behaviour though,
-		* it requires SWP_NOACTIVATE flag to retain the same behaviour as before.
-		*/
-		ResizeWindow(false);
+		ResizeWindow();
 
 		m_spineToolDatum.isWindowToBeResized = false;
 	}

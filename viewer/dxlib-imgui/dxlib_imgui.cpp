@@ -41,6 +41,7 @@ public:
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 		io.ConfigViewportsNoAutoMerge = true;
+		io.ConfigViewportsNoDefaultParent = false;
 
 		ImGui::StyleColorsLight();
 		ImGui::GetStyle().Colors[ImGuiCol_WindowBg].w = 0.875f;

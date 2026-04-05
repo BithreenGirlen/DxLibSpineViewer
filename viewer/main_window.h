@@ -158,7 +158,7 @@ private:
 	CFontSettingDialogue m_fontSettingDialogue;
 
 	void UpdateWindowResizableAttribute();
-	void ResizeWindow(bool toActivate = true);
+	void ResizeWindow();
 
 	bool m_toShowSpineParameter = false;
 	void ImGuiSpineParameterDialogue();

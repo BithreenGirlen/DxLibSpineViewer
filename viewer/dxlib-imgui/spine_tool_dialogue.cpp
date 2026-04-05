@@ -620,7 +620,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 				pDxLibSpinePlayer->togglePause();
 			}
 
-			if (ImGui::TreeNode("Statictics"))
+			if (ImGui::TreeNode("Statistics"))
 			{
 				ImGui::Text("Draw calls: %d", DxLib::GetDrawCallCount());
 
