@@ -55,8 +55,9 @@ public:
 		hr = pDWriteLocalisedStrings->GetStringLength(uiLocaleIndex, &uiStringLength);
 		if (FAILED(hr))return std::wstring();
 
-		std::wstring wstrLocaleFontName(uiStringLength + 1ULL, '\0');
+		std::wstring wstrLocaleFontName(uiStringLength + 1UL, L'\0');
 		hr = pDWriteLocalisedStrings->GetString(uiLocaleIndex, &wstrLocaleFontName[0], static_cast<UINT32>(wstrLocaleFontName.size()));
+		wstrLocaleFontName.pop_back();
 
 		return wstrLocaleFontName;
 	}
@@ -90,6 +91,7 @@ public:
 			hr = pDWriteLocalisedStrings->GetString(uiLocaleIndex, &wstrBuffer[0], static_cast<UINT32>(wstrBuffer.size()));
 			if (SUCCEEDED(hr))
 			{
+				wstrBuffer.pop_back();
 				systemFontFamilyNames.push_back(wstrBuffer);
 			}
 		}
@@ -155,6 +157,7 @@ public:
 			hr = pDWriteLocalFontFileLoader->GetFilePathFromKey(pFontFileReferenceKey, uiKeyLength, &wstrBuffer[0], static_cast<UINT32>(wstrBuffer.size()));
 			if (SUCCEEDED(hr))
 			{
+				wstrBuffer.pop_back();
 				fontFilePaths.push_back(wstrBuffer.data());
 			}
 		}
