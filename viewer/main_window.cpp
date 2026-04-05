@@ -850,13 +850,11 @@ void CMainWindow::MenuOnMakeWindowTransparent()
 		{
 			::SetWindowLong(m_hWnd, GWL_EXSTYLE, lStyleEx | WS_EX_LAYERED);
 			::SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), 255, LWA_COLORKEY);
-			::SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 		}
 		else
 		{
 			::SetWindowLong(m_hWnd, GWL_EXSTYLE, lStyleEx & ~WS_EX_LAYERED);
 			::SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), 255, LWA_COLORKEY);
-			::SetWindowPos(m_hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 		}
 	}
 }
@@ -948,6 +946,8 @@ void CMainWindow::MenuOnSaveAsPng()
 void CMainWindow::MenuOnStartRecording(int menuKind)
 {
 	if (!m_dxLibSpinePlayer.get()->hasSpineBeenLoaded())return;
+	if (m_dxLibSpinePlayer.get()->isPaused())m_dxLibSpinePlayer.get()->togglePause();
+	if (!m_dxLibSpinePlayer.get()->isVisible())m_dxLibSpinePlayer.get()->toggleVisibility();
 
 	CDxLibRecorder::EOutputType outputType = CDxLibRecorder::EOutputType::Unknown;
 	switch (menuKind)
