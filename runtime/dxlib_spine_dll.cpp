@@ -79,9 +79,9 @@ namespace DxLib
 	}
 
 #if defined _WIN32
-	extern int GetDisplayMaxResolution(int* SizeX, int* SizeY, int DisplayIndex)
+	extern HWND GetMainWindowHandle()
 	{
-		return g_dxLibRegerenda.GetDisplayMaxResolution(SizeX, SizeY, DisplayIndex);
+		return g_dxLibRegerenda.GetMainWindowHandle();
 	}
 #elif defined __ANDROID__
 	extern int GetAndroidDisplayResolution(int* SizeX, int* SizeY)
@@ -126,7 +126,7 @@ const DxLibRegerenda* GetDxLibFunctonsToBeRegistered()
 	s_dxLibRegerenda.ResetTransformTo2D= &DxLib::ResetTransformTo2D;
 
 #if defined _WIN32
-	s_dxLibRegerenda.GetDisplayMaxResolution = &DxLib::GetDisplayMaxResolution;
+	s_dxLibRegerenda.GetMainWindowHandle = &DxLib::GetMainWindowHandle;
 #elif defined __ANDROID__
 	s_dxLibRegerenda.GetAndroidDisplayResolution = &DxLib::GetAndroidDisplayResolution;
 #elif defined __APPLE__

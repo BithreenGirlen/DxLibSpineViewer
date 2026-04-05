@@ -906,41 +906,6 @@ void CSpinePlayerC::workOutDefaultSize()
 		CompareDimention(pSkeletonData->width, pSkeletonData->height);
 	}
 }
-/*標準尺度算出*/
-void CSpinePlayerC::workOutDefaultScale()
-{
-	m_fDefaultScale = 1.f;
-	m_fDefaultOffset = {};
-
-	int iSkeletonWidth = static_cast<int>(m_fBaseSize.x);
-	int iSkeletonHeight = static_cast<int>(m_fBaseSize.y);
-
-	int iDisplayWidth = 0;
-	int iDisplayHeight = 0;
-#if defined _WIN32
-	DxLib::GetDisplayMaxResolution(&iDisplayWidth, &iDisplayHeight);
-#elif defined __ANDROID__
-	DxLib::GetAndroidDisplayResolution(&iDisplayWidth, &iDisplayHeight);
-#elif defined __APPLE__
-	DxLib::GetDisplayResolution_iOS(&iDisplayWidth, &iDisplayHeight);
-#endif
-	if (iDisplayWidth == 0 || iDisplayHeight == 0)return;
-
-	if (iSkeletonWidth > iDisplayWidth || iSkeletonHeight > iDisplayHeight)
-	{
-		float fScaleX = static_cast<float>(iDisplayWidth) / iSkeletonWidth;
-		float fScaleY = static_cast<float>(iDisplayHeight) / iSkeletonHeight;
-
-		if (fScaleX > fScaleY)
-		{
-			m_fDefaultScale = fScaleY;
-		}
-		else
-		{
-			m_fDefaultScale = fScaleX;
-		}
-	}
-}
 /*位置適用*/
 void CSpinePlayerC::updatePosition()
 {

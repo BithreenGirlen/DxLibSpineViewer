@@ -39,8 +39,12 @@ struct DxLibRegerenda
 	int (*SetTransformTo2D)(const DxLib::MATRIX* Matrix);
 	int (*ResetTransformTo2D)(void);
 #if defined _WIN32
-	/* This does not corresponds to the two subsequent functions in that this returns the largest one in configuration, not the current one. */
-	int (*GetDisplayMaxResolution)(int* SizeX, int* SizeY, int DisplayIndex);
+	/*
+	* DxLib::GetDisplayMaxResolution does not corresponds to the two subsequent functions in that
+	* it returns the largest resolution in configuration, not the current one.
+	* So HWND is required to obtain the resolution of monitor where window exists by ulitising "MonitorFromWindow" and "GetMonitorInfoW".
+	*/
+	HWND (*GetMainWindowHandle)(void);
 #elif defined __ANDROID__
 	int (*GetAndroidDisplayResolution)(int* SizeX, int* SizeY);
 #elif defined __APPLE__

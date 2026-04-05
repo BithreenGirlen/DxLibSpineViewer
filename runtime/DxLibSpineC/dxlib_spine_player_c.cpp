@@ -77,7 +77,21 @@ void CDxLibSpinePlayerC::workOutDefaultScale()
 	int iDisplayWidth = 0;
 	int iDisplayHeight = 0;
 #if defined _WIN32
-	DxLib::GetDisplayMaxResolution(&iDisplayWidth, &iDisplayHeight);
+	const auto GetDisplayResolution = [](int* width, int* height) -> void
+		{
+			HMONITOR hMonitor = ::MonitorFromWindow(DxLib::GetMainWindowHandle(), MONITOR_DEFAULTTONEAREST);
+			if (hMonitor != nullptr)
+			{
+				MONITORINFO monitorInfo{ sizeof(MONITORINFO) };
+				BOOL iRet = ::GetMonitorInfoW(hMonitor, &monitorInfo);
+				if (iRet)
+				{
+					if (width != nullptr) *width = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+					if (height != nullptr) *height = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+				}
+			}
+		};
+	GetDisplayResolution(&iDisplayWidth, &iDisplayHeight);
 #elif defined __ANDROID__
 	DxLib::GetAndroidDisplayResolution(&iDisplayWidth, &iDisplayHeight);
 #elif defined __APPLE__
@@ -90,14 +104,7 @@ void CDxLibSpinePlayerC::workOutDefaultScale()
 		float fScaleX = static_cast<float>(iDisplayWidth) / iSkeletonWidth;
 		float fScaleY = static_cast<float>(iDisplayHeight) / iSkeletonHeight;
 
-		if (fScaleX > fScaleY)
-		{
-			m_fDefaultScale = fScaleY;
-		}
-		else
-		{
-			m_fDefaultScale = fScaleX;
-		}
+		m_fDefaultScale = fScaleX > fScaleY ? fScaleY : fScaleX;
 	}
 }
 
