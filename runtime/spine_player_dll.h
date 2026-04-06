@@ -114,7 +114,8 @@ public:
 	virtual void setTimeScale(float fTimeScale) = 0;
 
 	virtual DxLib::MATRIX calculateTransformMatrix() const noexcept = 0;
-	virtual DxLib::FLOAT4 getCurrentBoundingOfSlot(const std::string& slotName) const = 0;
+	virtual DxLib::FLOAT4 getCurrentBoundingBox() const = 0;
+	virtual DxLib::FLOAT4 getCurrentBoundingBoxOfSlot(const std::string& slotName) const = 0;
 private:
 
 };

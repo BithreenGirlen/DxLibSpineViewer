@@ -173,6 +173,38 @@ namespace spine_tool_dialogue
 			}
 		}
 	}
+
+	struct DxLibImGuiBoundsRenderer
+	{
+		static constexpr float fMinThickness = 1.f;
+		static constexpr float fMaxThickness = 14.f;
+
+		float fThickness = 2.f;
+		ImVec4 fRectangleColor = ImVec4(240 / 255.f, 240 / 255.f, 240 / 255.f, 1.00f);
+		bool toDrawRect = false;
+
+		void render(const DxLib::FLOAT4& bounds, const DxLib::MATRIX& transformMatrix)
+		{
+			ImGui::Text("Bounds: (%.2f, %.2f, %.2f, %.2f)", bounds.x, bounds.y, bounds.x + bounds.z, bounds.y + bounds.w);
+			ImGui::Checkbox("Draw rectangle", &toDrawRect);
+			if (toDrawRect)
+			{
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.4f);
+				ScrollableSliderFloat("Thickness", &fThickness, fMinThickness, fMaxThickness);
+				ImGui::SameLine();
+				ImGui::ColorEdit4("Colour", (float*)&fRectangleColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoInputs);
+				
+				unsigned int rectangleColour = ImGui::ColorConvertFloat4ToU32(fRectangleColor);
+				/* ABGR -> ARGB */
+				rectangleColour = ((rectangleColour & 0x000000ff) << 16) | ((rectangleColour & 0x00ff0000) >> 16) | ((rectangleColour & 0xff00ff00));
+
+				DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+				DxLib::SetTransformTo2D(&transformMatrix);
+				DxLib::DrawBoxAA(bounds.x, bounds.y, bounds.x + bounds.z, bounds.y + bounds.w, rectangleColour, 0, fThickness);
+				DxLib::ResetTransformTo2D();
+			}
+		}
+	};
 }
 
 void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen)
@@ -199,60 +231,54 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			ImGui::Text("Skeleton scale: %.2f", pDxLibSpinePlayer->getSkeletonScale());
 			ImGui::Text("Canvas scale: %.2f", pDxLibSpinePlayer->getCanvasScale());
 
-			if (ImGui::TreeNode("Slot bounding"))
+			if (ImGui::TreeNode("Bounding box"))
 			{
-				const std::vector<std::string>& slotNames = pDxLibSpinePlayer->getSlotNames();
-				static ImGuiComboBox slotsComboBox;
-				slotsComboBox.update(slotNames, "Slot##SlotBounding");
-				const auto& slotBounding = pDxLibSpinePlayer->getCurrentBoundingOfSlot(slotNames[slotsComboBox.selectedIndex]);
-				if (slotBounding.z == 0.f)
+				const DxLib::MATRIX transfromMatrix = pDxLibSpinePlayer->calculateTransformMatrix();
+				if (ImGui::TreeNode("Slot"))
 				{
-					ImGui::TextColored(ImVec4{1.f, 0.f, 0.f, 1.f}, "Slot not found in this animation.");
-				}
-				else
-				{
-					ImGui::Text("Slot bounding: (%.2f, %.2f, %.2f, %.2f)", slotBounding.x, slotBounding.y, slotBounding.x + slotBounding.z, slotBounding.y + slotBounding.w);
+					const std::vector<std::string>& slotNames = pDxLibSpinePlayer->getSlotNames();
+					static ImGuiComboBox slotsComboBox;
+					slotsComboBox.update(slotNames, "Slot##SlotBounding");
 
-					static bool toDrawRect = false;
-					ImGui::Checkbox("Draw slot bounding", &toDrawRect);
-					if (toDrawRect)
+					const DxLib::FLOAT4 slotBounding = pDxLibSpinePlayer->getCurrentBoundingBoxOfSlot(slotNames[slotsComboBox.selectedIndex]);
+					if (slotBounding.z == 0.f)
 					{
-						static constexpr float fMinThickness = 1.f;
-						static constexpr float fMaxThickness = 14.f;
-						static float fThickness = 2.f;
-						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.4f);
-						ScrollableSliderFloat("Thickness", &fThickness, fMinThickness, fMaxThickness);
-
-						/* 0xf0f0f0 */
-						static ImVec4 fRectangleColor = ImVec4(240 / 255.f, 240 / 255.f, 240 / 255.f, 1.00f);
-						ImGui::SameLine();
-						ImGui::ColorEdit4("Colour", (float*)&fRectangleColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoInputs);
-						unsigned int rectangleColour = ImGui::ColorConvertFloat4ToU32(fRectangleColor);
-						/* ABGR -> ARGB */
-						rectangleColour = ((rectangleColour & 0x000000ff) << 16) | ((rectangleColour & 0x00ff0000) >> 16) | ((rectangleColour & 0xff00ff00));
-
-						DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-						DxLib::MATRIX matrix = pDxLibSpinePlayer->calculateTransformMatrix();
-						DxLib::SetTransformTo2D(&matrix);
-						DxLib::DrawBoxAA(slotBounding.x, slotBounding.y, slotBounding.x + slotBounding.z, slotBounding.y + slotBounding.w, rectangleColour, 0, fThickness);
-						DxLib::ResetTransformTo2D();
-
-						if (ImGui::Button("Fit to this slot"))
+						ImGui::TextColored(ImVec4{ 1.f, 0.f, 0.f, 1.f }, "Slot not found in this animation.");
+					}
+					else
+					{
+						static DxLibImGuiBoundsRenderer slotBoundsRenderer;
+						slotBoundsRenderer.render(slotBounding, transfromMatrix);
+						if (slotBoundsRenderer.toDrawRect)
 						{
-							pDxLibSpinePlayer->setBaseSize(slotBounding.z, slotBounding.w);
-							pDxLibSpinePlayer->update(0.f);
-							const auto& updatedSlotBounding = pDxLibSpinePlayer->getCurrentBoundingOfSlot(slotNames[slotsComboBox.selectedIndex]);
-							if (updatedSlotBounding.z != 0)
+							if (ImGui::Button("Fit to this slot"))
 							{
-								auto offsetToBe = pDxLibSpinePlayer->getOffset();
-								offsetToBe.u += updatedSlotBounding.x;
-								offsetToBe.v += updatedSlotBounding.y;
-								pDxLibSpinePlayer->setOffset(offsetToBe.u, offsetToBe.v);
 								pDxLibSpinePlayer->setBaseSize(slotBounding.z, slotBounding.w);
+								pDxLibSpinePlayer->update(0.f);
+								const auto& updatedSlotBounding = pDxLibSpinePlayer->getCurrentBoundingBoxOfSlot(slotNames[slotsComboBox.selectedIndex]);
+								if (updatedSlotBounding.z != 0)
+								{
+									auto offsetToBe = pDxLibSpinePlayer->getOffset();
+									offsetToBe.u += updatedSlotBounding.x;
+									offsetToBe.v += updatedSlotBounding.y;
+									pDxLibSpinePlayer->setOffset(offsetToBe.u, offsetToBe.v);
+									pDxLibSpinePlayer->setBaseSize(slotBounding.z, slotBounding.w);
+								}
+								spineToolDatum.isWindowToBeResized = true;
 							}
-							spineToolDatum.isWindowToBeResized = true;
 						}
 					}
+
+					ImGui::TreePop();
+				}
+
+				if (ImGui::TreeNode("Whole"))
+				{
+					const DxLib::FLOAT4 wholeBounding = pDxLibSpinePlayer->getCurrentBoundingBox();
+					static DxLibImGuiBoundsRenderer wholeBoundsRenderer;
+					wholeBoundsRenderer.render(wholeBounding, transfromMatrix);
+
+					ImGui::TreePop();
 				}
 
 				ImGui::TreePop();

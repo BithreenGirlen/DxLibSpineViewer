@@ -46,13 +46,32 @@ DxLib::MATRIX CDxLibSpinePlayerC::calculateTransformMatrix() const noexcept
 	float fX = (m_fBaseSize.x * m_fSkeletonScale - iScreenWidth) / 2;
 	float fY = (m_fBaseSize.y * m_fSkeletonScale - iScreenHeight) / 2;
 
-	DxLib::MATRIX matrix = DxLib::MGetScale(DxLib::VGet(m_fSkeletonScale, m_fSkeletonScale, 1.f));
-	DxLib::MATRIX tranlateMatrix = DxLib::MGetTranslate(DxLib::VGet(-fX, -fY, 0.f));
+	DxLib::MATRIX scaleMatrix = DxLib::MGetScale(DxLib::VGet(m_fSkeletonScale, m_fSkeletonScale, 1.f));
+	DxLib::MATRIX translateMatrix = DxLib::MGetTranslate(DxLib::VGet(-fX, -fY, 0.f));
 
-	return DxLib::MMult(matrix, tranlateMatrix);
+	return DxLib::MMult(scaleMatrix, translateMatrix);
 }
 
-DxLib::FLOAT4 CDxLibSpinePlayerC::getCurrentBoundingOfSlot(const std::string& slotName) const
+DxLib::FLOAT4 CDxLibSpinePlayerC::getCurrentBoundingBox() const
+{
+	float fMinX = FLT_MAX;
+	float fMinY = FLT_MAX;
+	float fMaxX = -FLT_MAX;
+	float fMaxY = -FLT_MAX;
+
+	for (const auto& drawable : m_drawables)
+	{
+		const DxLib::FLOAT4 rect = drawable->getBoundingBox();
+		fMinX = (std::min)(fMinX, rect.x);
+		fMinY = (std::min)(fMinY, rect.y);
+		fMaxX = (std::max)(fMaxX, rect.x + rect.z);
+		fMaxY = (std::max)(fMaxY, rect.y + rect.w);
+	}
+
+	return { fMinX, fMinY, fMaxX - fMinX, fMaxY - fMinY };
+}
+
+DxLib::FLOAT4 CDxLibSpinePlayerC::getCurrentBoundingBoxOfSlot(const std::string& slotName) const
 {
 	bool found = false;
 	for (const auto& drawable : m_drawables)
@@ -63,6 +82,7 @@ DxLib::FLOAT4 CDxLibSpinePlayerC::getCurrentBoundingOfSlot(const std::string& sl
 			return rect;
 		}
 	}
+
 	return {};
 }
 

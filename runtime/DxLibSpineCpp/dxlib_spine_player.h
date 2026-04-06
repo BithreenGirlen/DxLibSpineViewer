@@ -12,7 +12,8 @@ public:
 	void draw();
 
 	DxLib::MATRIX calculateTransformMatrix() const noexcept;
-	DxLib::FLOAT4 getCurrentBoundingOfSlot(const std::string& slotName) const;
+	DxLib::FLOAT4 getCurrentBoundingBox() const;
+	DxLib::FLOAT4 getCurrentBoundingBoxOfSlot(const std::string& slotName) const;
 private:
 	void workOutDefaultScale() override;
 	void workOutDefaultOffset() override;

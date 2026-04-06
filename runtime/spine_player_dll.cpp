@@ -121,7 +121,8 @@ public:
 	void setTimeScale(float fTimeScale) override;
 
 	DxLib::MATRIX calculateTransformMatrix() const noexcept override;
-	DxLib::FLOAT4 getCurrentBoundingOfSlot(const std::string& slotName) const override;
+	DxLib::FLOAT4 getCurrentBoundingBox() const override;
+	DxLib::FLOAT4 getCurrentBoundingBoxOfSlot(const std::string& slotName) const override;
 private:
 	CDxLibSpinePlayer m_dxLibSpinePlayer;
 };
@@ -435,8 +436,13 @@ DxLib::MATRIX SPCLASS::calculateTransformMatrix() const noexcept
 	return m_dxLibSpinePlayer.calculateTransformMatrix();
 }
 
-DxLib::FLOAT4 SPCLASS::getCurrentBoundingOfSlot(const std::string& slotName) const
+DxLib::FLOAT4 SPCLASS::getCurrentBoundingBox() const
 {
-	return m_dxLibSpinePlayer.getCurrentBoundingOfSlot(slotName);
+	return m_dxLibSpinePlayer.getCurrentBoundingBox();
+}
+
+DxLib::FLOAT4 SPCLASS::getCurrentBoundingBoxOfSlot(const std::string& slotName) const
+{
+	return m_dxLibSpinePlayer.getCurrentBoundingBoxOfSlot(slotName);
 }
 

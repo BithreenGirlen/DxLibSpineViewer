@@ -1241,7 +1241,7 @@ void CMainWindow::ResizeWindow()
 
 	int monitorWidth = (std::numeric_limits<int32_t>::max)();
 	int monitorHeight = (std::numeric_limits<int32_t>::max)();
-	HMONITOR hMonitor = ::MonitorFromWindow(DxLib::GetMainWindowHandle(), MONITOR_DEFAULTTONEAREST);
+	HMONITOR hMonitor = ::MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
 	if (hMonitor != nullptr)
 	{
 		MONITORINFO monitorInfo{ sizeof(MONITORINFO) };
