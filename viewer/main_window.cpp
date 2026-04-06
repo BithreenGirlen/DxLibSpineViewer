@@ -97,9 +97,9 @@ int CMainWindow::MessageLoop()
 			::DispatchMessageW(&msg);
 		}
 
-		if (m_hasProcessedWmPaint)
+		if (m_windowState.hasProcessedWmPaint)
 		{
-			m_hasProcessedWmPaint = false;
+			m_windowState.hasProcessedWmPaint = false;
 			continue;
 		}
 
@@ -207,7 +207,7 @@ LRESULT CMainWindow::OnPaint()
 	else
 	{
 		Tick();
-		m_hasProcessedWmPaint = true;
+		m_windowState.hasProcessedWmPaint = true;
 	}
 
 	return 0;
@@ -1127,8 +1127,6 @@ bool CMainWindow::LoadSpinesFromMemory(const std::vector<std::string>& atlasData
 		return false;
 	}
 
-	bool isBinarySkel = skeletonMetaData.skeletonFormat == SkeletonFormat::Binary;
-
 	long long versionIndex = m_dxLibSpinePlayer.findVersionIndex(reinterpret_cast<const char*>(skeletonMetaData.version));
 	if (versionIndex == static_cast<long long>(CSpinePlayerDynamic::ESpineVersionIndex::NotImplemented))
 	{
@@ -1142,6 +1140,7 @@ bool CMainWindow::LoadSpinesFromMemory(const std::vector<std::string>& atlasData
 	}
 	m_dxLibSpinePlayer.setPlayerToUse(versionIndex);
 
+	bool isBinarySkel = skeletonMetaData.skeletonFormat == SkeletonFormat::Binary;
 	bool hadLoaded = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
 	bool hasLoaded = m_dxLibSpinePlayer.get()->loadSpineFromMemory(atlasData, textureDirectories, skelData, isBinarySkel);
 	PostSpineLoading(hadLoaded, hasLoaded, windowName);
@@ -1240,8 +1239,22 @@ void CMainWindow::ResizeWindow()
 	int iX = static_cast<int>(fBaseSize.u * fScale);
 	int iY = static_cast<int>(fBaseSize.v * fScale);
 
-	rect.right = iX + rect.left;
-	rect.bottom = iY + rect.top;
+	int monitorWidth = (std::numeric_limits<int32_t>::max)();
+	int monitorHeight = (std::numeric_limits<int32_t>::max)();
+	HMONITOR hMonitor = ::MonitorFromWindow(DxLib::GetMainWindowHandle(), MONITOR_DEFAULTTONEAREST);
+	if (hMonitor != nullptr)
+	{
+		MONITORINFO monitorInfo{ sizeof(MONITORINFO) };
+		BOOL iRet = ::GetMonitorInfoW(hMonitor, &monitorInfo);
+		if (iRet)
+		{
+			monitorWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+			monitorHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+		}
+	}
+
+	iX = (std::min)(iX, monitorWidth);
+	iY = (std::min)(iY, monitorHeight);
 
 	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
 	const auto IsWidowBarHidden = [&lStyle]()
@@ -1251,7 +1264,7 @@ void CMainWindow::ResizeWindow()
 		};
 
 	::AdjustWindowRect(&rect, lStyle, IsWidowBarHidden() ? FALSE : TRUE);
-	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, iX, iY, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void CMainWindow::ImGuiSpineParameterDialogue()

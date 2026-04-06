@@ -91,15 +91,19 @@ private:
 		bool isZoomReversed = false;
 	};
 
+	struct WindowState
+	{
+		bool hasProcessedWmPaint = false;
+	};
 	MouseState m_mouseState;
 	WindowStyle m_windowStyle;
+	WindowState m_windowState;
 
 	HMENU m_hMenuBar = nullptr;
 
 	std::vector<std::wstring> m_folders;
 	size_t m_nFolderIndex = 0;
 
-	bool m_hasProcessedWmPaint = false;
 	CWinClock m_winclock;
 
 	void Tick();
