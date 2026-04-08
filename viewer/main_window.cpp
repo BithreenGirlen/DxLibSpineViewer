@@ -1256,6 +1256,9 @@ void CMainWindow::ResizeWindow()
 	iX = (std::min)(iX, monitorWidth);
 	iY = (std::min)(iY, monitorHeight);
 
+	rect.right = iX + rect.left;
+	rect.bottom = iY + rect.top;
+
 	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
 	const auto IsWidowBarHidden = [&lStyle]()
 		-> bool
@@ -1264,7 +1267,7 @@ void CMainWindow::ResizeWindow()
 		};
 
 	::AdjustWindowRect(&rect, lStyle, IsWidowBarHidden() ? FALSE : TRUE);
-	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, iX, iY, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
 }
 
 void CMainWindow::ImGuiSpineParameterDialogue()
