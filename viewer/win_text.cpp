@@ -32,13 +32,13 @@ namespace win_text
             int iLen = ::MultiByteToWideChar(uiCodePage, 0, str, length, nullptr, 0);
             if (iLen > 0)
             {
-                std::wstring wstr(iLen, 0);
+                std::wstring wstr(iLen, L'\0');
                 ::MultiByteToWideChar(uiCodePage, 0, str, length, &wstr[0], iLen);
                 return wstr;
             }
         }
 
-        return std::wstring();
+        return {};
     }
 
     static std::string Narrow(const wchar_t* wstr, int length, CCodePage codePage)
@@ -49,12 +49,12 @@ namespace win_text
             int iLen = ::WideCharToMultiByte(uiCodePage, 0, wstr, length, nullptr, 0, nullptr, nullptr);
             if (iLen > 0)
             {
-                std::string str(iLen, 0);
+                std::string str(iLen, '\0');
                 ::WideCharToMultiByte(uiCodePage, 0, wstr, length, &str[0], iLen, nullptr, nullptr);
                 return str;
             }
         }
-        return std::string();
+        return {};
     }
 }
 
@@ -99,12 +99,12 @@ std::string win_text::NarrowAnsi(const wchar_t* wstr, int length)
     return Narrow(wstr, length, CCodePage::kAnsi);
 }
 
-int win_text::WidenUtf8Static(const char* str, int length, wchar_t* dst, int dstSize)
+int win_text::WidenUtf8InBuffer(const char* str, int length, wchar_t* dst, int dstSize)
 {
     return ::MultiByteToWideChar(CP_UTF8, 0, str, length, dst, dstSize);
 }
 
-int win_text::NarrowUtf8Static(const wchar_t* wstr, int length, char* dst, int dstSize)
+int win_text::NarrowUtf8InBuffer(const wchar_t* wstr, int length, char* dst, int dstSize)
 {
     return ::WideCharToMultiByte(CP_UTF8, 0, wstr, length, dst, dstSize, nullptr, nullptr);
 }

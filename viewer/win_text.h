@@ -17,12 +17,14 @@ namespace win_text
     std::string NarrowAnsi(const std::wstring& wstr);
     std::string NarrowAnsi(const wchar_t* wstr, int length);
 
-    /// @brief Convert UTF-8 to UTF-16 using static buffer
+    /// @brief Convert UTF-8 to UTF-16 in buffer
     /// @param dst A pointer to buffer that receives converted string without null termination
     /// @return 0 on failure; written length on success
-    int WidenUtf8Static(const char* str, int length, wchar_t* dst, int dstSize);
-    /// @brief Convert UTF-16 to UTF-8 using static buffer
-    int NarrowUtf8Static(const wchar_t* wstr, int length, char* dst, int dstSize);
+    int WidenUtf8InBuffer(const char* str, int length, wchar_t* dst, int dstSize);
+    /// @brief Convert UTF-16 to UTF-8 in buffer
+    /// @param dst A pointer to buffer that receives converted string without null termination
+    /// @return 0 on failure; written length on success
+    int NarrowUtf8InBuffer(const wchar_t* wstr, int length, char* dst, int dstSize);
 }
 
 #endif //WIN_TEXT_H_

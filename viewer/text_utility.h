@@ -190,6 +190,38 @@ namespace text_utility
 			}
 		}
 	}
+
+	size_t UnescapeInPlace(char* pSrc)
+	{
+		char* pStart = pSrc;
+		char* pDst = pSrc;
+		while (*pSrc)
+		{
+			if (*pSrc == '\\')
+			{
+				pSrc++;
+				if (!*pSrc) break;
+
+				switch (*pSrc)
+				{
+				case 'b':  *pDst++ = '\b'; break;
+				case 'f':  *pDst++ = '\f'; break;
+				case 'n':  *pDst++ = '\n'; break;
+				case 'r':  *pDst++ = '\r'; break;
+				case 't':  *pDst++ = '\t'; break;
+				default: *pDst++ = *pSrc; break;
+				}
+			}
+			else
+			{
+				*pDst++ = *pSrc;
+			}
+			pSrc++;
+		}
+
+		*pDst = '\0';
+		return pDst - pStart;
+	}
 } /* namespace text_utility */
 
 #endif // !TEXT_UTILITY_H_

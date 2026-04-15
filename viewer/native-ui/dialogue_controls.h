@@ -10,99 +10,99 @@
 class CListView
 {
 public:
-	CListView();
-	~CListView();
+	CListView() = default;
+	~CListView() = default;
 
-	bool Create(HWND hParentWnd, const wchar_t** columnNames, size_t columnCount, bool hasCheckBox = false);
+	bool create(HWND hParentWnd, const wchar_t** columnNames, size_t columnCount, bool hasCheckBox = false);
 	template <size_t columnCount>
-	void Create(HWND hParentWnd, const wchar_t*(&&columnNames)[columnCount], bool hasCheckBox = false)
+	void create(HWND hParentWnd, const wchar_t*(&&columnNames)[columnCount], bool hasCheckBox = false)
 	{
-		Create(hParentWnd, columnNames, columnCount, hasCheckBox);
+		create(hParentWnd, columnNames, columnCount, hasCheckBox);
 	}
 
-	HWND GetHwnd()const { return m_hWnd; }
+	HWND getHwnd()const { return m_hWnd; }
 
-	void AdjustWidth();
+	void adjustWidth();
 
-	bool Add(const wchar_t** columns, size_t columnCount, bool toBottom = true);
+	bool add(const wchar_t** columns, size_t columnCount, bool toBottom = true);
 	template<size_t columnCount>
-	bool Add(const wchar_t*(&&columns)[columnCount], bool toBottom = true)
+	bool add(const wchar_t*(&&columns)[columnCount], bool toBottom = true)
 	{
-		Add(columns, columnCount, toBottom);
+		add(columns, columnCount, toBottom);
 	}
-	bool Add(const std::vector<std::wstring>& columns, bool toBottom = true);
+	bool add(const std::vector<std::wstring>& columns, bool toBottom = true);
 
-	void Clear() const;
+	void clear() const;
 
-	void CreateSingleList(const std::vector<std::wstring>& items);
-	void CreateSingleList(const wchar_t** items, size_t itemCount);
+	void createSingleList(const std::vector<std::wstring>& items);
+	void createSingleList(const wchar_t** items, size_t itemCount);
 
-	std::vector<std::wstring> PickupCheckedItems();
+	std::vector<std::wstring> pickupCheckedItems();
 private:
 	HWND m_hWnd = nullptr;
 
-	int GetColumnCount() const;
-	int GetItemCount() const;
-	std::wstring GetItemText(int iRow, int iColumn) const;
+	int getColumnCount() const;
+	int getItemCount() const;
+	std::wstring getItemText(int iRow, int iColumn) const;
 };
 
 class CListBox
 {
 public:
-	CListBox();
-	~CListBox();
+	CListBox() = default;
+	~CListBox() = default;
 
-	bool Create(HWND hParentWnd);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool create(HWND hParentWnd);
+	HWND getHwnd()const { return m_hWnd; }
 
-	void Add(const wchar_t* szText, bool toBottom = true) const;
-	void Clear() const;
-	std::wstring GetSelectedItemName();
+	void add(const wchar_t* text, bool toBottom = true) const;
+	void clear() const;
+	std::wstring getSelectedItemName();
 private:
 	HWND m_hWnd = nullptr;
 
-	long long GetSelectedItemIndex() const;
+	long long getSelectedItemIndex() const;
 };
 
 class CComboBox
 {
 public:
-	CComboBox();
-	~CComboBox();
+	CComboBox() = default;
+	~CComboBox() = default;
 
-	bool Create(HWND hParentWnd);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool create(HWND hParentWnd);
+	HWND getHwnd()const { return m_hWnd; }
 
-	void Setup(const std::vector<std::wstring>& itemTexts);
-	void Setup(const wchar_t** itemTexts, size_t itemCount);
+	void setup(const std::vector<std::wstring>& itemTexts);
+	void setup(const wchar_t** itemTexts, size_t itemCount);
 	template<size_t itemCount>
-	void Setup(const wchar_t* (&& itemTexts)[itemCount])
+	void setup(const wchar_t* (&& itemTexts)[itemCount])
 	{
-		Setup(itemTexts, itemCount);
+		setup(itemTexts, itemCount);
 	}
 
-	int GetSelectedItemIndex() const;
-	std::wstring GetSelectedItemText() const;
+	int getSelectedItemIndex() const;
+	std::wstring getSelectedItemText() const;
 
-	int FindIndex(const wchar_t* szName) const;
-	bool SetSelectedItem(int iIndex) const;
+	int findIndex(const wchar_t* itemName) const;
+	bool setSelectedItem(int itemIndex) const;
 private:
 	HWND m_hWnd = nullptr;
 
-	void Clear() const;
+	void clear() const;
 };
 
 class CButton
 {
 public:
-	CButton();
-	~CButton();
+	CButton() = default;
+	~CButton() = default;
 
-	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, bool hasCheckBox = false);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool create(const wchar_t* text, HWND hParentWnd, HMENU hMenu, bool hasCheckBox = false);
+	HWND getHwnd()const { return m_hWnd; }
 
-	void SetCheckBox(bool checked) const;
-	bool IsChecked() const;
+	void setCheckBox(bool checked) const;
+	bool isChecked() const;
 private:
 	HWND m_hWnd = nullptr;
 };
@@ -110,16 +110,16 @@ private:
 class CSlider
 {
 public:
-	CSlider();
-	~CSlider();
+	CSlider() = default;
+	~CSlider() = default;
 
-	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, unsigned short usMin, unsigned short usMax, unsigned int uiRange, bool bVertical = false);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool create(const wchar_t* text, HWND hParentWnd, HMENU hMenu, unsigned short usMin, unsigned short usMax, unsigned int uiRange, bool toBeVertical = false);
+	HWND getHwnd()const { return m_hWnd; }
 
-	long long GetPosition() const;
-	void SetPosition(long long llPos) const;
+	long long getPosition() const;
+	void setPosition(long long llPos) const;
 
-	HWND GetToolTipHandle() const;
+	HWND getToolTipHandle() const;
 private:
 	HWND m_hWnd = nullptr;
 };
@@ -127,19 +127,19 @@ private:
 class CFloatSlider
 {
 public:
-	CFloatSlider();
-	~CFloatSlider();
+	CFloatSlider() = default;
+	~CFloatSlider() = default;
 
-	bool Create(const wchar_t* szText, HWND hParentWnd, HMENU hMenu, float fMin, float fMax, float fRange, unsigned int uiRatio = kDefaultRatio, bool bVertical = false);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool create(const wchar_t* text, HWND hParentWnd, HMENU hMenu, float fMin, float fMax, float fRange, unsigned int uiRatio = kDefaultRatio, bool toBeVertical = false);
+	HWND getHwnd()const { return m_hWnd; }
 
-	float GetPosition() const;
-	void SetPosition(float fPos) const;
+	float getPosition() const;
+	void setPosition(float fPos) const;
 
-	HWND GetToolTipHandle() const;
-	void OnToolTipNeedText(LPNMTTDISPINFOW pNmtTextDispInfo) const;
+	HWND getToolTipHandle() const;
+	void onToolTipNeedText(LPNMTTDISPINFOW pNmtTextDispInfo) const;
 
-	unsigned int GetRatio()const { return m_uiRatio; }
+	unsigned int getRatio()const { return m_uiRatio; }
 private:
 	static constexpr unsigned int kDefaultRatio = 10;
 	HWND m_hWnd = nullptr;
@@ -150,11 +150,11 @@ private:
 class CStatic
 {
 public:
-	CStatic();
-	~CStatic();
+	CStatic() = default;
+	~CStatic() = default;
 
-	bool Create(const wchar_t* szText, HWND hParentWnd, bool hasEdge = false);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool create(const wchar_t* text, HWND hParentWnd, bool hasEdge = false);
+	HWND getHwnd()const { return m_hWnd; }
 private:
 	HWND m_hWnd = nullptr;
 };
@@ -162,16 +162,16 @@ private:
 class CEdit
 {
 public:
-	CEdit();
-	~CEdit();
+	CEdit() = default;
+	~CEdit() = default;
 
-	bool Create(const wchar_t* initialText, HWND hParentWnd, bool bReadOnly = false, bool bBorder = true, bool bNumber = false, bool bPassword = false);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool create(const wchar_t* initialText, HWND hParentWnd, bool toBeReadOnly = false, bool hasBorder = true, bool onlyDigits = false, bool passwordField = false);
+	HWND getHwnd()const { return m_hWnd; }
 
-	std::wstring GetText() const;
-	bool SetText(size_t textLength, const wchar_t* text) const;
+	std::wstring getText() const;
+	bool setText(size_t textLength, const wchar_t* text) const;
 	
-	bool SetHint(const wchar_t* text, bool bToBeHidden = true) const;
+	bool setHint(const wchar_t* text, bool toBeHidden = true) const;
 private:
 	HWND m_hWnd = nullptr;
 };
@@ -179,17 +179,17 @@ private:
 class CSpin
 {
 public:
-	CSpin();
-	~CSpin();
+	CSpin() = default;
+	~CSpin() = default;
 
-	bool Create(HWND hParentWnd, unsigned short usMin, unsigned short usMax);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool create(HWND hParentWnd, unsigned short usMin, unsigned short usMax);
+	HWND getHwnd()const { return m_hWnd; }
 
-	long GetValue() const;
-	void SetValue(long value) const;
+	long getValue() const;
+	void setValue(long value) const;
 
-	HWND GetBuddyHandle() const;
-	void AdjustPosition(int x, int y, int width, int height);
+	HWND getBuddyHandle() const;
+	void adjustPosition(int x, int y, int width, int height);
 private:
 	HWND m_hWnd = nullptr;
 	CEdit m_buddy;
@@ -198,18 +198,18 @@ private:
 class CTab
 {
 public:
-	CTab();
-	~CTab();
+	CTab() = default;
+	~CTab() = default;
 
-	bool Create(HWND hParentWnd);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool create(HWND hParentWnd);
+	HWND getHwnd()const { return m_hWnd; }
 
-	bool Add(const wchar_t* name);
-	int GetTabCount() const;
-	int GetSelectedTabIndex() const;
+	bool add(const wchar_t* name);
+	int getTabCount() const;
+	int getSelectedTabIndex() const;
 
-	void Adjust() const;
-	int GetItemHeight() const;
+	void adjust() const;
+	int getItemHeight() const;
 
 private:
 	HWND m_hWnd = nullptr;

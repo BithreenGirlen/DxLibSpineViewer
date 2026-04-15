@@ -19,13 +19,13 @@
 class CMainWindow
 {
 public:
-	CMainWindow();
-	~CMainWindow();
+	CMainWindow() = default;
+	~CMainWindow() = default;
 
-	bool Create(HINSTANCE hInstance, const wchar_t* pwzWindowName);
-	int MessageLoop();
+	bool create(HINSTANCE hInstance, const wchar_t* pwzWindowName);
+	int messageLoop();
 
-	HWND GetHwnd()const { return m_hWnd; }
+	HWND getHwnd()const { return m_hWnd; }
 private:
 	const wchar_t* m_className = L"Dxlib-spine window";
 	const wchar_t* m_defaultWindowName = L"DxLib spine";
@@ -34,20 +34,22 @@ private:
 	HWND m_hWnd = nullptr;
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	LRESULT HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	LRESULT OnCreate(HWND hWnd);
-	LRESULT OnDestroy();
-	LRESULT OnClose();
-	LRESULT OnPaint();
-	LRESULT OnSize(WPARAM wParam, LPARAM lParam);
-	LRESULT OnKeyUp(WPARAM wParam, LPARAM lParam);
-	LRESULT OnCommand(WPARAM wParam, LPARAM lParam);
-	LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
-	LRESULT OnMouseWheel(WPARAM wParam, LPARAM lParam);
-	LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
-	LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
-	LRESULT OnRButtonUp(WPARAM wParam, LPARAM lParam);
-	LRESULT OnMButtonUp(WPARAM wParam, LPARAM lParam);
+	LRESULT handleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT onCreate(HWND hWnd);
+	LRESULT onDestroy();
+	LRESULT onClose();
+	LRESULT onPaint();
+	LRESULT onSize(WPARAM wParam, LPARAM lParam);
+	LRESULT onKeyUp(WPARAM wParam, LPARAM lParam);
+	LRESULT onCommand(WPARAM wParam, LPARAM lParam);
+	LRESULT onMouseMove(WPARAM wParam, LPARAM lParam);
+	LRESULT onMouseWheel(WPARAM wParam, LPARAM lParam);
+	LRESULT onLButtonDown(WPARAM wParam, LPARAM lParam);
+	LRESULT onLButtonUp(WPARAM wParam, LPARAM lParam);
+	LRESULT onRButtonUp(WPARAM wParam, LPARAM lParam);
+	LRESULT onMButtonUp(WPARAM wParam, LPARAM lParam);
+
+	using DxLibImageHandle = DxLibHandle<&DxLib::DeleteGraph>;
 
 	struct Menu
 	{
@@ -55,8 +57,8 @@ private:
 		{
 			kOpenFiles = 1, kOpenFolder, kExtensionSetting, kImportCocos,
 			kShowToolDialogue, kAddEffectFile, kFontSetting,
-			kSeeThroughImage, kAllowDraggedResizing, kReverseZoomDirection,
-			kFitToManualSize, kFitToDefaultSize,
+			kMakeWindowTransparent, kAllowDraggedResizing, kReverseZoomDirection,
+			kFitToCurrentFrame, kFitToDefaultSize,
 		};
 	};
 	struct MenuBar { enum { kFile, kTool, kWindow }; };
@@ -72,10 +74,11 @@ private:
 
 	struct MouseState
 	{
+		/// @brief 左釦押下を要する操作を行ったか。
 		bool wasLeftCombined = false;
 		bool wasLeftPressed = false;
 		bool wasLeftDragged = false;
-
+		/// @brief 右釦押下を要する操作を行ったか。
 		bool wasRightCombined = false;
 		bool wasRightDragged = false;
 
@@ -84,10 +87,10 @@ private:
 
 	struct WindowStyle
 	{
-		bool isFrameless = false;
+		bool isBorderless = false;
 		bool isTransparent = false;
 		bool isResizable = false;
-		
+		/// @brief ホイール回転方向に対する拡縮を逆にするか
 		bool isZoomReversed = false;
 	};
 
@@ -98,61 +101,16 @@ private:
 	MouseState m_mouseState;
 	WindowStyle m_windowStyle;
 	WindowState m_windowState;
+	bool m_toShowSpineTool = false;
 
 	HMENU m_hMenuBar = nullptr;
 
-	std::vector<std::wstring> m_folders;
-	size_t m_nFolderIndex = 0;
+	std::vector<std::wstring> m_folderPaths;
+	size_t m_nFolderPathIndex = 0;
 
 	CWinClock m_winclock;
 
-	void Tick();
-
-	void InitialiseMenuBar();
-
-	void MenuOnOpenFiles();
-	void MenuOnOpenFolder();
-	void MenuOnExtensionSetting();
-	void MenuOnImportCocos();
-
-	void MenuOnShowToolDialogue();
-	void MenuOnAddFile();
-	void MenuOnFont();
-
-	void MenuOnMakeWindowTransparent();
-	void MenuOnAllowDraggedResizing();
-	void MenuOnReverseZoomDirection();
-	void MenuOnFiToManualSize();
-	void MenuOnFitToDefaultSize();
-
-	void KeyUpOnNextFolder();
-	void KeyUpOnForeFolder();
-
-	void MenuOnSaveAsJpg();
-	void MenuOnSaveAsPng();
-
-	void MenuOnStartRecording(int menuKind);
-	void MenuOnEndRecording();
-
-	void ChangeWindowTitle(const wchar_t* pwzTitle);
-	std::wstring GetWindowTitle() const;
-
-	void ToggleWindowFrameStyle();
-	void UpdateMenuItemState();
-
-	bool LoadSpineFilesInFolder(const std::wstring& folderPath);
-	bool LoadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName);
-	bool LoadSpinesFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& textureDirectories, const std::vector<std::string>& skelData, const wchar_t* windowName);
-	void ClearFolderPathList();
-	void PostSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t* windowName);
-
-	std::wstring BuildExportFilePath();
-	std::wstring FormatAnimationTime(float fAnimationTime);
-	void StepRecording();
-
-	using DxLibImageHandle = DxLibHandle<&DxLib::DeleteGraph>;
-	DxLibImageHandle m_spineRenderTexture = { DxLibImageHandle(-1)};
-
+	DxLibImageHandle m_spineRenderTexture = { DxLibImageHandle(-1) };
 	CSpinePlayerDynamic m_dxLibSpinePlayer;
 	CSpineSettingDialogue m_spineSettingDialogue;
 
@@ -161,11 +119,69 @@ private:
 
 	CFontSettingDialogue m_fontSettingDialogue;
 
-	void UpdateWindowResizableAttribute();
-	void ResizeWindow();
+	void tick();
 
-	bool m_toShowSpineParameter = false;
-	void ImGuiSpineParameterDialogue();
+	void initialiseMenuBar();
+
+	void menuOnOpenFiles();
+	void menuOnOpenFolder();
+	void menuOnExtensionSetting();
+	void menuOnImportCocos();
+
+	void menuOnShowToolDialogue();
+	void menuOnAddFile();
+	void menuOnFont();
+
+	/// @brief 背景色透過・不透明切り替え
+	void menuOnMakeWindowTransparent();
+	/// @brief 抓んでの寸法変更を許可するか。動画録画中は切り替え不可
+	void menuOnAllowDraggedResizing();
+	/// @brief ホイール回転に対する拡縮方向を反転
+	void menuOnReverseZoomDirection();
+	/// @brief 手動変更された現在の表示範囲に合わせる
+	void menuOnFitToCurrentFrame();
+	/// @brief 既定の表示範囲に戻す
+	void menuOnFitToDefaultSize();
+
+	void clearFolderPaths();
+	void openForeFolder();
+	void openNextFolder();
+
+	/// @brief 現在の表示フレームをJPGとして保存
+	void saveRenderTextureAsJpg();
+	/// @brief 現在の表示フレームをPNGとして保存
+	void saveRenderTextureAsPng();
+
+	/// @brief 録画開始 
+	void startRecording(int menuKind);
+	/// @brief 録画更新処理
+	void stepRecording();
+	/// @brief 録画終了
+	void endRecording();
+
+	/// @brief ウィンドウ名称変更
+	void changeWindowTitle(const wchar_t* windowTitle);
+	/// @brief ウィンドウ名称取得
+	std::wstring getWindowTitle() const;
+	/// @brief バッファ上にウィンドウ名称書き込み
+	int getWindowTitleToBuffer(wchar_t* dst, size_t dstSize) const;
+
+	/// @brief ウィンドウ枠表示・非表示切り替え
+	void toggleWindowBorderStyle();
+	/// @brief メニュー欄項目の有効・無効状態更新
+	void updateMenuItemState();
+	void updateWindowResizableStyle();
+	void resizeWindow();
+
+	bool loadSpineFilesInFolder(const std::wstring& folderPath);
+	bool loadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName);
+	bool loadSpinesFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& textureDirectories, const std::vector<std::string>& skelData, const wchar_t* windowName);
+	void postSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t* windowName);
+
+	std::wstring buildExportFilePath();
+	wchar_t* formatAnimationTime(float fAnimationTime, int* length = nullptr);
+
+	void imGuiSpineToolDialogue();
 };
 
 #endif //MAIN_WINDOW_H_

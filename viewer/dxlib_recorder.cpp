@@ -29,17 +29,17 @@ public:
 		Clear();
 	}
 
-	bool Start(EOutputType outputType, unsigned int fps);
-	EOutputType GetoutputType() const { return m_outputType; }
-	int GetFps() const { return m_fps; }
+	bool start(EOutputType outputType, unsigned int fps);
+	EOutputType getoutputType() const { return m_outputType; }
+	int getFps() const { return m_fps; }
 
-	EState GetState() const { return m_recorderState; }
+	EState getState() const { return m_recorderState; }
 
-	bool Capture(const wchar_t* imageName);
-	bool CommitFrame(const int iGraphicHandle, const wchar_t* imageName);
-	bool HasFrames() const { return !m_images.empty(); }
+	bool captureFrame(const wchar_t* imageName);
+	bool commitFrame(const int iGraphicHandle, const wchar_t* imageName);
+	bool hasFrames() const { return !m_images.empty(); }
 
-	bool End(const wchar_t* filePath);
+	bool end(const wchar_t* filePath);
 private:
 	std::vector<DxLibImageHandle> m_images;
 	std::vector<std::wstring> m_imageNames;
@@ -53,10 +53,10 @@ private:
 
 	void Clear();
 
-	void TruncateSize(int* width, int* height) const;
+	void truncateSize(int* width, int* height) const;
 };
 
-bool CDxLibRecorder::Impl::Start(EOutputType outputType, unsigned int fps)
+bool CDxLibRecorder::Impl::start(EOutputType outputType, unsigned int fps)
 {
 	Clear();
 
@@ -68,7 +68,7 @@ bool CDxLibRecorder::Impl::Start(EOutputType outputType, unsigned int fps)
 	return true;
 }
 
-bool CDxLibRecorder::Impl::Capture(const wchar_t* imageName)
+bool CDxLibRecorder::Impl::captureFrame(const wchar_t* imageName)
 {
 	if (m_recorderState != EState::Idle && m_recorderState != EState::InitialisingVideoStream)
 	{
@@ -76,11 +76,11 @@ bool CDxLibRecorder::Impl::Capture(const wchar_t* imageName)
 		int iGraphHeight = 0;
 		DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
 
-		TruncateSize(&iGraphWidth, &iGraphHeight);
+		truncateSize(&iGraphWidth, &iGraphHeight);
 		DxLibImageHandle dxLibGraphHandle(DxLib::MakeGraph(iGraphWidth, iGraphHeight));
-		if (dxLibGraphHandle.Empty())return false;
+		if (dxLibGraphHandle.empty())return false;
 
-		int iRet = DxLib::GetDrawScreenGraph(0, 0, iGraphWidth, iGraphHeight, dxLibGraphHandle.Get());
+		int iRet = DxLib::GetDrawScreenGraph(0, 0, iGraphWidth, iGraphHeight, dxLibGraphHandle.get());
 		if (iRet == -1)return false;
 
 		m_images.push_back(std::move(dxLibGraphHandle));
@@ -92,18 +92,18 @@ bool CDxLibRecorder::Impl::Capture(const wchar_t* imageName)
 	return false;
 }
 
-bool CDxLibRecorder::Impl::CommitFrame(const int iGraphicHandle, const wchar_t* imageName)
+bool CDxLibRecorder::Impl::commitFrame(const int iGraphicHandle, const wchar_t* imageName)
 {
 	int iGraphWidth = 0;
 	int iGraphHeight = 0;
 	int iRet = DxLib::GetGraphSize(iGraphicHandle, &iGraphWidth, &iGraphHeight);
 	if (iRet == -1)return false;
 
-	TruncateSize(&iGraphWidth, &iGraphHeight);
+	truncateSize(&iGraphWidth, &iGraphHeight);
 	DxLibImageHandle dxLibGraphHandle(DxLib::MakeGraph(iGraphWidth, iGraphHeight));
-	if (dxLibGraphHandle.Empty())return false;
+	if (dxLibGraphHandle.empty())return false;
 
-	iRet = DxLib::BltDrawValidGraph(iGraphicHandle, 0, 0, iGraphWidth, iGraphHeight, 0, 0, dxLibGraphHandle.Get());
+	iRet = DxLib::BltDrawValidGraph(iGraphicHandle, 0, 0, iGraphWidth, iGraphHeight, 0, 0, dxLibGraphHandle.get());
 	if (iRet == -1)return false;
 
 	m_images.push_back(std::move(dxLibGraphHandle));
@@ -112,7 +112,7 @@ bool CDxLibRecorder::Impl::CommitFrame(const int iGraphicHandle, const wchar_t* 
 	return true;
 }
 
-bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
+bool CDxLibRecorder::Impl::end(const wchar_t* filePath)
 {
 	if (filePath == nullptr)
 	{
@@ -128,19 +128,19 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 		wstrFilePath += L".gif";
 
 		win_image::CWicGifEncoder wicGifEncoder;
-		bool bRet = wicGifEncoder.Initialise(wstrFilePath.c_str());
+		bool bRet = wicGifEncoder.initialise(wstrFilePath.c_str());
 		if (bRet)
 		{
 			for (auto& image : m_images)
 			{
-				CDxLibMap s(image.Get());
-				if (s.IsAccessible())
+				CDxLibMap s(image.get());
+				if (s.isAccessible())
 				{
-					wicGifEncoder.CommitFrame(s.width, s.height, s.stride, s.pPixels, true, 1.f / m_fps);
+					wicGifEncoder.commitFrame(s.width(), s.height(), s.stride(), s.pixels(), true, 1.f / m_fps);
 				}
-				image.Reset();
+				image.reset();
 			}
-			wicGifEncoder.Finalise();
+			wicGifEncoder.finalise();
 		}
 	}
 	break;
@@ -153,7 +153,7 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 		int iVideoHeight = 0;
 		if (!m_images.empty())
 		{
-			DxLib::GetGraphSize(m_images[0].Get(), &iVideoWidth, &iVideoHeight);
+			DxLib::GetGraphSize(m_images[0].get(), &iVideoWidth, &iVideoHeight);
 		}
 
 		/* Initialising input media types takes time. In the meantime, pause rendering. */
@@ -163,12 +163,12 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 		{
 			for (auto& image : m_images)
 			{
-				CDxLibMap s(image.Get());
-				if (s.IsAccessible())
+				CDxLibMap s(image.get());
+				if (s.isAccessible())
 				{
-					mfVideoEncoder.commitCpuFrame(s.pPixels, static_cast<unsigned long>(s.stride * s.height), true);
+					mfVideoEncoder.commitCpuFrame(s.pixels(), static_cast<unsigned long>(s.stride() * s.height()), true);
 				}
-				image.Reset();
+				image.reset();
 			}
 
 			mfVideoEncoder.finalise();
@@ -183,22 +183,22 @@ bool CDxLibRecorder::Impl::End(const wchar_t* filePath)
 		{
 			auto& image = m_images[i];
 
-			CDxLibMap s(image.Get());
-			if (s.IsAccessible())
+			CDxLibMap s(image.get());
+			if (s.isAccessible())
 			{
 				std::wstring wstrSequentialFilePath = wstrFilePath + m_imageNames[i];
 				if (m_outputType == EOutputType::Pngs)
 				{
 					wstrSequentialFilePath += L".png";
-					win_image::SaveImageAsPng(wstrSequentialFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
+					win_image::SaveImageAsPng(wstrSequentialFilePath.c_str(), s.width(), s.height(), s.stride(), s.pixels(), true);
 				}
 				else if (m_outputType == EOutputType::Jpgs)
 				{
 					wstrSequentialFilePath += L".jpg";
-					win_image::SaveImageAsJpg(wstrSequentialFilePath.c_str(), s.width, s.height, s.stride, s.pPixels, true);
+					win_image::SaveImageAsJpg(wstrSequentialFilePath.c_str(), s.width(), s.height(), s.stride(), s.pixels(), true);
 				}
 			}
-			image.Reset();
+			image.reset();
 		}
 	}
 	break;
@@ -220,7 +220,7 @@ void CDxLibRecorder::Impl::Clear()
 	m_recorderState = EState::Idle;
 }
 
-void CDxLibRecorder::Impl::TruncateSize(int* width, int* height) const
+void CDxLibRecorder::Impl::truncateSize(int* width, int* height) const
 {
 	/*
 	* Truncate video dimension to be multiple of 4 to prevent AMD CPU from hanging on final output
@@ -245,35 +245,35 @@ CDxLibRecorder::~CDxLibRecorder()
 	delete m_impl;
 }
 
-bool CDxLibRecorder::Start(EOutputType outputType, unsigned int fps)
+bool CDxLibRecorder::start(EOutputType outputType, unsigned int fps)
 {
-	return m_impl->Start(outputType, fps);
+	return m_impl->start(outputType, fps);
 }
-CDxLibRecorder::EOutputType CDxLibRecorder::GetOutputType() const
+CDxLibRecorder::EOutputType CDxLibRecorder::getOutputType() const
 {
-	return m_impl->GetoutputType();
+	return m_impl->getoutputType();
 }
-int CDxLibRecorder::GetFps() const
+int CDxLibRecorder::getFps() const
 {
-	return m_impl->GetFps();
+	return m_impl->getFps();
 }
-CDxLibRecorder::EState CDxLibRecorder::GetState() const
+CDxLibRecorder::EState CDxLibRecorder::getState() const
 {
-	return m_impl->GetState();
+	return m_impl->getState();
 }
-bool CDxLibRecorder::CaptureFrame(const wchar_t* imageName)
+bool CDxLibRecorder::captureFrame(const wchar_t* imageName)
 {
-	return m_impl->Capture(imageName);
+	return m_impl->captureFrame(imageName);
 }
-bool CDxLibRecorder::CommitFrame(const int iGraphicHandle, const wchar_t* imageName)
+bool CDxLibRecorder::commitFrame(const int iGraphicHandle, const wchar_t* imageName)
 {
-	return m_impl->CommitFrame(iGraphicHandle, imageName);
+	return m_impl->commitFrame(iGraphicHandle, imageName);
 }
-bool CDxLibRecorder::HasFrames() const
+bool CDxLibRecorder::hasFrames() const
 {
-	return m_impl->HasFrames();
+	return m_impl->hasFrames();
 }
-bool CDxLibRecorder::End(const wchar_t* pwzFilePath)
+bool CDxLibRecorder::end(const wchar_t* filePath)
 {
-	return m_impl->End(pwzFilePath);
+	return m_impl->end(filePath);
 }

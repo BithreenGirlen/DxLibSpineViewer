@@ -9,8 +9,8 @@
 
 CFontSettingDialogue::CFontSettingDialogue()
 {
-	int iFontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
-	m_hFont = ::CreateFont(iFontHeight, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, L"yumin");
+	int fontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
+	m_hFont = ::CreateFont(fontHeight, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, L"Yu mincho");
 }
 
 CFontSettingDialogue::~CFontSettingDialogue()
@@ -21,14 +21,14 @@ CFontSettingDialogue::~CFontSettingDialogue()
 	}
 }
 
-HWND CFontSettingDialogue::Open(HINSTANCE hInstance, HWND hWndParent, const wchar_t* pwzWindowName)
+HWND CFontSettingDialogue::open(HINSTANCE hInstance, HWND hWndParent, const wchar_t* windowName)
 {
-	CDialogueTemplate winDialogueTemplate;
-	winDialogueTemplate.SetWindowSize(160, 100);
+	CDialogueTemplate dialogueTemplate;
+	dialogueTemplate.setWindowSize(160, 100);
 
-	return ::CreateDialogIndirectParam(hInstance, (LPCDLGTEMPLATE)winDialogueTemplate.Generate(pwzWindowName), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
+	return ::CreateDialogIndirectParam(hInstance, (LPCDLGTEMPLATE)dialogueTemplate.generate(windowName), hWndParent, (DLGPROC)DialogProc, (LPARAM)this);
 }
-/*C CALLBACK*/
+/* C CALLBACK */
 LRESULT CFontSettingDialogue::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_INITDIALOG)
@@ -39,121 +39,113 @@ LRESULT CFontSettingDialogue::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 	auto pThis = reinterpret_cast<CFontSettingDialogue*>(::GetWindowLongPtr(hWnd, DWLP_USER));
 	if (pThis != nullptr)
 	{
-		return pThis->HandleMessage(hWnd, uMsg, wParam, lParam);
+		return pThis->handleMessage(hWnd, uMsg, wParam, lParam);
 	}
 	return FALSE;
 }
-/*メッセージ処理*/
-LRESULT CFontSettingDialogue::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+/* メッセージ処理 */
+LRESULT CFontSettingDialogue::handleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
-		return OnInit(hWnd);
+		return onInit(hWnd);
 	case WM_SIZE:
-		return OnSize();
+		return onSize();
 	case WM_CLOSE:
-		return OnClose();
-	case WM_NOTIFY:
-		return OnNotify(wParam, lParam);
+		return onClose();
 	case WM_COMMAND:
-		return OnCommand(wParam, lParam);
-	case WM_VSCROLL:
-		return OnVScroll(wParam, lParam);
+		return onCommand(wParam, lParam);
 	default:
 		break;
 	}
 	return FALSE;
 }
-/*WM_INITDIALOG*/
-LRESULT CFontSettingDialogue::OnInit(HWND hWnd)
+/* WM_INITDIALOG */
+LRESULT CFontSettingDialogue::onInit(HWND hWnd)
 {
 	m_hWnd = hWnd;
 
-	m_fontNameStatic.Create(L"Font name", m_hWnd);
-	m_fontNameComboBox.Create(m_hWnd);
+	m_fontNameStatic.create(L"Font name", m_hWnd);
+	m_fontNameComboBox.create(m_hWnd);
 
-	m_fontSizeStatic.Create(L"Size", m_hWnd);
-	m_fontSizeSlider.Create(L"", m_hWnd, reinterpret_cast<HMENU>(Controls::kFontSizeSlider), 8, 64, 1);
+	m_fontSizeStatic.create(L"Size", m_hWnd);
+	m_fontSizeSlider.create(L"", m_hWnd, reinterpret_cast<HMENU>(Controls::kFontSizeSlider), 8, 64, 1);
 
-	m_applyButton.Create(L"Apply", m_hWnd, reinterpret_cast<HMENU>(Controls::kApplyButton));
+	m_boldButton.create(L"Bold", m_hWnd, nullptr, true);
+
+	m_applyButton.create(L"Apply", m_hWnd, reinterpret_cast<HMENU>(Controls::kApplyButton));
 
 	CWinFont winFont;
 
-	std::vector<std::wstring> fontNames = winFont.GetSystemFontFamilyNames();
-	m_fontNameComboBox.Setup(fontNames);
+	std::vector<std::wstring> fontNames = winFont.getSystemFontFamilyNames();
+	m_fontNameComboBox.setup(fontNames);
 
 	if (m_lastFontNameIndex == -1)
 	{
-		std::wstring wstrLocaleFontName = winFont.FindLocaleFontName(L"游明朝");
-		if (!wstrLocaleFontName.empty())
+		std::wstring localeFontName = winFont.findLocaleFontName(L"Yu mincho");
+		if (!localeFontName.empty())
 		{
-			int iIndex = m_fontNameComboBox.FindIndex(wstrLocaleFontName.c_str());
-			if (iIndex != -1)
+			int index = m_fontNameComboBox.findIndex(localeFontName.c_str());
+			if (index != -1)
 			{
-				m_fontNameComboBox.SetSelectedItem(iIndex);
-				m_lastFontNameIndex = iIndex;
+				m_fontNameComboBox.setSelectedItem(index);
+				m_lastFontNameIndex = index;
 			}
 		}
 	}
 	else
 	{
-		m_fontNameComboBox.SetSelectedItem(m_lastFontNameIndex);
+		m_fontNameComboBox.setSelectedItem(m_lastFontNameIndex);
 	}
 
-	ResizeControls();
+	resizeControls();
 
-	SetSliderPosition();
+	setSliderPosition();
 
 	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
 
 	return TRUE;
 }
-/*WM_CLOSE*/
-LRESULT CFontSettingDialogue::OnClose()
+/* WM_CLOSE */
+LRESULT CFontSettingDialogue::onClose()
 {
 	::DestroyWindow(m_hWnd);
 	m_hWnd = nullptr;
 
 	return 0;
 }
-/*WM_SIZE*/
-LRESULT CFontSettingDialogue::OnSize()
+/* WM_SIZE */
+LRESULT CFontSettingDialogue::onSize()
 {
-	ResizeControls();
+	resizeControls();
 
 	return 0;
 }
-/*WM_NOTIFY*/
-LRESULT CFontSettingDialogue::OnNotify(WPARAM wParam, LPARAM lParam)
+/* WM_COMMAND */
+LRESULT CFontSettingDialogue::onCommand(WPARAM wParam, LPARAM lParam)
 {
-
-	return 0;
-}
-/*WM_COMMAND*/
-LRESULT CFontSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
-{
-	int wmId = LOWORD(wParam);
-	int wmKind = LOWORD(lParam);
-	if (wmKind == 0)
+	int id = LOWORD(wParam);
+	int msgSource = LOWORD(lParam);
+	if (msgSource == 0)
 	{
-		/*Menus*/
+		/* Menus */
 	}
 	else
 	{
-		/*Controls*/
+		/* Controls */
 
-		WORD usCode = HIWORD(wParam);
-		if (usCode == CBN_SELCHANGE)
+		WORD notificationCode = HIWORD(wParam);
+		if (notificationCode == CBN_SELCHANGE)
 		{
-			/*Notification code*/
+			/* Notification code */
 		}
 		else
 		{
-			switch (wmId)
+			switch (id)
 			{
 			case Controls::kApplyButton:
-				OnApplyButton();
+				onApplyButton();
 				break;
 			default:
 				break;
@@ -163,20 +155,15 @@ LRESULT CFontSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
-/*WM_VSCROLL*/
-LRESULT CFontSettingDialogue::OnVScroll(WPARAM wParam, LPARAM lParam)
-{
-	return 0;
-}
-/*EnumChildWindows CALLBACK*/
+
 BOOL CFontSettingDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 {
 	::SendMessage(hWnd, WM_SETFONT, static_cast<WPARAM>(lParam), 0);
 	/*TRUE: 続行, FALSE: 終了*/
 	return TRUE;
 }
-/*再配置*/
-void CFontSettingDialogue::ResizeControls()
+
+void CFontSettingDialogue::resizeControls()
 {
 	RECT clientRect;
 	::GetClientRect(m_hWnd, &clientRect);
@@ -187,73 +174,67 @@ void CFontSettingDialogue::ResizeControls()
 	long spaceX = clientWidth / 24;
 	long spaceY = clientHeight / 96;
 
+	int fontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
+
 	long x = spaceX;
 	long y = spaceY * 2;
 	long w = clientWidth - spaceX * 2;
 	long h = clientHeight * 8 / 10;
-
-	int fontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
-
-	if (m_fontNameStatic.GetHwnd() != nullptr)
-	{
-		::MoveWindow(m_fontNameStatic.GetHwnd(), x, y, w, h, TRUE);
-	}
+	::MoveWindow(m_fontNameStatic.getHwnd(), x, y, w, h, TRUE);
 
 	y += fontHeight;
-	if (m_fontNameComboBox.GetHwnd() != nullptr)
-	{
-		::MoveWindow(m_fontNameComboBox.GetHwnd(), x, y, w, h, TRUE);
-	}
+	::MoveWindow(m_fontNameComboBox.getHwnd(), x, y, w, h, TRUE);
 
 	y += clientHeight * 1 / 6;
 	h = clientHeight * 1 / 6;
-	::MoveWindow(m_fontSizeStatic.GetHwnd(), x, y, w, h, TRUE);
+	::MoveWindow(m_fontSizeStatic.getHwnd(), x, y, w, h, TRUE);
 
 	y += fontHeight;
-	::MoveWindow(m_fontSizeSlider.GetHwnd(), x, y, w, h, TRUE);
+	::MoveWindow(m_fontSizeSlider.getHwnd(), x, y, w, h, TRUE);
+
+	y += h + spaceY;
+	::MoveWindow(m_boldButton.getHwnd(), x, y, w, h, TRUE);
 
 	w = clientWidth / 4;
 	h = static_cast<int>(fontHeight * 1.5);
 	x = clientWidth - w - spaceX * 2;
 	y = clientHeight - h - spaceY * 2;
-	if (m_applyButton.GetHwnd() != nullptr)
-	{
-		::MoveWindow(m_applyButton.GetHwnd(), x, y, w, h, TRUE);
-	}
+	::MoveWindow(m_applyButton.getHwnd(), x, y, w, h, TRUE);
 }
 /*適用ボタン*/
-void CFontSettingDialogue::OnApplyButton()
+void CFontSettingDialogue::onApplyButton()
 {
-	std::wstring wstrFontName = m_fontNameComboBox.GetSelectedItemText();
-	if (!wstrFontName.empty())
+	std::wstring fontName = m_fontNameComboBox.getSelectedItemText();
+	if (!fontName.empty())
 	{
-		CWinFont sWinFont;
+		CWinFont winFont;
+		bool isBold = m_boldButton.isChecked();
 
-		auto filePaths = sWinFont.FindFontFilePaths(wstrFontName.c_str(), false, false);
-		if (!filePaths.empty())
+		std::vector<std::wstring> fontFilePaths = winFont.findFontFilePaths(fontName.c_str(), isBold, false);
+		if (!fontFilePaths.empty())
 		{
-			float fontSize = static_cast<float>(m_fontSizeSlider.GetPosition());
+			float fontSize = static_cast<float>(m_fontSizeSlider.getPosition());
 
 			ImGuiIO& io = ImGui::GetIO();
 			const auto& fontAtlas = io.Fonts;
 			fontAtlas->Clear();
 
 			const ImWchar* glyph = fontAtlas->GetGlyphRangesChineseFull();
-			std::string strFontFilePath = win_text::NarrowUtf8(filePaths[0]);
+			std::string strFontFilePath = win_text::NarrowUtf8(fontFilePaths[0]);
 			fontAtlas->AddFontFromFileTTF(strFontFilePath.c_str(), fontSize, nullptr, glyph);
 
 			ImGuiStyle& style = ImGui::GetStyle();
 			style._NextFrameFontSizeBase = fontSize;
 
-			m_lastFontNameIndex = m_fontNameComboBox.GetSelectedItemIndex();
+			m_lastFontNameIndex = m_fontNameComboBox.getSelectedItemIndex();
 		}
 	}
 }
 
-void CFontSettingDialogue::SetSliderPosition()
+void CFontSettingDialogue::setSliderPosition()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
-	long long llFontSize = static_cast<long long>(style.FontSizeBase);
+	long long fontSize = static_cast<long long>(style.FontSizeBase);
 	/* Before initial rendering, font size remains zero. */
-	m_fontSizeSlider.SetPosition(llFontSize == 0 ? 20 : llFontSize);
+	m_fontSizeSlider.setPosition(fontSize == 0 ? 20 : fontSize);
 }

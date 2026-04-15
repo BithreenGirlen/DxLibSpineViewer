@@ -7,7 +7,7 @@ public:
 	CDxLibImgui(const char* defaultFontfilePath = nullptr, float fontSize = DefaultFontSize);
 	~CDxLibImgui();
 
-	bool HasBeenInitialised() const { return m_bInitialised; }
+	bool hasBeenInitialised() const { return m_hasBeenInitialised; }
 
 	static void NewFrame();
 	static void Render();
@@ -15,7 +15,7 @@ public:
 	static void UpdateAndRenderViewPorts();
 private:
 	static constexpr float DefaultFontSize = 20.f;
-	bool m_bInitialised = false;
+	bool m_hasBeenInitialised = false;
 };
 
 #endif // !DXLIB_IMGUI_H_

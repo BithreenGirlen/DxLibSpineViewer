@@ -13,26 +13,26 @@ public:
 	CSpineSettingDialogue();
 	~CSpineSettingDialogue();
 
-	bool Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* pwzWindowName);
-	HWND GetHwnd()const { return m_hWnd; }
+	bool open(HINSTANCE hInstance, HWND hWnd, const wchar_t* windowName);
+	HWND getHwnd()const { return m_hWnd; }
 
-	const std::wstring& GetAtlasExtension() const { return m_wstrAtlasExtension; }
-	const std::wstring& GetSkelExtension() const { return m_wstrSkelExtension; }
+	const std::wstring& getAtlasExtension() const { return m_atlasExtension; }
+	const std::wstring& getSkelExtension() const { return m_skelExtension; }
 
 private:
-	const wchar_t* m_swzClassName = L"Spine setting dialogue";
+	const wchar_t* m_className = L"Spine setting dialogue";
 	HINSTANCE m_hInstance = nullptr;
 	HWND m_hWnd = nullptr;
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	int MessageLoop();
-	LRESULT HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	LRESULT OnCreate(HWND hWnd);
-	LRESULT OnDestroy();
-	LRESULT OnClose();
-	LRESULT OnPaint();
-	LRESULT OnSize();
-	LRESULT OnCommand(WPARAM wParam, LPARAM lParam);
+	int messageLoop();
+	LRESULT handleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT onCreate(HWND hWnd);
+	LRESULT onDestroy();
+	LRESULT onClose();
+	LRESULT onPaint();
+	LRESULT onSize();
+	LRESULT onCommand(WPARAM wParam, LPARAM lParam);
 
 	enum Constants { kFontSize = 16 };
 
@@ -43,11 +43,12 @@ private:
 	CStatic m_skelStatic;
 	CEdit m_skelEdit;
 
-	std::wstring m_wstrAtlasExtension = L".atlas";
-	std::wstring m_wstrSkelExtension = L".skel";
+	std::wstring m_atlasExtension = L".atlas";
+	std::wstring m_skelExtension = L".skel";
 
+	/// @brief EnumChildWindows callback 
 	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
 
-	void GetInputs();
+	void storeEditBoxInputs();
 };
 #endif // !SPINE_SETTING_DIALOGUE_H_

@@ -33,12 +33,12 @@ namespace win_image
 		CWicGifEncoder();
 		~CWicGifEncoder();
 
-		bool Initialise(const wchar_t* filePath);
-		bool HasBeenInitialised() const;
+		bool initialise(const wchar_t* filePath);
+		bool hasBeenInitialised() const;
+		/// @brief Assume that pixel format is RGBA32
+		bool commitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delayInSeconds);
 
-		bool CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delayInSeconds);
-
-		bool Finalise();
+		bool finalise();
 	private:
 		class Impl;
 		Impl* m_impl = nullptr;

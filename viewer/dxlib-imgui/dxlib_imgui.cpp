@@ -114,8 +114,8 @@ public:
 CDxLibImgui::CDxLibImgui(const char* defaultFontfilePath, float fontSize)
 {
 #if defined _WIN32
-	m_bInitialised = CDxLibImguiImplWin32::CreateContext();
-	m_bInitialised &= CDxLibImguiImplWin32::Initialise();
+	m_hasBeenInitialised = CDxLibImguiImplWin32::CreateContext();
+	m_hasBeenInitialised &= CDxLibImguiImplWin32::Initialise();
 
 	if (defaultFontfilePath != nullptr)
 	{

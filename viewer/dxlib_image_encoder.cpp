@@ -6,89 +6,88 @@
 #include <DxLib.h>
 
 
-/*描画対象をJPGとして保存*/
-bool CDxLibImageEncoder::SaveScreenAsJpg(const wchar_t* wszFilePath)
+bool dxlib_image_encoder::SaveScreenAsJpg(const wchar_t* filePath)
 {
-	int iGraphWidth = 0;
-	int iGraphHeight = 0;
-	DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
+	int screenWidth = 0;
+	int screenHeight = 0;
+	DxLib::GetScreenState(&screenWidth, &screenHeight, nullptr);
 
-	int iRet = DxLib::SaveDrawScreenToJPEG(0, 0, iGraphWidth, iGraphHeight, wszFilePath);
-	return iRet != -1;
-}
-/*描画対象をPNGとして保存*/
-bool CDxLibImageEncoder::SaveScreenAsPng(const wchar_t *wszFilePath)
-{
-	int iGraphWidth = 0;
-	int iGraphHeight = 0;
-	DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
-
-	int iRet = DxLib::SaveDrawScreenToPNG(0, 0, iGraphWidth, iGraphHeight, wszFilePath);
+	int iRet = DxLib::SaveDrawScreenToJPEG(0, 0, screenWidth, screenHeight, filePath);
 	return iRet != -1;
 }
 
-bool CDxLibImageEncoder::SaveGraphicAsJpg(int iGraphicHandle, const wchar_t* wszFilePath)
+bool dxlib_image_encoder::SaveScreenAsPng(const wchar_t *filePath)
 {
-	int iGraphWidth = 0;
-	int iGraphHeight = 0;
-	int iRet = DxLib::GetGraphSize(iGraphicHandle, &iGraphWidth, &iGraphHeight);
+	int screenWidth = 0;
+	int screenHeight = 0;
+	DxLib::GetScreenState(&screenWidth, &screenHeight, nullptr);
+
+	int iRet = DxLib::SaveDrawScreenToPNG(0, 0, screenWidth, screenHeight, filePath);
+	return iRet != -1;
+}
+
+bool dxlib_image_encoder::SaveRenderTextureAsJpg(int iGraphicHandle, const wchar_t* filePath)
+{
+	int textureWidth = 0;
+	int textureHeight = 0;
+	int iRet = DxLib::GetGraphSize(iGraphicHandle, &textureWidth, &textureHeight);
 	if (iRet == -1)return false;
 
-	iRet = DxLib::SaveDrawValidGraphToJPEG(iGraphicHandle, 0, 0, iGraphWidth, iGraphHeight, wszFilePath);
+	iRet = DxLib::SaveDrawValidGraphToJPEG(iGraphicHandle, 0, 0, textureWidth, textureHeight, filePath);
 	return iRet != -1;
 }
 
-bool CDxLibImageEncoder::SaveGraphicAsPng(int iGraphicHandle, const wchar_t* wszFilePath)
+bool dxlib_image_encoder::SaveRenderTextureAsPng(int iGraphicHandle, const wchar_t* filePath)
 {
-	int iGraphWidth = 0;
-	int iGraphHeight = 0;
-	int iRet = DxLib::GetGraphSize(iGraphicHandle, &iGraphWidth, &iGraphHeight);
+	int textureWidth = 0;
+	int textureHeight = 0;
+	int iRet = DxLib::GetGraphSize(iGraphicHandle, &textureWidth, &textureHeight);
 	if (iRet == -1)return false;
 
-	iRet = DxLib::SaveDrawValidGraphToPNG(iGraphicHandle, 0, 0, iGraphWidth, iGraphHeight, wszFilePath);
+	iRet = DxLib::SaveDrawValidGraphToPNG(iGraphicHandle, 0, 0, textureWidth, textureHeight, filePath);
 	return iRet != -1;
 }
-/*描画対象の画素配列取得。*/
-bool CDxLibImageEncoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, bool bToCovertToRgba)
+
+bool dxlib_image_encoder::GetScreenPixels(int* iWidth, int* iHeight, int *iStride, std::vector<unsigned char>& pixels, bool toBeRgba)
 {
-	int iGraphWidth = 0;
-	int iGraphHeight = 0;
-	DxLib::GetScreenState(&iGraphWidth, &iGraphHeight, nullptr);
+	int screenWidth = 0;
+	int screenHeight = 0;
+	DxLib::GetScreenState(&screenWidth, &screenHeight, nullptr);
 
-	int iImageHandle = bToCovertToRgba ?
-		DxLib::MakeABGR8ColorSoftImage(iGraphWidth, iGraphHeight) : DxLib::MakeARGB8ColorSoftImage(iGraphWidth, iGraphHeight);
-	if (iImageHandle == -1)return false;
+	int imageHandle = toBeRgba ?
+		DxLib::MakeABGR8ColorSoftImage(screenWidth, screenHeight) :
+		DxLib::MakeARGB8ColorSoftImage(screenWidth, screenHeight);
+	if (imageHandle == -1)return false;
 
-	int iRet = DxLib::GetDrawScreenSoftImage(0, 0, iGraphWidth, iGraphHeight, iImageHandle);
+	int iRet = DxLib::GetDrawScreenSoftImage(0, 0, screenWidth, screenHeight, imageHandle);
 	if (iRet == -1)
 	{
-		DxLib::DeleteSoftImage(iImageHandle);
+		DxLib::DeleteSoftImage(imageHandle);
 		return false;
 	}
 
-	unsigned char* pPixels = static_cast<unsigned char*>(DxLib::GetImageAddressSoftImage(iImageHandle));
+	unsigned char* pPixels = static_cast<unsigned char*>(DxLib::GetImageAddressSoftImage(imageHandle));
 	if (pPixels == nullptr)
 	{
-		DxLib::DeleteSoftImage(iImageHandle);
+		DxLib::DeleteSoftImage(imageHandle);
 		return false;
 	}
-	int iPitch = DxLib::GetPitchSoftImage(iImageHandle);
+	int iPitch = DxLib::GetPitchSoftImage(imageHandle);
 	if (iPitch == -1)
 	{
-		DxLib::DeleteSoftImage(iImageHandle);
+		DxLib::DeleteSoftImage(imageHandle);
 		return false;
 	}
 
 	*iStride = iPitch;
-	*iWidth = iGraphWidth;
-	*iHeight = iGraphHeight;
+	*iWidth = screenWidth;
+	*iHeight = screenHeight;
 
-	size_t nSize = static_cast<size_t>(iPitch * iGraphHeight);
+	size_t nSize = static_cast<size_t>(iPitch * screenHeight);
 	pixels.resize(nSize);
-
 	memcpy(&pixels[0], pPixels, nSize);
 
-	DxLib::DeleteSoftImage(iImageHandle);
+	DxLib::DeleteSoftImage(imageHandle);
 
 	return true;
 }

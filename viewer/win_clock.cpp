@@ -5,7 +5,7 @@
 CWinClock::CWinClock()
 {
 	::QueryPerformanceFrequency(&m_frequency);
-	Restart();
+	restart();
 }
 
 CWinClock::~CWinClock()
@@ -13,18 +13,18 @@ CWinClock::~CWinClock()
 
 }
 
-float CWinClock::GetElapsedTime()
+float CWinClock::getElapsedTime()
 {
-	LARGE_INTEGER nNow = GetNowCounter();
-	return static_cast<float>(nNow.QuadPart - m_nLastCounter.QuadPart) / m_frequency.QuadPart;
+	LARGE_INTEGER nNow = getTicks();
+	return static_cast<float>(nNow.QuadPart - m_nLastCount.QuadPart) / m_frequency.QuadPart;
 }
 
-void CWinClock::Restart()
+void CWinClock::restart()
 {
-	m_nLastCounter = GetNowCounter();
+	m_nLastCount = getTicks();
 }
 
-LARGE_INTEGER CWinClock::GetNowCounter()
+LARGE_INTEGER CWinClock::getTicks()
 {
 	LARGE_INTEGER ticks;
 	::QueryPerformanceCounter(&ticks);

@@ -9,8 +9,8 @@
 
 CSpineSettingDialogue::CSpineSettingDialogue()
 {
-	int iFontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
-	m_hFont = ::CreateFont(iFontHeight, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, L"yumin");
+	int fontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
+	m_hFont = ::CreateFont(fontHeight, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, L"Yu mincho");
 }
 
 CSpineSettingDialogue::~CSpineSettingDialogue()
@@ -21,20 +21,20 @@ CSpineSettingDialogue::~CSpineSettingDialogue()
 	}
 }
 
-bool CSpineSettingDialogue::Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* pwzWindowName)
+bool CSpineSettingDialogue::open(HINSTANCE hInstance, HWND hWnd, const wchar_t* windowName)
 {
 	WNDCLASSEXW wcex{};
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
 
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = WindowProc;
+	wcex.lpfnWndProc = &WindowProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+	wcex.hCursor = ::LoadCursorW(nullptr, IDC_ARROW);
 	wcex.hbrBackground = ::GetSysColorBrush(COLOR_BTNFACE);
-	wcex.lpszClassName = m_swzClassName;
+	wcex.lpszClassName = m_className;
 
 	if (::RegisterClassExW(&wcex))
 	{
@@ -49,11 +49,11 @@ bool CSpineSettingDialogue::Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 		POINT parentClientPos{ rect.left, rect.top };
 		::ClientToScreen(hWnd, &parentClientPos);
 
-		m_hWnd = ::CreateWindowW(m_swzClassName, pwzWindowName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
+		m_hWnd = ::CreateWindowW(m_className, windowName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
 			parentClientPos.x, parentClientPos.y, iWindowWidth, iWindowHeight, hWnd, nullptr, hInstance, this);
 		if (m_hWnd != nullptr)
 		{
-			MessageLoop();
+			messageLoop();
 			return true;
 		}
 	}
@@ -61,7 +61,7 @@ bool CSpineSettingDialogue::Open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 	return false;
 }
 
-int CSpineSettingDialogue::MessageLoop()
+int CSpineSettingDialogue::messageLoop()
 {
 	MSG msg;
 
@@ -102,73 +102,73 @@ LRESULT CSpineSettingDialogue::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 	pThis = reinterpret_cast<CSpineSettingDialogue*>(::GetWindowLongPtr(hWnd, GWLP_USERDATA));
 	if (pThis != nullptr)
 	{
-		return pThis->HandleMessage(hWnd, uMsg, wParam, lParam);
+		return pThis->handleMessage(hWnd, uMsg, wParam, lParam);
 	}
 
 	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 /* メッセージ処理 */
-LRESULT CSpineSettingDialogue::HandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CSpineSettingDialogue::handleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
 	case WM_CREATE:
-		return OnCreate(hWnd);
+		return onCreate(hWnd);
 	case WM_DESTROY:
-		return OnDestroy();
+		return onDestroy();
 	case WM_CLOSE:
-		return OnClose();
+		return onClose();
 	case WM_PAINT:
-		return OnPaint();
+		return onPaint();
 	case WM_SIZE:
-		return OnSize();
+		return onSize();
 	case WM_COMMAND:
-		return OnCommand(wParam, lParam);
+		return onCommand(wParam, lParam);
 	}
 
 	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 /* WM_CREATE */
-LRESULT CSpineSettingDialogue::OnCreate(HWND hWnd)
+LRESULT CSpineSettingDialogue::onCreate(HWND hWnd)
 {
 	m_hWnd = hWnd;
 
 	::ShowWindow(hWnd, SW_NORMAL);
 	::EnableWindow(::GetWindow(m_hWnd, GW_OWNER), FALSE);
 
-	m_atlasStatic.Create(L"Atlas", m_hWnd);
-	m_atlasEdit.Create(m_wstrAtlasExtension.c_str(), m_hWnd);
+	m_atlasStatic.create(L"Atlas", m_hWnd);
+	m_atlasEdit.create(m_atlasExtension.c_str(), m_hWnd);
 
-	m_skelStatic.Create(L"Skeleton", m_hWnd);
-	m_skelEdit.Create(m_wstrSkelExtension.c_str(), m_hWnd);
+	m_skelStatic.create(L"Skeleton", m_hWnd);
+	m_skelEdit.create(m_skelExtension.c_str(), m_hWnd);
 
 	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
 
 	return 0;
 }
 /* WM_DESTROY */
-LRESULT CSpineSettingDialogue::OnDestroy()
+LRESULT CSpineSettingDialogue::onDestroy()
 {
 	::PostQuitMessage(0);
 
 	return 0;
 }
 /* WM_CLOSE */
-LRESULT CSpineSettingDialogue::OnClose()
+LRESULT CSpineSettingDialogue::onClose()
 {
-	GetInputs();
+	storeEditBoxInputs();
 
 	HWND hOwnerWnd = ::GetWindow(m_hWnd, GW_OWNER);
 	::EnableWindow(hOwnerWnd, TRUE);
 	::BringWindowToTop(hOwnerWnd);
 
 	::DestroyWindow(m_hWnd);
-	::UnregisterClassW(m_swzClassName, m_hInstance);
+	::UnregisterClassW(m_className, m_hInstance);
 
 	return 0;
 }
 /* WM_PAINT */
-LRESULT CSpineSettingDialogue::OnPaint()
+LRESULT CSpineSettingDialogue::onPaint()
 {
 	PAINTSTRUCT ps;
 	HDC hdc = ::BeginPaint(m_hWnd, &ps);
@@ -178,7 +178,7 @@ LRESULT CSpineSettingDialogue::OnPaint()
 	return 0;
 }
 /* WM_SIZE */
-LRESULT CSpineSettingDialogue::OnSize()
+LRESULT CSpineSettingDialogue::onSize()
 {
 	RECT rect;
 	::GetClientRect(m_hWnd, &rect);
@@ -194,26 +194,29 @@ LRESULT CSpineSettingDialogue::OnSize()
 	long x = spaceX;
 	long y = spaceY * 2;
 	long w = clientWidth * 3 / 4;
-	long h = fontHeight + spaceY;
-	::MoveWindow(m_atlasStatic.GetHwnd(), x, y, w, h, TRUE);
+	long h = fontHeight;
+	::MoveWindow(m_atlasStatic.getHwnd(), x, y, w, h, TRUE);
 
 	y += h;
-	::MoveWindow(m_atlasEdit.GetHwnd(), x, y, w, h, TRUE);
+	h = fontHeight + spaceY * 2;
+	::MoveWindow(m_atlasEdit.getHwnd(), x, y, w, h, TRUE);
 
 	y += h + spaceY * 4;
-	::MoveWindow(m_skelStatic.GetHwnd(), x, y, w, h, TRUE);
+	h = fontHeight;
+	::MoveWindow(m_skelStatic.getHwnd(), x, y, w, h, TRUE);
 
 	y += h;
-	::MoveWindow(m_skelEdit.GetHwnd(), x, y, w, h, TRUE);
+	h = fontHeight + spaceY * 2;
+	::MoveWindow(m_skelEdit.getHwnd(), x, y, w, h, TRUE);
 
 	return 0;
 }
-/*WM_COMMAND*/
-LRESULT CSpineSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
+/* WM_COMMAND */
+LRESULT CSpineSettingDialogue::onCommand(WPARAM wParam, LPARAM lParam)
 {
-	int wmId = LOWORD(wParam);
-	int wmKind = LOWORD(lParam);
-	if (wmKind == 0)
+	int id = LOWORD(wParam);
+	int msgSource = LOWORD(lParam);
+	if (msgSource == 0)
 	{
 		/* Menus */
 	}
@@ -221,8 +224,8 @@ LRESULT CSpineSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 	{
 		/* Controls */
 
-		WORD usCode = HIWORD(wParam);
-		if (usCode == CBN_SELCHANGE)
+		WORD notificationCode = HIWORD(wParam);
+		if (notificationCode == CBN_SELCHANGE)
 		{
 			/* Notification code */
 		}
@@ -230,7 +233,7 @@ LRESULT CSpineSettingDialogue::OnCommand(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
-/* EnumChildWindows CALLBACK */
+
 BOOL CSpineSettingDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 {
 	::SendMessage(hWnd, WM_SETFONT, static_cast<WPARAM>(lParam), 0);
@@ -238,10 +241,10 @@ BOOL CSpineSettingDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
 	return TRUE;
 }
 
-/* 入力値取得 */
-void CSpineSettingDialogue::GetInputs()
+/* 入力値格納 */
+void CSpineSettingDialogue::storeEditBoxInputs()
 {
-	m_wstrAtlasExtension.assign(m_atlasEdit.GetText());
-	m_wstrSkelExtension.assign(m_skelEdit.GetText());
+	m_atlasExtension.assign(m_atlasEdit.getText());
+	m_skelExtension.assign(m_skelEdit.getText());
 }
 

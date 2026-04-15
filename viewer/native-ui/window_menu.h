@@ -27,7 +27,7 @@ namespace window_menu
 
 			for (const auto& menuItem : menuItems)
 			{
-				if (IsValid())
+				if (isValid())
 				{
 					if (menuItem.child == nullptr)
 					{
@@ -47,24 +47,24 @@ namespace window_menu
 				}
 				else
 				{
-					Destroy();
+					destroy();
 					break;
 				}
 			}
 		}
 		~MenuBuilder()
 		{
-			Destroy();
+			destroy();
 		}
 
-		HMENU Get() const { return m_hMenu; }
+		HMENU get() const { return m_hMenu; }
 	private:
 		HMENU m_hMenu = nullptr;
 		BOOL m_lastResult = Result::Success;
 
-		bool IsValid() const { return (m_hMenu != nullptr) && (m_lastResult != Result::Error); }
+		bool isValid() const { return (m_hMenu != nullptr) && (m_lastResult != Result::Error); }
 
-		void Destroy()
+		void destroy()
 		{
 			if (m_hMenu != nullptr && m_lastResult == Result::Error)
 			{
@@ -92,16 +92,16 @@ namespace window_menu
 		}
 		~CContextMenu()
 		{
-			Destroy();
+			destroy();
 		}
 
-		void AddItems(const MenuItem* menuItems, size_t itemCount)
+		void addItems(const MenuItem* menuItems, size_t itemCount)
 		{
 			for (size_t i = 0; i < itemCount; ++i)
 			{
 				const auto& menuItem = menuItems[i];
 
-				if (IsValid())
+				if (isValid())
 				{
 					if (menuItem.child == nullptr)
 					{
@@ -121,20 +121,20 @@ namespace window_menu
 				}
 				else
 				{
-					Destroy();
+					destroy();
 					break;
 				}
 			}
 		}
 
 		template <size_t itemCount>
-		void AddItems(const MenuItem(&menuItems)[itemCount])
+		void addItems(const MenuItem(&menuItems)[itemCount])
 		{
-			AddItems(menuItems, itemCount);
+			addItems(menuItems, itemCount);
 		}
 
 		/// @return Selected menu item identifier; 0 when cancelled and -1 when failed. 
-		BOOL Display(HWND hOwnerWindow) const
+		BOOL display(HWND hOwnerWindow) const
 		{
 			if (!::IsMenu(m_hPopupMenu) || !::IsWindow(hOwnerWindow))return - 1;
 
@@ -147,9 +147,9 @@ namespace window_menu
 		HMENU m_hPopupMenu = nullptr;
 		BOOL m_lastResult = Result::Success;
 
-		bool IsValid() const { return (m_hPopupMenu != nullptr) && (m_lastResult != Result::Error); }
+		bool isValid() const { return (m_hPopupMenu != nullptr) && (m_lastResult != Result::Error); }
 
-		void Destroy()
+		void destroy()
 		{
 			if (m_hPopupMenu != nullptr)
 			{

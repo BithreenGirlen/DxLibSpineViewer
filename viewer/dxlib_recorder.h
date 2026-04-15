@@ -1,12 +1,14 @@
 ﻿#ifndef DXLIB_RECORDER_H_
 #define DXLIB_RECORDER_H_
 
+/// @brief 録画器
 class CDxLibRecorder
 {
 public:
 	CDxLibRecorder();
 	~CDxLibRecorder();
 
+	/// @brief 出力形式
 	enum class EOutputType
 	{
 		Unknown,
@@ -15,23 +17,36 @@ public:
 		Pngs,
 		Jpgs,
 	};
-	bool Start(EOutputType outputType, unsigned int fps = kDefaultFps);
-	EOutputType GetOutputType() const;
-	int GetFps() const;
+	/// @brief 録画開始
+	bool start(EOutputType outputType, unsigned int fps = kDefaultFps);
+	/// @brief 録画中の場合、出力形式を取得
+	EOutputType getOutputType() const;
+	/// @brief 録画中の場合、フレーム率を取得
+	int getFps() const;
 
+	/// @brief 動作状態
 	enum class EState
 	{
 		Idle,
 		UnderRecording,
 		InitialisingVideoStream,
 	};
-	EState GetState() const;
+	/// @brief 動作状態を取得
+	EState getState() const;
 
-	bool CaptureFrame(const wchar_t* imageName = nullptr);
-	bool CommitFrame(const int iGraphicHandle, const wchar_t* imageName = nullptr);
-	bool HasFrames() const;
+	/// @brief 現在の描画先を複写して録画フレームとする
+	/// @param imageName 個々のフレーム名。連番画像出力時のみ必要
+	bool captureFrame(const wchar_t* imageName = nullptr);
+	/// @brief 描画対象にできる紋理を複写して録画フレームとする
+	/// @param iGraphicHandle 描画対象にできるグラフィックハンドル
+	/// @param imageName 個々のフレーム名。連番画像出力時のみ必要
+	bool commitFrame(const int iGraphicHandle, const wchar_t* imageName = nullptr);
+	/// @brief 1フレームでも有しているか
+	bool hasFrames() const;
 
-	bool End(const wchar_t* pwzFilePath);
+	/// @brief 録画終了
+	/// @param filePath 拡張子を除いたファイル経路。拡張子は出力形式に応じて付与
+	bool end(const wchar_t* filePath);
 private:
 	static constexpr unsigned int kDefaultFps = 30;
 

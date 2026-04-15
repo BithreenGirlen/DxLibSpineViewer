@@ -8,18 +8,23 @@ public:
 	CDxLibMap(int iTextureHandle);
 	~CDxLibMap();
 
-	bool IsAccessible() const;
+	bool isAccessible() const;
 
-	int width = 0;
-	int height = 0;
-	int stride = 0;
-	unsigned char* pPixels = nullptr;
-
+	int width() const;
+	int height() const;
+	int stride() const;
+	unsigned char* pixels() const;
 	/// @brief should be casted to DxLib::COLORDATA*
-	void* pColorData = nullptr;
+	void* colorData() const;
 private:
 	int m_imageHandle = -1;
 	bool m_isLocked = false;
+
+	int m_width = 0;
+	int m_height = 0;
+	int m_stride = 0;
+	unsigned char* m_pPixels = nullptr;
+	void* m_pColorData = nullptr;
 
 	bool ReadPixels();
 	void Unlock() const;

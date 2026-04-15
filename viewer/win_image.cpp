@@ -217,12 +217,12 @@ namespace win_image
 	class CWicGifEncoder::Impl
 	{
 	public:
-		bool Initialise(const wchar_t* filePath);
-		bool HasBeenInitialised() const { return m_hasBeenInitialised; }
+		bool initialise(const wchar_t* filePath);
+		bool hasBeenInitialised() const { return m_hasBeenInitialised; }
 
-		bool CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, unsigned short delay);
+		bool commitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, unsigned short delay);
 
-		bool Finalise();
+		bool finalise();
 	private:
 		CComPtr<IWICImagingFactory> m_pWicImagingFactory;
 		CComPtr<IWICBitmapEncoder> m_pWicBitmapEncoder;
@@ -232,7 +232,7 @@ namespace win_image
 	};
 
 
-	bool CWicGifEncoder::Impl::Initialise(const wchar_t* filePath)
+	bool CWicGifEncoder::Impl::initialise(const wchar_t* filePath)
 	{
 		HRESULT hr = ::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pWicImagingFactory));
 		if (FAILED(hr))return false;
@@ -280,7 +280,7 @@ namespace win_image
 		return m_hasBeenInitialised;
 	}
 
-	bool CWicGifEncoder::Impl::CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, unsigned short delay)
+	bool CWicGifEncoder::Impl::commitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, unsigned short delay)
 	{
 		CComPtr<IWICBitmapFrameEncode> pWicBitmapFrameEncode;
 		CComPtr<IPropertyBag2> pPropertyBag;
@@ -358,7 +358,7 @@ namespace win_image
 		return SUCCEEDED(hr);
 	}
 
-	bool CWicGifEncoder::Impl::Finalise()
+	bool CWicGifEncoder::Impl::finalise()
 	{
 		HRESULT hr = m_pWicBitmapEncoder->Commit();
 
@@ -382,25 +382,25 @@ namespace win_image
 		delete m_impl;
 	}
 
-	bool CWicGifEncoder::Initialise(const wchar_t* filePath)
+	bool CWicGifEncoder::initialise(const wchar_t* filePath)
 	{
-		return m_impl->Initialise(filePath);
+		return m_impl->initialise(filePath);
 	}
 
-	bool CWicGifEncoder::HasBeenInitialised() const
+	bool CWicGifEncoder::hasBeenInitialised() const
 	{
-		return m_impl->HasBeenInitialised();
+		return m_impl->hasBeenInitialised();
 	}
 
-	bool CWicGifEncoder::CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delayInSeconds)
+	bool CWicGifEncoder::commitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delayInSeconds)
 	{
 		unsigned short delayInHundredths = static_cast<unsigned short>(delayInSeconds * 100.f);
 
-		return m_impl->CommitFrame(width, height, stride, pixels, hasAlpha, delayInHundredths == 0 ? 1 : delayInHundredths);
+		return m_impl->commitFrame(width, height, stride, pixels, hasAlpha, delayInHundredths == 0 ? 1 : delayInHundredths);
 	}
 
-	bool CWicGifEncoder::Finalise()
+	bool CWicGifEncoder::finalise()
 	{
-		return m_impl->Finalise();
+		return m_impl->finalise();
 	}
 }

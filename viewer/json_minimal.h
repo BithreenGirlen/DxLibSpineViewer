@@ -1,18 +1,21 @@
 ﻿#ifndef JSON_MINIMAL_H_
 #define JSON_MINIMAL_H_
 
+/// @brief Json extracter
 namespace json_minimal
 {
-	bool ExtractJsonObject(char** src, const char* name, char** dst);
-	bool ExtractJsonArray(char** src, const char* name, char** dst);
-	bool GetJsonElementValue(char* src, const char* name, char* dst, size_t nDstSize, int* iDepth = nullptr, char** pEnd = nullptr);
+	bool FindNextObject(const char** src, const char* name, const char** start, const char** end);
+	bool FindNextArray(const char** src, const char* name, const char** start, const char** end);
 
-	bool ExtractArrayValueByIndices(char* src, const size_t* indices, size_t indices_size, char** dst);
+	bool FindValueByName(const char* src, const char* name, const char** start, const char** end, int* iDepth = nullptr);
+	bool FindArrayValueByIndices(const char* src, const size_t* indices, size_t indices_size, const char** start, const char** end);
 
-	bool ReadNextKey(char** src, char* key, size_t nKeySize, char* value, size_t nValueSize);
-	bool ReadNextArrayValue(char** src, char* dst, size_t nDstSize);
+	namespace util
+	{
+		bool ReadNextKeyInObject(const char** src, const char** keyStart, const char** keyEnd, const char** valueStart, const char** valueEnd);
 
-	bool ReadUpToNameEnd(char** src, const char* name = nullptr, char* value = nullptr, size_t nValueSize = 0);
+		bool ReadNextValueInArray(const char** src, const char** start, const char** end);
+	}
 }
 
 #endif //JSON_MINIMAL_H_

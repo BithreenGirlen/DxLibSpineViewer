@@ -9,26 +9,26 @@ CDialogueTemplate::CDialogueTemplate()
 
 CDialogueTemplate::~CDialogueTemplate()
 {
-	Release();
+	release();
 }
 
-void CDialogueTemplate::SetWindowSize(unsigned short usWidth, unsigned short usHeight)
+void CDialogueTemplate::setWindowSize(unsigned short usWidth, unsigned short usHeight)
 {
 	m_usWidth = usWidth;
 	m_usHeight = usHeight;
 }
 
-void CDialogueTemplate::MakeWindowResizable(bool bResizable)
+void CDialogueTemplate::makeWindowResizable(bool isResizable)
 {
-	m_bResizable = bResizable;
+	m_isResizable = isResizable;
 }
 
-void CDialogueTemplate::MakeWindowChild(bool bChild)
+void CDialogueTemplate::makeWindowChild(bool isChild)
 {
-	m_bChild = bChild;
+	m_isChild = isChild;
 }
 
-const unsigned char* CDialogueTemplate::Generate(const wchar_t* wszWindowTitle)
+const unsigned char* CDialogueTemplate::generate(const wchar_t* windowTitle)
 {
 	/*
 	* Dialogue template without child controls.
@@ -72,54 +72,55 @@ const unsigned char* CDialogueTemplate::Generate(const wchar_t* wszWindowTitle)
 		const wchar_t* typeFace = defaultTypeFace;
 	};
 
-	SDialogueTemplateEx sDialogueTemplateEx;
+	SDialogueTemplateEx dialogueTemplateEx;
 
-	sDialogueTemplateEx.header.cx = m_usWidth;
-	sDialogueTemplateEx.header.cy = m_usHeight;
+	dialogueTemplateEx.header.cx = m_usWidth;
+	dialogueTemplateEx.header.cy = m_usHeight;
 
-	if (m_bChild)
+	if (m_isChild)
 	{
-		sDialogueTemplateEx.header.style &= ~(WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_BORDER);
-		sDialogueTemplateEx.header.style |= WS_CHILD;
+		dialogueTemplateEx.header.style &= ~(WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_BORDER);
+		dialogueTemplateEx.header.style |= WS_CHILD;
 	}
-	else if (m_bResizable)
+	else if (m_isResizable)
 	{
-		sDialogueTemplateEx.header.style &= ~DS_MODALFRAME;
-		sDialogueTemplateEx.header.style |= WS_THICKFRAME;
+		dialogueTemplateEx.header.style &= ~DS_MODALFRAME;
+		dialogueTemplateEx.header.style |= WS_THICKFRAME;
 	}
 
 	size_t titleSize = defaultTitleSize;
-	if (wszWindowTitle != nullptr)
+	if (windowTitle != nullptr)
 	{
-		sDialogueTemplateEx.title = wszWindowTitle;
-		titleSize = (wcslen(wszWindowTitle) + 1) * sizeof(wchar_t);
+		dialogueTemplateEx.title = windowTitle;
+		titleSize = (wcslen(windowTitle) + 1) * sizeof(wchar_t);
 	}
 
-	Release();
+	release();
 	size_t dataSize = sizeof(SDialogueTemplateHeader) + titleSize + sizeof(SDialogueTemplateFont) + defaultTypeFaceSize;
 	m_pData = static_cast<unsigned char*>(malloc(dataSize));
+	if (m_pData == nullptr)return nullptr;
 
 	size_t nWritten = 0;
 	size_t nLen = sizeof(SDialogueTemplateHeader);
-	memcpy(&m_pData[nWritten], &sDialogueTemplateEx.header, nLen);
+	memcpy(&m_pData[nWritten], &dialogueTemplateEx.header, nLen);
 	nWritten += nLen;
 
 	nLen = titleSize;
-	memcpy(&m_pData[nWritten], sDialogueTemplateEx.title, nLen);
+	memcpy(&m_pData[nWritten], dialogueTemplateEx.title, nLen);
 	nWritten += nLen;
 
 	nLen = sizeof(SDialogueTemplateFont);
-	memcpy(&m_pData[nWritten], &sDialogueTemplateEx.font, nLen);
+	memcpy(&m_pData[nWritten], &dialogueTemplateEx.font, nLen);
 	nWritten += nLen;
 
 	nLen = defaultTypeFaceSize;
-	memcpy(&m_pData[nWritten], sDialogueTemplateEx.typeFace, nLen);
+	memcpy(&m_pData[nWritten], dialogueTemplateEx.typeFace, nLen);
 	nWritten += nLen;
 
 	return m_pData;
 }
 
-void CDialogueTemplate::Release()
+void CDialogueTemplate::release()
 {
 	if (m_pData != nullptr)
 	{
