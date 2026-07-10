@@ -40,50 +40,59 @@ namespace win_image
 
 		CComPtr<IWICBitmapFrameDecode> pWicFrameDecode;
 		hr = pWicBitmapDecoder->GetFrame(0, &pWicFrameDecode);
+		if (FAILED(hr))return false;
+
+		CComPtr<IWICFormatConverter> pWicFormatConverter;
+		hr = pWicImageFactory->CreateFormatConverter(&pWicFormatConverter);
+		if (FAILED(hr))return false;
+
+		pWicFormatConverter->Initialize(pWicFrameDecode, GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, nullptr, 0.f, WICBitmapPaletteTypeCustom);
+		if (FAILED(hr))return false;
+
+		CComPtr<IWICBitmapScaler> pWicBmpScaler;
+		hr = pWicImageFactory->CreateBitmapScaler(&pWicBmpScaler);
+		if (FAILED(hr))return false;
+
+		UINT uiWidth = 0, uiHeight = 0;
+		hr = pWicFormatConverter->GetSize(&uiWidth, &uiHeight);
 		if (FAILED(hr)) return false;
 
-		CComPtr<IWICBitmapSource> pWicCurrentSource;
-		hr = pWicFrameDecode->QueryInterface(IID_PPV_ARGS(&pWicCurrentSource));
-		if (FAILED(hr)) return false;
-
-		if (fScale != 1.f)
-		{
-			UINT uiWidth = 0, uiHeight = 0;
-			hr = pWicCurrentSource->GetSize(&uiWidth, &uiHeight);
-			if (FAILED(hr)) return false;
-
-			CComPtr<IWICBitmapScaler> pWicBmpScaler;
-			hr = pWicImageFactory->CreateBitmapScaler(&pWicBmpScaler);
-			if (FAILED(hr)) return false;
-
-			hr = pWicBmpScaler->Initialize(pWicCurrentSource, static_cast<UINT>(uiWidth * fScale), static_cast<UINT>(uiHeight * fScale), WICBitmapInterpolationModeCubic);
-			if (FAILED(hr)) return false;
-
-			pWicCurrentSource = pWicBmpScaler;
-		}
+		hr = pWicBmpScaler->Initialize(pWicFormatConverter, static_cast<UINT>(uiWidth * fScale), static_cast<UINT>(uiHeight * fScale), WICBitmapInterpolationMode::WICBitmapInterpolationModeCubic);
+		if (FAILED(hr))return false;
 
 		if (rotation != ERotation::None)
 		{
 			WICBitmapTransformOptions ulRotation = WICBitmapTransformRotate0;
 			switch (rotation)
 			{
-			case ERotation::Deg90:  ulRotation = WICBitmapTransformRotate90;  break;
-			case ERotation::Deg180: ulRotation = WICBitmapTransformRotate180; break;
-			case ERotation::Deg270: ulRotation = WICBitmapTransformRotate270; break;
-			default: break;
+			case ERotation::None:
+				break;
+			case ERotation::Deg90:
+				ulRotation = WICBitmapTransformOptions::WICBitmapTransformRotate90;
+				break;
+			case ERotation::Deg180:
+				ulRotation = WICBitmapTransformOptions::WICBitmapTransformRotate180;
+				break;
+			case ERotation::Deg270:
+				ulRotation = WICBitmapTransformOptions::WICBitmapTransformRotate270;
+				break;
+			default:
+				break;
 			}
 
 			CComPtr<IWICBitmapFlipRotator> pWicFlipRotator;
 			hr = pWicImageFactory->CreateBitmapFlipRotator(&pWicFlipRotator);
-			if (FAILED(hr)) return false;
+			if (FAILED(hr))return false;
 
-			hr = pWicFlipRotator->Initialize(pWicCurrentSource, ulRotation);
-			if (FAILED(hr)) return false;
+			hr = pWicFlipRotator->Initialize(pWicBmpScaler, ulRotation);
+			if (FAILED(hr))return false;
 
-			pWicCurrentSource = pWicFlipRotator;
+			hr = pWicImageFactory->CreateBitmapFromSource(pWicFlipRotator, WICBitmapCacheOnDemand, pOutWicBitmap);
 		}
-
-		hr = pWicImageFactory->CreateBitmapFromSource(pWicCurrentSource, WICBitmapCacheOnDemand, pOutWicBitmap);
+		else
+		{
+			hr = pWicImageFactory->CreateBitmapFromSource(pWicBmpScaler, WICBitmapCacheOnDemand, pOutWicBitmap);
+		}
 
 		return SUCCEEDED(hr);
 	}
