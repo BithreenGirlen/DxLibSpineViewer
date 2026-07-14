@@ -16,14 +16,14 @@ namespace win_filesystem
 	class StaticWString
 	{
 	public:
-		const wchar_t* data() const { return m_data; }
-		size_t size() const { return m_nWritten; }
-		bool empty() const { return m_nWritten == 0; }
-		const wchar_t front() const { return m_data[0]; }
-		const wchar_t back() const { return m_data[m_nWritten]; }
+		const wchar_t* data() const noexcept { return m_data; }
+		size_t size() const noexcept { return m_nWritten; }
+		bool empty() const noexcept { return m_nWritten == 0; }
+		const wchar_t front() const noexcept { return m_data[0]; }
+		const wchar_t back() const noexcept { return m_nWritten == 0 ? m_data[0] : m_data[m_nWritten - 1]; }
 
 		/// @brief 文字列連結
-		StaticWString& append(const std::wstring& s)
+		StaticWString& append(const std::wstring& s) noexcept
 		{
 			if (m_nWritten + s.size() < MaxSize)
 			{
@@ -34,7 +34,7 @@ namespace win_filesystem
 
 			return *this;
 		}
-		StaticWString& append(const wchar_t* s, size_t length)
+		StaticWString& append(const wchar_t* s, size_t length) noexcept
 		{
 			if (m_nWritten + length < MaxSize)
 			{
@@ -46,14 +46,14 @@ namespace win_filesystem
 			return *this;
 		}
 		/// @brief 文字連結
-		void pushBack(const wchar_t c)
+		void pushBack(const wchar_t c) noexcept
 		{
 			m_data[m_nWritten] = c;
 			++m_nWritten;
 			m_data[m_nWritten] = L'\0';
 		}
 		/// @brief 文字挿入
-		void insert(const wchar_t c, size_t nPos = 0)
+		void insert(const wchar_t c, size_t nPos = 0) noexcept
 		{
 			if (m_nWritten + 1 > MaxSize)return;
 
@@ -62,13 +62,13 @@ namespace win_filesystem
 			++m_nWritten;
 		}
 		/// @brief 消去
-		void clear()
+		void clear() noexcept
 		{
 			wmemset(m_data, L'\0', MaxSize);
 			m_nWritten = 0;
 		}
 		/// @brief 縮め
-		void shrink(size_t nLength)
+		void shrink(size_t nLength) noexcept
 		{
 			if (nLength >= m_nWritten)return;
 
@@ -268,7 +268,7 @@ bool win_filesystem::CreateSubDirectoryToBuffer(const wchar_t* directoryName, si
 	nWritten = nBasePathLength;
 
 	size_t nRead = 0;
-	if (dst[nWritten] != L'\\' && dst[nWritten] != L'/')
+	if (dst[nWritten - 1ULL] != L'\\' && dst[nWritten - 1ULL] != L'/')
 	{
 		dst[nWritten++] = L'\\';
 		dst[nWritten] = L'\0';
@@ -376,7 +376,10 @@ bool win_filesystem::SaveDataToFile(const wchar_t* filePath, const void* pData, 
 
 bool win_filesystem::DoesFileExist(const wchar_t* filePath)
 {
-	return ::PathFileExistsW(filePath) == TRUE;
+	WIN32_FILE_ATTRIBUTE_DATA win32FileAttributeData{};
+	BOOL iRet = ::GetFileAttributesExW(filePath, GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &win32FileAttributeData);
+
+	return iRet != 0;
 }
 
 bool win_filesystem::RenameFile(const wchar_t* filePathOld, const wchar_t* filePathNew)
