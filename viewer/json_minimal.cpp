@@ -133,7 +133,7 @@ namespace json_minimal
 		const char* q = SkipPrimitive(p);
 		if (q == nullptr) q = strchr(src, '\0');
 
-		*start = src;
+		*start = p;
 		*end = q;
 
 		return true;
@@ -191,28 +191,28 @@ bool json_minimal::FindValueByName(const char* src, const char* name, const char
 	{
 		const char* q = nullptr;
 		const char* qq = nullptr;
-		p2 = src;
+		const char* pRead = src;
 
 		for (;;)
 		{
-			q = strchr(p2, '}');
+			q = strchr(pRead, '}');
 			if (q == nullptr)break;
 
-			qq = strchr(p2, '{');
+			qq = strchr(pRead, '{');
 			if (qq == nullptr)break;
 
 			if (q < qq)
 			{
 				--(*iDepth);
-				p2 = q + 1;
+				pRead = q + 1;
 			}
 			else
 			{
 				++(*iDepth);
-				p2 = qq + 1;
+				pRead = qq + 1;
 			}
 
-			if (p2 > *end)break;
+			if (pRead > *end)break;
 		}
 	}
 

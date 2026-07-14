@@ -741,8 +741,7 @@ void CMainWindow::menuOnImportCocos()
 			--pEnd;
 		}
 		std::string atlasDatum(pStart, pEnd);
-		size_t unescapedLength = text_utility::UnescapeInPlace(&atlasDatum[0]);
-		atlasDatum.resize(unescapedLength);
+		text_utility::UnescapeInPlace(atlasDatum);
 		atlasData.push_back(std::move(atlasDatum));
 	}
 	else

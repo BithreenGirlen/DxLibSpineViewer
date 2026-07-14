@@ -80,12 +80,28 @@ namespace text_utility
 	}
 
 	template <typename CharType>
-	void EliminateTag(std::basic_string<CharType>& src)
+	void EliminateSingleCharacterInPlace(std::basic_string<CharType>& str, const CharType characterToBeEliminated)
 	{
-		std::basic_string<CharType> result{};
-		result.reserve(src.size());
+		size_t nWritten = 0;
+		for (auto& c : str)
+		{
+			if (c == characterToBeEliminated)
+			{
+				continue;
+			}
+
+			str[nWritten++] = c;
+		}
+
+		str.resize(nWritten);
+	}
+
+	template <typename CharType>
+	void EliminateTagInPlace(std::basic_string<CharType>& str)
+	{
+		size_t nWritten = 0;
 		int iCount = 0;
-		for (const auto& c : src)
+		for (const auto& c : str)
 		{
 			if (c == CharType('<'))
 			{
@@ -97,35 +113,53 @@ namespace text_utility
 				--iCount;
 				continue;
 			}
-
 			if (iCount == 0)
 			{
-				result.push_back(c);
+				str[nWritten++] = c;
 			}
 		}
-		src = result;
+
+		str.resize(nWritten);
 	}
 
 	template <typename CharType>
-	void EliminateRuby(std::basic_string<CharType>& src)
+	size_t UnescapeInPlace(CharType* pSrc)
 	{
-		const CharType strRuby[] = { '<', 'r', 'u', 'b', 'y', '>', '\0' };
-
-		for (size_t nRead = 0;;)
+		CharType* pStart = pSrc;
+		CharType* pDst = pSrc;
+		while (*pSrc)
 		{
-			size_t nPos = src.find(strRuby, nRead);
-			if (nPos == std::basic_string<CharType>::npos)break;
+			if (*pSrc == CharType('\\'))
+			{
+				pSrc++;
+				if (!*pSrc) break;
 
-			size_t nPos1 = src.find(CharType('|'), nPos);
-			if (nPos1 == std::basic_string<CharType>::npos)break;
-
-			size_t nPos2 = src.find(CharType('<'), nPos1);
-			if (nPos2 == std::basic_string<CharType>::npos)break;
-
-			size_t nLen = nPos2 - nPos1;
-			src.erase(nPos1, nLen);
-			nRead = nPos1;
+				switch (*pSrc)
+				{
+				case CharType('b'):  *pDst++ = CharType('\b'); break;
+				case CharType('f'):  *pDst++ = CharType('\f'); break;
+				case CharType('n'):  *pDst++ = CharType('\n'); break;
+				case CharType('r'):  *pDst++ = CharType('\r'); break;
+				case CharType('t'):  *pDst++ = CharType('\t'); break;
+				default: *pDst++ = *pSrc; break;
+				}
+			}
+			else
+			{
+				*pDst++ = *pSrc;
+			}
+			pSrc++;
 		}
+
+		*pDst = CharType('\0');
+
+		return pDst - pStart;
+	}
+	template <typename CharType>
+	void UnescapeInPlace(std::basic_string<CharType>& src)
+	{
+		size_t unescapedLength = UnescapeInPlace(&src[0]);
+		src.resize(unescapedLength);
 	}
 
 	template <typename CharType>
@@ -189,38 +223,6 @@ namespace text_utility
 				nRead = ++nPos;
 			}
 		}
-	}
-
-	size_t UnescapeInPlace(char* pSrc)
-	{
-		char* pStart = pSrc;
-		char* pDst = pSrc;
-		while (*pSrc)
-		{
-			if (*pSrc == '\\')
-			{
-				pSrc++;
-				if (!*pSrc) break;
-
-				switch (*pSrc)
-				{
-				case 'b':  *pDst++ = '\b'; break;
-				case 'f':  *pDst++ = '\f'; break;
-				case 'n':  *pDst++ = '\n'; break;
-				case 'r':  *pDst++ = '\r'; break;
-				case 't':  *pDst++ = '\t'; break;
-				default: *pDst++ = *pSrc; break;
-				}
-			}
-			else
-			{
-				*pDst++ = *pSrc;
-			}
-			pSrc++;
-		}
-
-		*pDst = '\0';
-		return pDst - pStart;
 	}
 } /* namespace text_utility */
 
