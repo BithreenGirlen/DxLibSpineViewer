@@ -77,7 +77,7 @@ _SP_ARRAY_DECLARE_TYPE(spDxLibVertexArray, DxLib::VERTEX2D)
 class CDxLibSpineDrawableC
 {
 public:
-	CDxLibSpineDrawableC(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData = nullptr);
+	CDxLibSpineDrawableC(spSkeletonData* pSkeletonData);
 	~CDxLibSpineDrawableC();
 
 	spSkeleton* skeleton() const noexcept;
@@ -104,7 +104,6 @@ public:
 	DxLib::FLOAT4 getBoundingBox();
 	DxLib::FLOAT4 getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr);
 private:
-	bool m_hasOwnAnimationStateData = false;
 	bool m_isAlphaPremultiplied = true;
 	bool m_isToForceBlendModeNormal = false;
 	bool m_isVisible = true;

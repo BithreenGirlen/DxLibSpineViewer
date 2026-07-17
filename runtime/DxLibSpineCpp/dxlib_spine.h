@@ -16,7 +16,7 @@
 class CDxLibSpineDrawable
 {
 public:
-	CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData, spine::AnimationStateData* pAnimationStateData = nullptr);
+	CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData);
 	~CDxLibSpineDrawable();
 
 	spine::Skeleton* skeleton() const noexcept;
@@ -46,7 +46,6 @@ public:
 	DxLib::FLOAT4 getBoundingBox();
 	DxLib::FLOAT4 getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr);
 private:
-	bool m_hasOwnAnimationStateData = false;
 	bool m_isAlphaPremultiplied = true;
 	bool m_isToForceBlendModeNormal = false;
 	bool m_isVisible = true;

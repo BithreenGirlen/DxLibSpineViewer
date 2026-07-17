@@ -60,7 +60,7 @@ char* _spUtil_readFile(const char* path, int* length)
 
 /* ==================== end of implementations for <extension.h> ==================== */
 
-CDxLibSpineDrawableC::CDxLibSpineDrawableC(spSkeletonData* pSkeletonData, spAnimationStateData* pAnimationStateData)
+CDxLibSpineDrawableC::CDxLibSpineDrawableC(spSkeletonData* pSkeletonData)
 {
 	spBone_setYDown(-1);
 
@@ -69,12 +69,11 @@ CDxLibSpineDrawableC::CDxLibSpineDrawableC(spSkeletonData* pSkeletonData, spAnim
 	m_tempVertices = spFloatArray_create(128);
 
 	m_skeleton = spSkeleton_create(pSkeletonData);
-	if (pAnimationStateData == nullptr)
+	spAnimationStateData* pAnimationStateData = spAnimationStateData_create(pSkeletonData);
+	if (pAnimationStateData != nullptr)
 	{
-		pAnimationStateData = spAnimationStateData_create(pSkeletonData);
-		m_hasOwnAnimationStateData = true;
+		m_animationState = spAnimationState_create(pAnimationStateData);
 	}
-	m_animationState = spAnimationState_create(pAnimationStateData);
 	m_clipper = spSkeletonClipping_create();
 
 	DxLib::SetDrawCustomBlendMode
@@ -107,10 +106,7 @@ CDxLibSpineDrawableC::~CDxLibSpineDrawableC()
 
 	if (m_animationState != nullptr)
 	{
-		if (m_hasOwnAnimationStateData)
-		{
-			spAnimationStateData_dispose(m_animationState->data);
-		}
+		spAnimationStateData_dispose(m_animationState->data);
 
 		spAnimationState_dispose(m_animationState);
 	}

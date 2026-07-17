@@ -12,7 +12,7 @@ namespace spine
 	}
 }
 
-CDxLibSpineDrawable::CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData, spine::AnimationStateData* pAnimationStateData)
+CDxLibSpineDrawable::CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData)
 {
 	spine::Bone::setYDown(true);
 
@@ -20,12 +20,7 @@ CDxLibSpineDrawable::CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData, spi
 	m_tempVertices.ensureCapacity(128);
 
 	m_skeleton = new spine::Skeleton(pSkeletonData);
-
-	if (pAnimationStateData == nullptr)
-	{
-		pAnimationStateData = new spine::AnimationStateData(pSkeletonData);
-		m_hasOwnAnimationStateData = true;
-	}
+	spine::AnimationStateData* pAnimationStateData = new spine::AnimationStateData(pSkeletonData);
 	m_animationState = new spine::AnimationState(pAnimationStateData);
 
 	m_quadIndices.add(0);
@@ -63,10 +58,8 @@ CDxLibSpineDrawable::~CDxLibSpineDrawable()
 {
 	if (m_animationState != nullptr)
 	{
-		if (m_hasOwnAnimationStateData)
-		{
-			delete m_animationState->getData();
-		}
+		spine::AnimationStateData* pAnimationStateData = m_animationState->getData();
+		delete pAnimationStateData;
 
 		delete m_animationState;
 	}
