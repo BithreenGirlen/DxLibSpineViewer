@@ -278,6 +278,28 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 					static DxLibImGuiBoundsRenderer wholeBoundsRenderer;
 					wholeBoundsRenderer.render(wholeBounding, transfromMatrix);
 
+					if (ImGui::Button("Fit to whole"))
+					{
+						static constexpr float kMaxDimension = 16384.f;
+
+						if(::isless(wholeBounding.z, kMaxDimension)	&& ::isless(wholeBounding.w, kMaxDimension))
+						{
+							DxLib::FLOAT2 offsetToBe = pDxLibSpinePlayer->getOffset();
+
+							pDxLibSpinePlayer->setBaseSize(wholeBounding.z, wholeBounding.w);
+							pDxLibSpinePlayer->update(0.f);
+
+							const DxLib::FLOAT4 updatedWholeBounding = pDxLibSpinePlayer->getCurrentBoundingBox();
+							offsetToBe.u += updatedWholeBounding.x;
+							offsetToBe.v += updatedWholeBounding.y;
+
+							pDxLibSpinePlayer->setOffset(offsetToBe.u, offsetToBe.v);
+							pDxLibSpinePlayer->setBaseSize(wholeBounding.z, wholeBounding.w);
+
+							spineToolDatum.isWindowToBeResized = true;
+						}
+					}
+
 					ImGui::TreePop();
 				}
 
@@ -307,11 +329,6 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 				ImGui::SetNextItemWidth(windowWidth / 8);
 				ScrollableInputFloat("Height", &rect.w);
 
-				if (ImGui::Button("Get current size/offset"))
-				{
-					rect = { offset.u, offset.v, baseSize.u, baseSize.v };
-				}
-				ImGui::SameLine();
 				if (ImGui::Button("Apply"))
 				{
 					pDxLibSpinePlayer->setOffset(rect.x, rect.y);
@@ -628,7 +645,6 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 				ImGui::Checkbox("Reverse draw order", &drawOrder);
 				ImGui::EndDisabled();
 			}
-
 			HelpMarker("Draw order is crutial only when rendering multiple Spines.\n"
 				"Be sure to make it appropriate in prior to adding animation effect.");
 
@@ -637,7 +653,6 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			{
 				pDxLibSpinePlayer->toggleVisibility();
 			}
-
 			HelpMarker("To be used to count draw calls to render Spine.");
 
 			bool isPaused = pDxLibSpinePlayer->isPaused();
