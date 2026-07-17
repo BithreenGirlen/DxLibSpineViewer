@@ -486,6 +486,12 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 		/* 装い指定・合成 */
 		if (ImGui::BeginTabItem("Skin"))
 		{
+			const char* pzSkinName = pDxLibSpinePlayer->getCurrentSkinName();
+			if (pzSkinName != nullptr)
+			{
+				ImGui::Text("Current skin : %s", pzSkinName);
+			}
+
 			const std::vector<std::string>& skinNames = pDxLibSpinePlayer->getSkinNames();
 			/* 装い指定 */
 			if (ImGui::TreeNode("Set Skin"))

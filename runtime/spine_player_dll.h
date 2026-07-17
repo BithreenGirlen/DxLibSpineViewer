@@ -78,6 +78,8 @@ public:
 	virtual void setCurrentAnimationTime(float animationTime) = 0;
 	virtual float getAnimationDuration(const char* animationName) = 0;
 
+	virtual const char* getCurrentSkinName() = 0;
+
 	virtual const std::vector<std::string>& getSlotNames() const noexcept = 0;
 	virtual const std::vector<std::string>& getSkinNames() const noexcept = 0;
 	virtual const std::vector<std::string>& getAnimationNames() const noexcept = 0;

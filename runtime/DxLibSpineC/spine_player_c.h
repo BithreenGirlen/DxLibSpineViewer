@@ -82,6 +82,9 @@ public:
 	void setCurrentAnimationTime(float animationTime);
 	float getAnimationDuration(const char* animationName);
 
+	/// @brief Maybe nullptr
+	const char* getCurrentSkinName();
+
 	const std::vector<std::string>& getSlotNames() const noexcept;
 	const std::vector<std::string>& getSkinNames() const noexcept;
 	const std::vector<std::string>& getAnimationNames() const noexcept;

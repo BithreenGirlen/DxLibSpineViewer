@@ -419,6 +419,20 @@ float CSpinePlayer::getAnimationDuration(const char* animationName)
 	return 0.f;
 }
 
+const char* CSpinePlayer::getCurrentSkinName()
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		spine::Skin* pSkin = pDrawable->skeleton()->getSkin();
+		if (pSkin != nullptr)
+		{
+			return pSkin->getName().buffer();
+		}
+	}
+
+	return nullptr;
+}
+
 /*槽溝名称引き渡し*/
 const std::vector<std::string>& CSpinePlayer::getSlotNames() const noexcept
 {
