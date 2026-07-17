@@ -20,8 +20,8 @@ using CSpineDrawableC = CDxLibSpineDrawableC;
 class CSpinePlayerC
 {
 public:
-	CSpinePlayerC();
-	virtual ~CSpinePlayerC();
+	CSpinePlayerC() = default;
+	virtual ~CSpinePlayerC() = default;
 
 	bool loadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel);
 	bool loadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool isBinarySkel);
@@ -143,9 +143,9 @@ protected:
 	bool addDrawable(spSkeletonData* pSkeletonData);
 	bool setupDrawables();
 
-	void workOutDefaultSize();
+	void workOutDefaultSizeFromFileData();
 	virtual void workOutDefaultScale() = 0;
-	virtual void workOutDefaultOffset() = 0;
+	virtual void workOutDefaultSizeAndOffset() = 0;
 
 	void updatePosition();
 

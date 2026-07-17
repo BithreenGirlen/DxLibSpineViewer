@@ -6,8 +6,8 @@
 class CDxLibSpinePlayer : public CSpinePlayer
 {
 public:
-	CDxLibSpinePlayer();
-	~CDxLibSpinePlayer();
+	CDxLibSpinePlayer() = default;
+	virtual ~CDxLibSpinePlayer() = default;
 
 	void draw();
 
@@ -16,6 +16,6 @@ public:
 	DxLib::FLOAT4 getCurrentBoundingBoxOfSlot(const std::string& slotName) const;
 private:
 	void workOutDefaultScale() override;
-	void workOutDefaultOffset() override;
+	void workOutDefaultSizeAndOffset() override;
 };
 #endif // !DXLIB_SPINE_PLAYER_H_

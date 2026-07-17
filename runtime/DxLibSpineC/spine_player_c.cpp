@@ -5,16 +5,6 @@
 #include "spine_player_c.h"
 #include "spine_loader_c.h"
 
-CSpinePlayerC::CSpinePlayerC()
-{
-
-}
-
-CSpinePlayerC::~CSpinePlayerC()
-{
-
-}
-
 /*ファイル取り込み*/
 bool CSpinePlayerC::loadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel)
 {
@@ -226,7 +216,7 @@ void CSpinePlayerC::setupSkin()
 		}
 	}
 }
-/*乗算済み透過度有効・無効切り替え*/
+
 void CSpinePlayerC::togglePma()
 {
 	for (const auto& pDrawable : m_drawables)
@@ -234,7 +224,7 @@ void CSpinePlayerC::togglePma()
 		pDrawable->premultiplyAlpha(!pDrawable->isAlphaPremultiplied());
 	}
 }
-/*槽溝指定合成方法採択可否*/
+
 void CSpinePlayerC::toggleBlendModeAdoption()
 {
 	for (const auto& pDrawable : m_drawables)
@@ -258,7 +248,7 @@ void CSpinePlayerC::toggleVisibility()
 		pDrawable->setVisibility(!pDrawable->isVisible());
 	}
 }
-/* 乗算済み是否 */
+
 bool CSpinePlayerC::isAlphaPremultiplied(size_t nDrawableIndex)
 {
 	if (nDrawableIndex < m_drawables.size())
@@ -279,7 +269,7 @@ bool CSpinePlayerC::premultiplyAlpha(bool premultiplied, size_t nDrawableIndex)
 
 	return false;
 }
-/* 通常混色法強制是否*/
+
 bool CSpinePlayerC::isBlendModeNormalForced(size_t nDrawableIndex)
 {
 	if (nDrawableIndex < m_drawables.size())
@@ -718,11 +708,9 @@ void CSpinePlayerC::setBaseSize(float fWidth, float fHeight)
 
 void CSpinePlayerC::resetBaseSize()
 {
-	workOutDefaultSize();
-	workOutDefaultScale();
-
 	m_fOffset = {};
 	updatePosition();
+
 	for (const auto& drawable : m_drawables)
 	{
 		/* Spine 2.1 does not have empty animation, so cannot be returned to default state without reloading. */
@@ -732,8 +720,18 @@ void CSpinePlayerC::resetBaseSize()
 		drawable->update(0.f);
 	}
 
-	workOutDefaultOffset();
+	workOutDefaultSizeAndOffset();
+	updatePosition();
+	for (const auto& drawable : m_drawables)
+	{
+		drawable->update(0.f);
+	}
+
+	workOutDefaultSizeAndOffset();
+	workOutDefaultScale();
+
 	resetScale();
+
 	restartAnimation();
 }
 
@@ -808,8 +806,7 @@ bool CSpinePlayerC::addDrawable(spSkeletonData* pSkeletonData)
 
 bool CSpinePlayerC::setupDrawables()
 {
-	workOutDefaultSize();
-	workOutDefaultScale();
+	workOutDefaultSizeFromFileData();
 
 	for (const auto& pSkeletonDatum : m_skeletonData)
 	{
@@ -844,16 +841,12 @@ bool CSpinePlayerC::setupDrawables()
 		}
 	}
 
-	workOutDefaultOffset();
-
-	restartAnimation();
-
-	resetScale();
+	resetBaseSize();
 
 	return m_animationNames.size() > 0;
 }
 /*標準寸法算出*/
-void CSpinePlayerC::workOutDefaultSize()
+void CSpinePlayerC::workOutDefaultSizeFromFileData()
 {
 	if (m_skeletonData.empty())return;
 

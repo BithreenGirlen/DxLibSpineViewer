@@ -2,16 +2,6 @@
 
 #include "dxlib_spine_player.h"
 
-CDxLibSpinePlayer::CDxLibSpinePlayer()
-{
-
-}
-
-CDxLibSpinePlayer::~CDxLibSpinePlayer()
-{
-
-}
-
 /*再描画*/
 void CDxLibSpinePlayer::draw()
 {
@@ -90,7 +80,6 @@ DxLib::FLOAT4 CDxLibSpinePlayer::getCurrentBoundingBoxOfSlot(const std::string& 
 void CDxLibSpinePlayer::workOutDefaultScale()
 {
 	m_fDefaultScale = 1.f;
-	m_fDefaultOffset = {};
 
 	int iSkeletonWidth = static_cast<int>(m_fBaseSize.x);
 	int iSkeletonHeight = static_cast<int>(m_fBaseSize.y);
@@ -129,17 +118,37 @@ void CDxLibSpinePlayer::workOutDefaultScale()
 	}
 }
 
-void CDxLibSpinePlayer::workOutDefaultOffset()
+void CDxLibSpinePlayer::workOutDefaultSizeAndOffset()
 {
+	static constexpr float kMaxDimension = 16384.f;
+
 	float fMinX = FLT_MAX;
 	float fMinY = FLT_MAX;
+	float fWidth = -FLT_MAX;
+	float fHeight = -FLT_MAX;
 
 	for (const auto& pDrawable : m_drawables)
 	{
 		const auto& rect = pDrawable->getBoundingBox();
 		fMinX = (std::min)(fMinX, rect.x);
 		fMinY = (std::min)(fMinY, rect.y);
+
+		if (::isless(rect.z, kMaxDimension) && ::isless(rect.w, kMaxDimension))
+		{
+			fWidth = (std::max)(fWidth, rect.z);
+			fHeight = (std::max)(fHeight, rect.w);
+		}
 	}
 
-	m_fDefaultOffset = { fMinX == FLT_MAX ? 0 : fMinX, fMinY == FLT_MAX ? 0 : fMinY };
+	if (::isless(fMinX, FLT_MAX) && ::isless(fMinY, FLT_MAX))
+	{
+		m_fDefaultOffset.x = fMinX;
+		m_fDefaultOffset.y = fMinY;
+	}
+
+	if (::isgreater(fWidth, -FLT_MAX) && ::isgreater(fHeight, -FLT_MAX))
+	{
+		m_fBaseSize.x = fWidth;
+		m_fBaseSize.y = fHeight;
+	}
 }

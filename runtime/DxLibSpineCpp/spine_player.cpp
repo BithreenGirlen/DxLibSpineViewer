@@ -2,15 +2,6 @@
 #include "spine_player.h"
 #include "spine_loader.h"
 
-CSpinePlayer::CSpinePlayer()
-{
-
-}
-
-CSpinePlayer::~CSpinePlayer()
-{
-
-}
 
 /*ファイル取り込み*/
 bool CSpinePlayer::loadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel)
@@ -667,19 +658,27 @@ void CSpinePlayer::setBaseSize(float fWidth, float fHeight)
 
 void CSpinePlayer::resetBaseSize()
 {
-	workOutDefaultSize();
-	workOutDefaultScale();
-
 	m_fOffset = {};
 	updatePosition();
+
 	for (const auto& drawable : m_drawables)
 	{
 		drawable->animationState()->setEmptyAnimations(0.f);
 		drawable->update(0.f);
 	}
 
-	workOutDefaultOffset();
+	workOutDefaultSizeAndOffset();
+	updatePosition();
+	for (const auto& drawable : m_drawables)
+	{
+		drawable->update(0.f);
+	}
+
+	workOutDefaultSizeAndOffset();
+	workOutDefaultScale();
+
 	resetScale();
+
 	restartAnimation();
 }
 
@@ -754,8 +753,7 @@ bool CSpinePlayer::addDrawable(spine::SkeletonData* pSkeletonData)
 
 bool CSpinePlayer::setupDrawables()
 {
-	workOutDefaultSize();
-	workOutDefaultScale();
+	workOutDefaultSizeFromFileData();
 
 	for (const auto& pSkeletonDatum : m_skeletonData)
 	{
@@ -791,16 +789,12 @@ bool CSpinePlayer::setupDrawables()
 		}
 	}
 
-	workOutDefaultOffset();
-
-	restartAnimation();
-
-	resetScale();
+	resetBaseSize();
 
 	return m_animationNames.size() > 0;
 }
 /*基準寸法算出*/
-void CSpinePlayer::workOutDefaultSize()
+void CSpinePlayer::workOutDefaultSizeFromFileData()
 {
 	if (m_skeletonData.empty())return;
 
@@ -855,9 +849,11 @@ void CSpinePlayer::workOutDefaultSize()
 			{
 				spine::MeshAttachment* pMeshAttachment = (spine::MeshAttachment*)pAttachment;
 
+				static constexpr float kMinAtlas = 1024.f;
+
 				float fScale =
-					::isgreater(pMeshAttachment->getWidth(), Constants::kMinAtlas) &&
-					::isgreater(pMeshAttachment->getHeight(), Constants::kMinAtlas) ? 1.f : 2.f;
+					::isgreater(pMeshAttachment->getWidth(), kMinAtlas) &&
+					::isgreater(pMeshAttachment->getHeight(), kMinAtlas) ? 1.f : 2.f;
 
 				CompareDimention(pMeshAttachment->getWidth() * fScale, pMeshAttachment->getHeight() * fScale);
 			}

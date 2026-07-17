@@ -132,7 +132,7 @@ void CDxLibSpineDrawable::update(float fDelta)
 		if (!m_isPaused)m_animationState->update(fDelta);
 		m_animationState->apply(*m_skeleton);
 
-		/* Spine 4.1 does not have "Skeleton::update()" */
+	/* Spine 4.1 does not have "Skeleton::update()" */
 #if !defined(SPINE_41)
 		if (!m_isPaused)m_skeleton->update(fDelta);
 #endif
@@ -206,7 +206,7 @@ void CDxLibSpineDrawable::draw()
 			m_isAlphaPremultiplied = pAtlasRegion->page->pma;
 #endif
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->page->getRendererObject())));
-#endif // SPINE_4_1_OR_LATER
+#endif
 		}
 		else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
 		{
@@ -233,7 +233,7 @@ void CDxLibSpineDrawable::draw()
 			m_isAlphaPremultiplied = pAtlasRegion->page->pma;
 #endif
 			iDxLibTexture = (static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasRegion->page->getRendererObject())));
-#endif // SPINE_4_1_OR_LATER
+#endif
 		}
 		else if (pAttachment->getRTTI().isExactly(spine::ClippingAttachment::rtti))
 		{
