@@ -84,7 +84,7 @@ public:
 	void setDrawOrder(bool isToBeReversed) override;
 	bool isDrawOrderReversed() const noexcept override;
 
-	std::string getCurrentAnimationName() override;
+	const char* getCurrentAnimationName() override;
 	void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) override;
 	void setCurrentAnimationTime(float animationTime) override;
 	float getAnimationDuration(const char* animationName) override;
@@ -300,7 +300,7 @@ void SPCLASS::setDrawOrder(bool isToBeReversed)
 	m_dxLibSpinePlayer.setDrawOrder(isToBeReversed);
 }
 
-std::string SPCLASS::getCurrentAnimationName()
+const char* SPCLASS::getCurrentAnimationName()
 {
 	return m_dxLibSpinePlayer.getCurrentAnimationName();
 }

@@ -342,8 +342,8 @@ void CSpinePlayer::setDrawOrder(bool reversed)
 {
 	m_isDrawOrderReversed = reversed;
 }
-/*現在の動作名と経過時間取得*/
-std::string CSpinePlayer::getCurrentAnimationName()
+
+const char* CSpinePlayer::getCurrentAnimationName()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
@@ -358,7 +358,7 @@ std::string CSpinePlayer::getCurrentAnimationName()
 		}
 	}
 
-	return std::string();
+	return nullptr;
 }
 
 void CSpinePlayer::getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd)

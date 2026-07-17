@@ -343,7 +343,7 @@ void CSpinePlayerC::setDrawOrder(bool reversed)
 	m_isDrawOrderReversed = reversed;
 }
 
-std::string CSpinePlayerC::getCurrentAnimationName()
+const char* CSpinePlayerC::getCurrentAnimationName()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
@@ -361,7 +361,7 @@ std::string CSpinePlayerC::getCurrentAnimationName()
 		}
 	}
 
-	return std::string();
+	return nullptr;
 }
 
 void CSpinePlayerC::getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd)
@@ -489,7 +489,7 @@ void CSpinePlayerC::mixSkins(const std::vector<std::string>& skinNames)
 				}
 			}
 		}
-		spSkeleton_setSkin(pDrawble->skeleton, skinToSet);
+		spSkeleton_setSkin(pDrawble->skeleton(), skinToSet);
 		spSkeleton_setToSetupPose(pDrawble->skeleton());
 	}
 #endif

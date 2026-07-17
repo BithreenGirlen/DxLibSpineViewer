@@ -73,7 +73,7 @@ public:
 	virtual bool isVisible(size_t nDrawableIndex = 0) = 0;
 	virtual bool setVisibility(bool visible, size_t nDrawableIndex = 0);
 
-	virtual std::string getCurrentAnimationName() = 0;
+	virtual const char* getCurrentAnimationName() = 0;
 	virtual void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) = 0;
 	virtual void setCurrentAnimationTime(float animationTime) = 0;
 	virtual float getAnimationDuration(const char* animationName) = 0;

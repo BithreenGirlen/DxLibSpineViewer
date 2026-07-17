@@ -381,17 +381,20 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 		/* 動作名・動作指定・動作合成 */
 		if (ImGui::BeginTabItem("Animation"))
 		{
-			const std::string& animationName = pDxLibSpinePlayer->getCurrentAnimationName();
-			DxLib::FLOAT4 animationWatch{};
-			pDxLibSpinePlayer->getCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
-
-			/* 動作名と再生区間 */
-			if (ImGui::SliderFloat(animationName.c_str(), &animationWatch.y, animationWatch.z, animationWatch.w, "%0.2f"))
+			const char* pzAnimationName = pDxLibSpinePlayer->getCurrentAnimationName();
+			if (pzAnimationName != nullptr)
 			{
-				/* 再生位置変更 */
-				pDxLibSpinePlayer->setCurrentAnimationTime(animationWatch.y);
-			};
-			ImGui::Text("Time scale: %.2f", pDxLibSpinePlayer->getTimeScale());
+				DxLib::FLOAT4 animationWatch{};
+				pDxLibSpinePlayer->getCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
+
+				/* 動作名と再生区間 */
+				if (ImGui::SliderFloat(pzAnimationName, &animationWatch.y, animationWatch.z, animationWatch.w, "%0.2f"))
+				{
+					/* 再生位置変更 */
+					pDxLibSpinePlayer->setCurrentAnimationTime(animationWatch.y);
+				};
+				ImGui::Text("Time scale: %.2f", pDxLibSpinePlayer->getTimeScale());
+			}
 
 			const std::vector<std::string>& animationNames = pDxLibSpinePlayer->getAnimationNames();
 			/* 動作指定 */

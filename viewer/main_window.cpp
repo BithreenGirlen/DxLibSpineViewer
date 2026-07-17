@@ -1255,11 +1255,20 @@ void CMainWindow::postSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t
 
 std::wstring CMainWindow::buildExportFilePath()
 {
-	wchar_t windowTitle[256]{};
-	int windowTitleLength = getWindowTitleToBuffer(windowTitle, sizeof(windowTitle) / sizeof(wchar_t));
+	wchar_t nameBuffer[256]{};
+	static constexpr size_t bufferSize = sizeof(nameBuffer) / sizeof(wchar_t) - 1;
+	int windowTitleLength = getWindowTitleToBuffer(nameBuffer, bufferSize);
 
-	std::wstring filePath = win_filesystem::CreateSubDirectory(windowTitle, windowTitleLength);
-	filePath += win_text::WidenUtf8(m_dxLibSpinePlayer.get()->getCurrentAnimationName());
+	std::wstring filePath = win_filesystem::CreateSubDirectory(nameBuffer, windowTitleLength);
+
+	const char* pzAnimationName = m_dxLibSpinePlayer.get()->getCurrentAnimationName();
+	if (pzAnimationName != nullptr)
+	{
+		const size_t animationNameLength = ::strlen(pzAnimationName);
+		int utf16Length = win_text::WidenUtf8InBuffer(pzAnimationName, animationNameLength, nameBuffer, bufferSize);
+		nameBuffer[utf16Length] = L'\0';
+		filePath.append(nameBuffer, utf16Length);
+	}
 
 	return filePath;
 }

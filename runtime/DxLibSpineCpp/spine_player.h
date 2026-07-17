@@ -69,7 +69,8 @@ public:
 	bool isDrawOrderReversed() const noexcept;
 	void setDrawOrder(bool reversed);
 
-	std::string getCurrentAnimationName();
+	/// @brief Current animation name in track; maybe nullptr
+	const char* getCurrentAnimationName();
 	/// @brief Get animation time actually entried in track.
 	/// @param fTrack elapsed time since the track was entried.
 	/// @param fLast current timeline position.
