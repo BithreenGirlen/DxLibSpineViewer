@@ -40,8 +40,8 @@ public:
 	void setLeaveOutList(const char** list, int listCount);
 	void setLeaveOutCallback(bool (*pFunc)(const char*, size_t)) { m_pLeaveOutCallback = pFunc; }
 
-	DxLib::FLOAT4 getBoundingBox() const;
-	DxLib::FLOAT4 getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr) const;
+	DxLib::FLOAT4 getBoundingBox();
+	DxLib::FLOAT4 getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr);
 private:
 	bool m_hasOwnAnimationStateData = false;
 	bool m_isAlphaPremultiplied = true;
@@ -55,6 +55,9 @@ private:
 	spFloatArray* m_worldVertices = nullptr;
 	spDxLibVertexArray* m_dxLibVertices = nullptr;
 	spUnsignedShortArray* m_dxLibIndices = nullptr;
+
+	/// @brief A buffer to be used to calculate bounding box.
+	spFloatArray* m_tempVertices = nullptr;
 
 	char** m_leaveOutList = nullptr;
 	int m_leaveOutListCount = 0;

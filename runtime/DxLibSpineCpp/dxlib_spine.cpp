@@ -17,6 +17,7 @@ CDxLibSpineDrawable::CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData, spi
 	spine::Bone::setYDown(true);
 
 	m_dxLibVertices.ensureCapacity(128);
+	m_tempVertices.ensureCapacity(128);
 
 	m_skeleton = new spine::Skeleton(pSkeletonData);
 
@@ -327,20 +328,19 @@ void CDxLibSpineDrawable::setLeaveOutList(spine::Vector<spine::String>& list)
 	m_leaveOutList.clearAndAddAll(list);
 }
 
-DxLib::FLOAT4 CDxLibSpineDrawable::getBoundingBox() const
+DxLib::FLOAT4 CDxLibSpineDrawable::getBoundingBox()
 {
 	DxLib::FLOAT4 boundingBox{};
 
 	if (m_skeleton != nullptr)
 	{
-		spine::Vector<float> tempVertices;
-		m_skeleton->getBounds(boundingBox.x, boundingBox.y, boundingBox.z, boundingBox.w, tempVertices);
+		m_skeleton->getBounds(boundingBox.x, boundingBox.y, boundingBox.z, boundingBox.w, m_tempVertices);
 	}
 
 	return boundingBox;
 }
 
-DxLib::FLOAT4 CDxLibSpineDrawable::getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found) const
+DxLib::FLOAT4 CDxLibSpineDrawable::getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found)
 {
 	float fMinX = FLT_MAX;
 	float fMinY = FLT_MAX;
@@ -360,33 +360,35 @@ DxLib::FLOAT4 CDxLibSpineDrawable::getBoundingBoxOfSlot(const char* slotName, si
 				spine::Attachment* pAttachment = slot.getAttachment();
 				if (pAttachment != nullptr)
 				{
-					spine::Vector<float> tempVertices;
 					if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
 					{
 						spine::RegionAttachment* pRegionAttachment = static_cast<spine::RegionAttachment*>(pAttachment);
 
-						tempVertices.setSize(8, 0);
+						m_tempVertices.setSize(8, 0);
+
 #if defined (SPINE_41) || defined (SPINE_42)
-						pRegionAttachment->computeWorldVertices(slot, tempVertices, 0, 2);
+						pRegionAttachment->computeWorldVertices(slot, m_tempVertices, 0, 2);
 #else
-						pRegionAttachment->computeWorldVertices(slot.getBone(), tempVertices, 0, 2);
+						pRegionAttachment->computeWorldVertices(slot.getBone(), m_tempVertices, 0, 2);
 #endif
 					}
 					else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
 					{
 						spine::MeshAttachment* pMeshAttachment = static_cast<spine::MeshAttachment*>(pAttachment);
-						tempVertices.setSize(pMeshAttachment->getWorldVerticesLength(), 0);
-						pMeshAttachment->computeWorldVertices(slot, 0, pMeshAttachment->getWorldVerticesLength(), tempVertices, 0, 2);
+		
+						m_tempVertices.setSize(pMeshAttachment->getWorldVerticesLength(), 0);
+
+						pMeshAttachment->computeWorldVertices(slot, 0, pMeshAttachment->getWorldVerticesLength(), m_tempVertices, 0, 2);
 					}
 					else
 					{
 						continue;
 					}
 
-					for (size_t ii = 0; ii < tempVertices.size(); ii += 2)
+					for (size_t ii = 0; ii < m_tempVertices.size(); ii += 2)
 					{
-						float fX = tempVertices[ii];
-						float fY = tempVertices[ii + 1LL];
+						float fX = m_tempVertices[ii];
+						float fY = m_tempVertices[ii + 1LL];
 
 						fMinX = fMinX < fX ? fMinX : fX;
 						fMinY = fMinY < fY ? fMinY : fY;

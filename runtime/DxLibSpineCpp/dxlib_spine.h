@@ -43,8 +43,8 @@ public:
 	void setLeaveOutList(spine::Vector<spine::String> &list);
 	void setLeaveOutCallback(bool (*pFunc)(const char*, size_t)) { m_pLeaveOutCallback = pFunc; }
 
-	DxLib::FLOAT4 getBoundingBox() const;
-	DxLib::FLOAT4 getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr) const;
+	DxLib::FLOAT4 getBoundingBox();
+	DxLib::FLOAT4 getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found = nullptr);
 private:
 	bool m_hasOwnAnimationStateData = false;
 	bool m_isAlphaPremultiplied = true;
@@ -57,10 +57,11 @@ private:
 
 	spine::Vector<float> m_worldVertices;
 	spine::Vector<DxLib::VERTEX2D> m_dxLibVertices;
-
 	spine::Vector<unsigned short> m_quadIndices;
-
 	spine::SkeletonClipping m_clipper;
+
+	/// @brief A buffer to be used to calculate bounding box.
+	spine::Vector<float> m_tempVertices;
 
 	spine::Vector<spine::String> m_leaveOutList;
 	bool (*m_pLeaveOutCallback)(const char*, size_t) = nullptr;

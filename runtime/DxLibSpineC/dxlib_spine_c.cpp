@@ -66,6 +66,7 @@ CDxLibSpineDrawableC::CDxLibSpineDrawableC(spSkeletonData* pSkeletonData, spAnim
 
 	m_worldVertices = spFloatArray_create(128);
 	m_dxLibVertices = spDxLibVertexArray_create(128);
+	m_tempVertices = spFloatArray_create(128);
 
 	m_skeleton = spSkeleton_create(pSkeletonData);
 	if (pAnimationStateData == nullptr)
@@ -98,6 +99,10 @@ CDxLibSpineDrawableC::~CDxLibSpineDrawableC()
 	if (m_dxLibVertices != nullptr)
 	{
 		spDxLibVertexArray_dispose(m_dxLibVertices);
+	}
+	if (m_tempVertices != nullptr)
+	{
+		spFloatArray_dispose(m_tempVertices);
 	}
 
 	if (m_animationState != nullptr)
@@ -374,14 +379,12 @@ void CDxLibSpineDrawableC::setLeaveOutList(const char** list, int listCount)
 	}
 }
 
-DxLib::FLOAT4 CDxLibSpineDrawableC::getBoundingBox() const
+DxLib::FLOAT4 CDxLibSpineDrawableC::getBoundingBox()
 {
 	float fMinX = FLT_MAX;
 	float fMinY = FLT_MAX;
 	float fMaxX = -FLT_MAX;
 	float fMaxY = -FLT_MAX;
-
-	spFloatArray* pTempVertices = spFloatArray_create(128);
 
 	for (int i = 0; i < m_skeleton->slotsCount; ++i)
 	{
@@ -394,29 +397,29 @@ DxLib::FLOAT4 CDxLibSpineDrawableC::getBoundingBox() const
 		{
 			spRegionAttachment* pRegionAttachment = (spRegionAttachment*)pAttachment;
 
-			spFloatArray_setSize(pTempVertices, 8);
+			spFloatArray_setSize(m_tempVertices, 8);
 #if defined (SPINE_41) || defined (SPINE_42)
-			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot, pTempVertices->items, 0, 2);
+			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot, m_tempVertices->items, 0, 2);
 #else
-			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, pTempVertices->items, 0, 2);
+			spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, m_tempVertices->items, 0, 2);
 #endif
 		}
 		else if (pAttachment->type == SP_ATTACHMENT_MESH)
 		{
 			spMeshAttachment* pMeshAttachment = (spMeshAttachment*)pAttachment;
 
-			spFloatArray_setSize(pTempVertices, pMeshAttachment->super.worldVerticesLength);
-			spVertexAttachment_computeWorldVertices(SUPER(pMeshAttachment), pSlot, 0, pMeshAttachment->super.worldVerticesLength, pTempVertices->items, 0, 2);
+			spFloatArray_setSize(m_tempVertices, pMeshAttachment->super.worldVerticesLength);
+			spVertexAttachment_computeWorldVertices(SUPER(pMeshAttachment), pSlot, 0, pMeshAttachment->super.worldVerticesLength, m_tempVertices->items, 0, 2);
 		}
 		else
 		{
 			continue;
 		}
 
-		for (size_t ii = 0; ii < pTempVertices->size; ii += 2)
+		for (size_t ii = 0; ii < m_tempVertices->size; ii += 2)
 		{
-			float fX = pTempVertices->items[ii];
-			float fY = pTempVertices->items[ii + 1LL];
+			float fX = m_tempVertices->items[ii];
+			float fY = m_tempVertices->items[ii + 1LL];
 
 			fMinX = fMinX < fX ? fMinX : fX;
 			fMinY = fMinY < fY ? fMinY : fY;
@@ -425,19 +428,15 @@ DxLib::FLOAT4 CDxLibSpineDrawableC::getBoundingBox() const
 		}
 	}
 
-	if (pTempVertices != nullptr)spFloatArray_dispose(pTempVertices);
-
 	return DxLib::FLOAT4{ fMinX, fMinY, fMaxX - fMinX, fMaxY - fMinY };
 }
 
-DxLib::FLOAT4 CDxLibSpineDrawableC::getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found) const
+DxLib::FLOAT4 CDxLibSpineDrawableC::getBoundingBoxOfSlot(const char* slotName, size_t nameLength, bool* found)
 {
 	float fMinX = FLT_MAX;
 	float fMinY = FLT_MAX;
 	float fMaxX = -FLT_MAX;
 	float fMaxY = -FLT_MAX;
-
-	spFloatArray* pTempVertices = spFloatArray_create(128);
 
 	if (m_skeleton != nullptr)
 	{
@@ -456,29 +455,29 @@ DxLib::FLOAT4 CDxLibSpineDrawableC::getBoundingBoxOfSlot(const char* slotName, s
 				{
 					spRegionAttachment* pRegionAttachment = (spRegionAttachment*)pAttachment;
 
-					spFloatArray_setSize(pTempVertices, 8);
+					spFloatArray_setSize(m_tempVertices, 8);
 #if defined (SPINE_41) || defined (SPINE_42)
-					spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot, pTempVertices->items, 0, 2);
+					spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot, m_tempVertices->items, 0, 2);
 #else
-					spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, pTempVertices->items, 0, 2);
+					spRegionAttachment_computeWorldVertices(pRegionAttachment, pSlot->bone, m_tempVertices->items, 0, 2);
 #endif
 				}
 				else if (pAttachment->type == SP_ATTACHMENT_MESH)
 				{
 					spMeshAttachment* pMeshAttachment = (spMeshAttachment*)pAttachment;
 
-					spFloatArray_setSize(pTempVertices, pMeshAttachment->super.worldVerticesLength);
-					spVertexAttachment_computeWorldVertices(SUPER(pMeshAttachment), pSlot, 0, pMeshAttachment->super.worldVerticesLength, pTempVertices->items, 0, 2);
+					spFloatArray_setSize(m_tempVertices, pMeshAttachment->super.worldVerticesLength);
+					spVertexAttachment_computeWorldVertices(SUPER(pMeshAttachment), pSlot, 0, pMeshAttachment->super.worldVerticesLength, m_tempVertices->items, 0, 2);
 				}
 				else
 				{
 					continue;
 				}
 
-				for (size_t i = 0; i < pTempVertices->size; i += 2)
+				for (size_t i = 0; i < m_tempVertices->size; i += 2)
 				{
-					float fX = pTempVertices->items[i];
-					float fY = pTempVertices->items[i + 1LL];
+					float fX = m_tempVertices->items[i];
+					float fY = m_tempVertices->items[i + 1LL];
 
 					fMinX = fMinX < fX ? fMinX : fX;
 					fMinY = fMinY < fY ? fMinY : fY;
@@ -491,8 +490,6 @@ DxLib::FLOAT4 CDxLibSpineDrawableC::getBoundingBoxOfSlot(const char* slotName, s
 			}
 		}
 	}
-
-	if (pTempVertices != nullptr)spFloatArray_dispose(pTempVertices);
 
 	return DxLib::FLOAT4{ fMinX, fMinY, fMaxX - fMinX, fMaxY - fMinY };
 }
