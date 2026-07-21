@@ -34,6 +34,19 @@ public:
 	void setVisibility(bool visible) noexcept;
 	bool isVisible() const noexcept;
 
+	/// @brief Never to be used; just for compatibility
+	enum class Physics : unsigned char
+	{
+		None = 0,
+		Reset,
+		Update,
+		Pose
+	};
+
+	/// @brief Never to be used; just for compatibility
+	void setPhysics(Physics physics);
+	Physics getPhysics() const noexcept;
+
 	void update(float fDelta);
 	void draw();
 
@@ -47,6 +60,7 @@ private:
 	bool m_isToForceBlendModeNormal = false;
 	bool m_isVisible = true;
 	bool m_isPaused = false;
+	Physics m_physics = Physics::Update;
 
 	spSkeleton* m_skeleton = nullptr;
 	spAnimationState* m_animationState = nullptr;

@@ -64,14 +64,26 @@ public:
 	virtual bool isBlendModeNormalForced(size_t nDrawableIndex = 0) = 0;
 	virtual bool forceBlendModeNormal(bool isToForce, size_t nDrawableIndex = 0) = 0;
 
-	virtual bool isDrawOrderReversed() const noexcept = 0;
-	virtual void setDrawOrder(bool isToBeReversed) = 0;
-
 	virtual bool isPaused(size_t nDrawableIndex = 0) = 0;
 	virtual bool setPause(bool paused, size_t nDrawableIndex = 0) = 0;
 
 	virtual bool isVisible(size_t nDrawableIndex = 0) = 0;
 	virtual bool setVisibility(bool visible, size_t nDrawableIndex = 0);
+
+	enum class Physics : unsigned char
+	{
+		None = 0,
+		Reset,
+		Update,
+		Pose
+	};
+
+	virtual bool setPhysics(Physics physics, size_t nDrawableIndex = 0) = 0;
+	virtual void setPhysicsAll(Physics physics) = 0;
+	virtual Physics getPhysics(size_t nDrawableIndex = 0) const noexcept = 0;
+
+	virtual bool isDrawOrderReversed() const noexcept = 0;
+	virtual void setDrawOrder(bool reversed) = 0;
 
 	virtual const char* getCurrentAnimationName() = 0;
 	virtual void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) = 0;

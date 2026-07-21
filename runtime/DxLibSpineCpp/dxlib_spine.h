@@ -34,6 +34,19 @@ public:
 	void setVisibility(bool visible) noexcept;
 	bool isVisible() const noexcept;
 
+	/// @brief 物理演算法
+	enum class Physics : unsigned char
+	{
+		None = 0, /* 物理演算を行わない */
+		Reset, /* 1フレーム前までの影響をリセットして新たに物理演算を開始する */
+		Update, /* 物理演算を行い、通算の影響を反映させる */
+		Pose /* 1フレーム前の状態で静止させる */
+	};
+
+	/// @brief 物理演算方法指定。Spine4.2以降でのみ有効
+	void setPhysics(Physics physics);
+	Physics getPhysics() const noexcept;
+
 	/// @brief Add animation time and update world transform.
 	/// @remark Even if it is paused or 0.0f is passed, world transform will be updated.
 	void update(float fDelta);
@@ -50,6 +63,7 @@ private:
 	bool m_isToForceBlendModeNormal = false;
 	bool m_isVisible = true;
 	bool m_isPaused = false;
+	Physics m_physics = Physics::Update;
 
 	spine::Skeleton* m_skeleton = nullptr;
 	spine::AnimationState* m_animationState = nullptr;

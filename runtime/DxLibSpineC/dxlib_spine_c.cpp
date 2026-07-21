@@ -8,6 +8,14 @@
 
 _SP_ARRAY_IMPLEMENT_TYPE_NO_CONTAINS(spDxLibVertexArray, DxLib::VERTEX2D)
 
+/* std::underlying_type_t is not a core language feature. */
+#if defined(SPINE_42)
+static_assert(static_cast<spPhysics>(CDxLibSpineDrawableC::Physics::None) == spPhysics::SP_PHYSICS_NONE, "Physics_None");
+static_assert(static_cast<spPhysics>(CDxLibSpineDrawableC::Physics::Reset) == spPhysics::SP_PHYSICS_RESET, "Physics_Reset");
+static_assert(static_cast<spPhysics>(CDxLibSpineDrawableC::Physics::Update) == spPhysics::SP_PHYSICS_UPDATE, "Physics_Update");
+static_assert(static_cast<spPhysics>(CDxLibSpineDrawableC::Physics::Pose) == spPhysics::SP_PHYSICS_POSE, "Physics_Pose");
+#endif
+
 #if	defined(_WIN32) && defined(_UNICODE)
 static wchar_t* WidenPath(const char* path)
 {
@@ -172,6 +180,16 @@ bool CDxLibSpineDrawableC::isVisible() const noexcept
 	return m_isVisible;
 }
 
+void CDxLibSpineDrawableC::setPhysics(Physics physics)
+{
+	m_physics = physics;
+}
+
+CDxLibSpineDrawableC::Physics CDxLibSpineDrawableC::getPhysics() const noexcept
+{
+	return m_physics;
+}
+
 void CDxLibSpineDrawableC::update(float fDelta)
 {
 	if (m_skeleton == nullptr || m_animationState == nullptr)return;
@@ -185,7 +203,7 @@ void CDxLibSpineDrawableC::update(float fDelta)
 #endif
 
 #if defined(SPINE_42)
-	spSkeleton_updateWorldTransform(m_skeleton, spPhysics::SP_PHYSICS_UPDATE);
+	spSkeleton_updateWorldTransform(m_skeleton, static_cast<spPhysics>(m_physics));
 #else
 	spSkeleton_updateWorldTransform(m_skeleton);
 #endif

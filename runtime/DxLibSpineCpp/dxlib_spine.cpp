@@ -10,6 +10,14 @@ namespace spine
 	{
 		return new DefaultSpineExtension();
 	}
+
+	/* std::underlying_type_t is not a core language feature. */
+#if defined(SPINE_42)
+	static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::None) == spine::Physics::Physics_None, "Physics_None");
+	static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::Reset) == spine::Physics::Physics_Reset, "Physics_Reset");
+	static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::Update) == spine::Physics::Physics_Update, "Physics_Update");
+	static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::Pose) == spine::Physics::Physics_Pose, "Physics_Pose");
+#endif
 }
 
 CDxLibSpineDrawable::CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData)
@@ -119,6 +127,16 @@ bool CDxLibSpineDrawable::isVisible() const noexcept
 	return m_isVisible;
 }
 
+void CDxLibSpineDrawable::setPhysics(Physics physics)
+{
+	m_physics = physics;
+}
+
+CDxLibSpineDrawable::Physics CDxLibSpineDrawable::getPhysics() const noexcept
+{
+	return m_physics;
+}
+
 void CDxLibSpineDrawable::update(float fDelta)
 {
 	if (m_skeleton != nullptr && m_animationState != nullptr)
@@ -132,7 +150,7 @@ void CDxLibSpineDrawable::update(float fDelta)
 #endif
 
 #if defined(SPINE_42)
-		m_skeleton->updateWorldTransform(spine::Physics::Physics_Update);
+		m_skeleton->updateWorldTransform(static_cast<spine::Physics>(m_physics));
 #else
 		m_skeleton->updateWorldTransform();
 #endif

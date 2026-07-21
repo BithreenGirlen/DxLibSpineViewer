@@ -95,6 +95,20 @@ public:
 	void setVisibility(bool visible) noexcept;
 	bool isVisible() const noexcept;
 
+	/// @brief 物理演算法
+	enum class Physics : unsigned char /* uint8_t is not defined here */
+	{
+		None = 0, /* 物理演算を行わない */
+		Reset, /* 1フレーム前までの影響をリセットして新たに物理演算を開始する */
+		Update, /* 物理演算を行い、通算の影響を反映させる */
+		Pose, /* 1フレーム前の状態で静止させる */
+		NotSupported = static_cast<unsigned char>(-1) /* To be used for Spine 4.1 and older */
+	};
+
+	/// @brief 物理演算方法指定。Spine4.2以降でのみ有効
+	void setPhysics(Physics physics);
+	Physics getPhysics() const noexcept;
+
 	void update(float fDelta);
 	void draw();
 
@@ -108,6 +122,7 @@ private:
 	bool m_isToForceBlendModeNormal = false;
 	bool m_isVisible = true;
 	bool m_isPaused = false;
+	Physics m_physics = Physics::Update;
 
 	spSkeleton* m_skeleton = nullptr;
 	spAnimationState* m_animationState = nullptr;

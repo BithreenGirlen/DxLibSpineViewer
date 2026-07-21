@@ -18,6 +18,7 @@ namespace spine_tool_dialogue
 
 		bool isWindowToBeResized = false;
 		bool hasJustBeenLoaded = false;
+		bool toUpdatePhysicsSelectedItem = true;
 	};
 
 	void Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen);

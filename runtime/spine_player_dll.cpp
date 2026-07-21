@@ -4,6 +4,7 @@
 #if defined(SPINE_C)
 #include "DxLibSpineC/dxlib_spine_player_c.h"
 using CDxLibSpinePlayer = CDxLibSpinePlayerC;
+using CDxLibSpineDrawable = CSpineDrawableC;
 #elif defined(SPINE_CPP)
 #include "DxLibSpineCpp/dxlib_spine_player.h"
 #endif
@@ -81,7 +82,11 @@ public:
 	bool isVisible(size_t nDrawableIndex = 0) override;
 	bool setVisibility(bool visible, size_t nDrawableIndex = 0) override;
 
-	void setDrawOrder(bool isToBeReversed) override;
+	bool setPhysics(Physics physics, size_t nDrawableIndex = 0) override;
+	void setPhysicsAll(Physics physics) override;
+	Physics getPhysics(size_t nDrawableIndex = 0) const noexcept override;
+
+	void setDrawOrder(bool reversed) override;
 	bool isDrawOrderReversed() const noexcept override;
 
 	const char* getCurrentAnimationName() override;
@@ -292,14 +297,29 @@ bool SPCLASS::setVisibility(bool visible, size_t nDrawableIndex)
 	return m_dxLibSpinePlayer.setVisibility(visible, nDrawableIndex);
 }
 
+bool SPCLASS::setPhysics(Physics physics, size_t nDrawableIndex)
+{
+	return m_dxLibSpinePlayer.setPhysics(static_cast<CDxLibSpineDrawable::Physics>(physics));
+}
+
+void SPCLASS::setPhysicsAll(Physics physics)
+{
+	m_dxLibSpinePlayer.setPhysicsAll(static_cast<CDxLibSpineDrawable::Physics>(physics));
+}
+
+ISpinePlayer::Physics SPCLASS::getPhysics(size_t nDrawableIndex) const noexcept
+{
+	return static_cast<ISpinePlayer::Physics>(m_dxLibSpinePlayer.getPhysics(nDrawableIndex));
+}
+
 bool SPCLASS::isDrawOrderReversed() const noexcept
 {
 	return m_dxLibSpinePlayer.isDrawOrderReversed();
 }
 
-void SPCLASS::setDrawOrder(bool isToBeReversed)
+void SPCLASS::setDrawOrder(bool reversed)
 {
-	m_dxLibSpinePlayer.setDrawOrder(isToBeReversed);
+	m_dxLibSpinePlayer.setDrawOrder(reversed);
 }
 
 const char* SPCLASS::getCurrentAnimationName()

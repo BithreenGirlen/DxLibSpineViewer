@@ -160,6 +160,16 @@ bool CDxLibSpineDrawableC21::isVisible() const noexcept
 	return m_isVisible;
 }
 
+void CDxLibSpineDrawableC21::setPhysics(Physics physics)
+{
+	m_physics = physics;
+}
+
+CDxLibSpineDrawableC21::Physics CDxLibSpineDrawableC21::getPhysics() const noexcept
+{
+	return m_physics;
+}
+
 void CDxLibSpineDrawableC21::update(float fDelta)
 {
 	if (m_skeleton == nullptr || m_animationState == nullptr)return;

@@ -333,6 +333,35 @@ bool CSpinePlayerC::setVisibility(bool visible, size_t nDrawableIndex)
 	return false;
 }
 
+bool CSpinePlayerC::setPhysics(CSpineDrawableC::Physics physics, size_t nDrawableIndex)
+{
+	if (nDrawableIndex < m_drawables.size())
+	{
+		m_drawables[nDrawableIndex]->setPhysics(physics);
+		return true;
+	}
+
+	return false;
+}
+
+void CSpinePlayerC::setPhysicsAll(CSpineDrawableC::Physics physics)
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->setPhysics(physics);
+	}
+}
+
+CSpineDrawableC::Physics CSpinePlayerC::getPhysics(size_t nDrawableIndex) const noexcept
+{
+	if (nDrawableIndex < m_drawables.size())
+	{
+		return m_drawables[nDrawableIndex]->getPhysics();
+	}
+
+	return CSpineDrawableC::Physics::Update;
+}
+
 bool CSpinePlayerC::isDrawOrderReversed() const noexcept
 {
 	return m_isDrawOrderReversed;

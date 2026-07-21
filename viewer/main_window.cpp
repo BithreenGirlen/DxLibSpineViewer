@@ -234,6 +234,17 @@ LRESULT CMainWindow::onKeyUp(WPARAM wParam, LPARAM lParam)
 	case VK_DOWN:
 		openNextFolder();
 		break;
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+		if (m_dxLibSpinePlayer.get()->hasSpineBeenLoaded())
+		{
+			ISpinePlayer::Physics physics = static_cast<ISpinePlayer::Physics>(wParam - '1');
+			m_dxLibSpinePlayer.get()->setPhysicsAll(physics);
+			m_spineToolDatum.toUpdatePhysicsSelectedItem = true;
+		}
+		break;
 	case 'A':
 		m_dxLibSpinePlayer.get()->togglePma();
 		break;

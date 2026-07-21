@@ -26,6 +26,7 @@ namespace spine_tool_dialogue
 		}
 	};
 
+	/// @brief STL使用コンボボックス補助
 	struct ImGuiComboBox
 	{
 		unsigned int selectedIndex = 0;
@@ -42,8 +43,37 @@ namespace spine_tool_dialogue
 			{
 				for (size_t i = 0; i < itemNames.size(); ++i)
 				{
-					bool isSelected = (selectedIndex == i);
+					const bool isSelected = (selectedIndex == i);
 					if (ImGui::Selectable(itemNames[i].c_str(), isSelected))
+					{
+						selectedIndex = static_cast<unsigned int>(i);
+					}
+
+					if (isSelected)ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+		}
+	};
+	/// @brief C配列版コンボボックス補助
+	struct ImGuiComboBoxFixedBuffer
+	{
+		unsigned int selectedIndex = 0;
+
+		void update(const char* const* itemNames, size_t itemCount, const char* comboLabel)
+		{
+			if (selectedIndex >= itemCount)
+			{
+				selectedIndex = 0;
+				return;
+			}
+
+			if (ImGui::BeginCombo(comboLabel, itemNames[selectedIndex], ImGuiComboFlags_HeightSmall | ImGuiComboFlags_WidthFitPreview))
+			{
+				for (size_t i = 0; i < itemCount; ++i)
+				{
+					const bool isSelected = (selectedIndex == i);
+					if (ImGui::Selectable(itemNames[i], isSelected))
 					{
 						selectedIndex = static_cast<unsigned int>(i);
 					}
@@ -614,17 +644,16 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 		if (ImGui::BeginTabItem("Rendering"))
 		{
 			bool pma = pDxLibSpinePlayer->isAlphaPremultiplied();
-			bool pmaChecked = pma;
-			size_t versionIndex = pDxLibSpinePlayerDynamic->versionIndexInUse();
+			const size_t versionIndex = pDxLibSpinePlayerDynamic->versionIndexInUse();
 			if (versionIndex >= static_cast<size_t>(CSpinePlayerDynamic::ESpineVersionIndex::Spine40))
 			{
 				ImGui::BeginDisabled();
-				ImGui::Checkbox("Premultiply alpha", &pmaChecked);
+				ImGui::Checkbox("Premultiply alpha", &pma);
 				ImGui::EndDisabled();
 			}
 			else
 			{
-				if (ImGui::Checkbox("Premultiply alpha", &pmaChecked))
+				if (ImGui::Checkbox("Premultiply alpha", &pma))
 				{
 					pDxLibSpinePlayer->togglePma();
 				}
@@ -640,8 +669,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			HelpMarker("Force if the slot with blend-mode-multiply on non-PMA texture is not well rendered.");
 
 			bool drawOrder = pDxLibSpinePlayer->isDrawOrderReversed();
-			bool drawOrderConfigureWorthy = pDxLibSpinePlayer->getNumberOfSpines() > 1;
-			if (drawOrderConfigureWorthy)
+			if (pDxLibSpinePlayer->getNumberOfSpines() > 1)
 			{
 				if (ImGui::Checkbox("Reverse draw order", &drawOrder))
 				{
@@ -669,6 +697,34 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			{
 				pDxLibSpinePlayer->togglePause();
 			}
+
+			static constexpr const char* physicsModes[] = {"None", "Reset", "Update", "Pose"};
+			static constexpr size_t physicsModeCount = sizeof(physicsModes) / sizeof(const char*);
+			static ImGuiComboBoxFixedBuffer physicsComboBox;
+			if (spineToolDatum.toUpdatePhysicsSelectedItem)
+			{
+				physicsComboBox.selectedIndex = static_cast<unsigned int>(pDxLibSpinePlayer->getPhysics());
+				spineToolDatum.toUpdatePhysicsSelectedItem = false;
+			}
+			
+			if (versionIndex >= static_cast<size_t>(CSpinePlayerDynamic::ESpineVersionIndex::Spine42))
+			{
+				const unsigned int lastPhisicsIndex = physicsComboBox.selectedIndex;
+				physicsComboBox.update(physicsModes, physicsModeCount, "Physics##PhysicsMode");
+				if (lastPhisicsIndex != physicsComboBox.selectedIndex)
+				{
+					pDxLibSpinePlayer->setPhysicsAll(static_cast<ISpinePlayer::Physics>(physicsComboBox.selectedIndex));
+				}
+			}
+			else
+			{
+				ImGui::BeginDisabled();
+				physicsComboBox.update(physicsModes, physicsModeCount, "Physics##PhysicsMode");
+				ImGui::EndDisabled();
+			}
+			/* "Pose"の挙動確認はUI操作では厳しいので主画面キーボード入力にも割り当てる。 */
+			HelpMarker("Physics is available for Spine 4.2 and later.\n"
+				"Each mode is assigned to keyboard 1~4 on main window.");
 
 			if (ImGui::TreeNode("Statistics"))
 			{
@@ -702,7 +758,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			auto& videoFps = spineToolDatum.iVideoFps;
 
 			ScrollableSliderInt("Image", &imageFps, minFps, maxImageFps);
-			HelpMarker("GIF delay is defined in 10ms increments.\n Mind that fractional part will be discarded.");
+			HelpMarker("GIF delay is defined in 10ms increments.\nMind that fractional part will be discarded.");
 			ScrollableSliderInt("Video", &spineToolDatum.iVideoFps, minFps, maxVideoFps);
 
 			ImGui::SeparatorText("Export method");

@@ -68,6 +68,10 @@ public:
 	bool isVisible(size_t nDrawableIndex = 0);
 	bool setVisibility(bool visible, size_t nDrawableIndex = 0);
 
+	bool setPhysics(CSpineDrawableC::Physics physics, size_t nDrawableIndex = 0);
+	void setPhysicsAll(CSpineDrawableC::Physics physics);
+	CSpineDrawableC::Physics getPhysics(size_t nDrawableIndex = 0) const noexcept;
+
 	bool isDrawOrderReversed() const noexcept;
 	void setDrawOrder(bool reversed);
 
