@@ -1,4 +1,4 @@
-
+﻿
 
 #include "spine_loader_c.h"
 
@@ -28,10 +28,10 @@ std::shared_ptr<spAtlas> spine_loader_c::CreateAtlasFromMemory(const char* atlas
 	return atlas;
 }
 
-std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromFile(const char* filePath, spAtlas* atlas, float scale)
+std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromFile(const char* filePath, spAtlas* atlas)
 {
 	spSkeletonJson* json = spSkeletonJson_create(atlas);
-	json->scale = scale;
+	json->scale = 1.f;
 	auto skeletonData = std::shared_ptr<spSkeletonData>
 		(
 			spSkeletonJson_readSkeletonDataFile(json, filePath),
@@ -44,10 +44,10 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromFile(const c
     return skeletonData;
 }
 
-std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromFile(const char* filePath, spAtlas* atlas, float scale)
+std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromFile(const char* filePath, spAtlas* atlas)
 {
 	spSkeletonBinary* binary = spSkeletonBinary_create(atlas);
-	binary->scale = scale;
+	binary->scale = 1.f;
 	auto skeletonData = std::shared_ptr<spSkeletonData>
 		(
 			spSkeletonBinary_readSkeletonDataFile(binary, filePath),
@@ -60,10 +60,10 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromFile(const
 	return skeletonData;
 }
 
-std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromMemory(const char* skeletonJson, spAtlas* atlas, float scale)
+std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromMemory(const char* skeletonJson, spAtlas* atlas)
 {
 	spSkeletonJson* json = spSkeletonJson_create(atlas);
-	json->scale = scale;
+	json->scale = 1.f;
 	auto skeletonData = std::shared_ptr<spSkeletonData>
 		(
 			spSkeletonJson_readSkeletonData(json, skeletonJson),
@@ -76,10 +76,10 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromMemory(const
 	return skeletonData;
 }
 
-std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromMemory(const unsigned char* skeletonBinary, int skeletonLength, spAtlas* atlas, float scale)
+std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromMemory(const unsigned char* skeletonBinary, int skeletonLength, spAtlas* atlas)
 {
 	spSkeletonBinary* binary = spSkeletonBinary_create(atlas);
-	binary->scale = scale;
+	binary->scale = 1.f;
 	auto skeletonData = std::shared_ptr<spSkeletonData>
 		(
 			spSkeletonBinary_readSkeletonData(binary, skeletonBinary, skeletonLength),

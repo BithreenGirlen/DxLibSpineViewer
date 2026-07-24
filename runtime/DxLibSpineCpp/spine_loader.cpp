@@ -2,10 +2,10 @@
 
 #include "spine_loader.h"
 
-std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromFile(const char* filePath, spine::Atlas* atlas, float scale)
+std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromFile(const char* filePath, spine::Atlas* atlas)
 {
 	spine::SkeletonJson json(atlas);
-	json.setScale(scale);
+	json.setScale(1.f);
 	auto skeletonData = json.readSkeletonDataFile(filePath);
 	if (!skeletonData)
 	{
@@ -14,10 +14,10 @@ std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromFile(cons
 	return std::shared_ptr<spine::SkeletonData>(skeletonData);
 }
 
-std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromFile(const char* filePath, spine::Atlas* atlas, float scale)
+std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromFile(const char* filePath, spine::Atlas* atlas)
 {
 	spine::SkeletonBinary binary(atlas);
-	binary.setScale(scale);
+	binary.setScale(1.f);
 	auto skeletonData = binary.readSkeletonDataFile(filePath);
 	if (!skeletonData)
 	{
@@ -26,10 +26,10 @@ std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromFile(co
 	return std::shared_ptr<spine::SkeletonData>(skeletonData);
 }
 
-std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromMemory(const char* skeletonJson, spine::Atlas* atlas, float scale)
+std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromMemory(const char* skeletonJson, spine::Atlas* atlas)
 {
 	spine::SkeletonJson json(atlas);
-	json.setScale(scale);
+	json.setScale(1.f);
 	auto skeletonData = json.readSkeletonData(skeletonJson);
 	if (!skeletonData)
 	{
@@ -38,10 +38,10 @@ std::shared_ptr<spine::SkeletonData> spine_loader::ReadTextSkeletonFromMemory(co
 	return std::shared_ptr<spine::SkeletonData>(skeletonData);
 }
 
-std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromMemory(const unsigned char* skeletonBinary, int skeletonLength, spine::Atlas* atlas, float scale)
+std::shared_ptr<spine::SkeletonData> spine_loader::ReadBinarySkeletonFromMemory(const unsigned char* skeletonBinary, int skeletonLength, spine::Atlas* atlas)
 {
 	spine::SkeletonBinary binary(atlas);
-	binary.setScale(scale);
+	binary.setScale(1.f);
 	auto skeletonData = binary.readSkeletonData(skeletonBinary, skeletonLength);
 	if (!skeletonData)
 	{

@@ -18,8 +18,8 @@ bool CSpinePlayer::loadSpineFromFile(const std::vector<std::string>& atlasPaths,
 		if (atlas.get() == nullptr)continue;
 
 		std::shared_ptr<spine::SkeletonData> skeletonData = isBinarySkel ?
-			spine_loader::ReadBinarySkeletonFromFile(strSkeletonPath.c_str(), atlas.get(), 1.f) :
-			spine_loader::ReadTextSkeletonFromFile(strSkeletonPath.c_str(), atlas.get(), 1.f);
+			spine_loader::ReadBinarySkeletonFromFile(strSkeletonPath.c_str(), atlas.get()) :
+			spine_loader::ReadTextSkeletonFromFile(strSkeletonPath.c_str(), atlas.get());
 		if (skeletonData.get() == nullptr)return false;
 
 		m_atlases.push_back(std::move(atlas));
@@ -46,8 +46,8 @@ bool CSpinePlayer::loadSpineFromMemory(const std::vector<std::string>& atlasData
 		if (atlas.get() == nullptr)continue;
 
 		std::shared_ptr<spine::SkeletonData> skeletonData = isBinarySkel ?
-			spine_loader::ReadBinarySkeletonFromMemory(reinterpret_cast<const unsigned char*>(strSkeletonData.data()), static_cast<int>(strSkeletonData.size()), atlas.get(), 1.f) :
-			spine_loader::ReadTextSkeletonFromMemory(strSkeletonData.data(), atlas.get(), 1.f);
+			spine_loader::ReadBinarySkeletonFromMemory(reinterpret_cast<const unsigned char*>(strSkeletonData.data()), static_cast<int>(strSkeletonData.size()), atlas.get()) :
+			spine_loader::ReadTextSkeletonFromMemory(strSkeletonData.data(), atlas.get());
 		if (skeletonData.get() == nullptr)return false;
 
 		m_atlases.push_back(std::move(atlas));
@@ -67,8 +67,8 @@ bool CSpinePlayer::addSpineFromFile(const char* szAtlasPath, const char* szSkelP
 	if (atlas.get() == nullptr)return false;
 
 	std::shared_ptr<spine::SkeletonData> skeletonData = isBinarySkel ?
-		spine_loader::ReadBinarySkeletonFromFile(szSkelPath, atlas.get(), 1.f) :
-		spine_loader::ReadTextSkeletonFromFile(szSkelPath, atlas.get(), 1.f);
+		spine_loader::ReadBinarySkeletonFromFile(szSkelPath, atlas.get()) :
+		spine_loader::ReadTextSkeletonFromFile(szSkelPath, atlas.get());
 	if (skeletonData.get() == nullptr)return false;
 
 	bool bRet = addDrawable(skeletonData.get());
