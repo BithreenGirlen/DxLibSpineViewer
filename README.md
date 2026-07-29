@@ -83,8 +83,8 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 
 ### Load via `Open folder` 
 
-1. From `File->Extension setting`, specify atlas and skeleton extensions.
-2. From `File->Open folder`, select a folder containing atlas/skel(s) with specified extensions.
+1. From menu `File->Extension setting`, specify atlas and skeleton extensions.
+2. From menu `File->Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
 - `Open folder` is __to load all the Spine files in a folder and render them synchronically.__
   - Of cource it is appropriate to open a folder containing only one set of Spine, but it is not appropriate to open a folder containing more than two sets of Spine unless their animations have synchronised timelines.
@@ -113,26 +113,24 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 
 | Input | Action |
 | --- | --- |
-| <kbd>Esc</kbd> | Close the application. |
+| <kbd>Esc</kbd> | Close the application. |s
 | <kbd>Up</kbd> | Open the previpus folder. |
 | <kbd>Down</kbd> | Open the next folder. |
 | <kbd>A</kbd> | Enable/disable premultiplied alpha. _Default: enabled_. | 
-| <kbd>B</kbd> | Prefer/ignore blned-mode specified by slots. _Default: preferred_. | 
 | <kbd>R</kbd> | Toggle draw-order between filename asc/descending order. _Default: ascending order_. | 
 
 - <kbd>Up</kbd> and <kbd>Down</kbd> key are valid only when files are loaded via `Open folder`.
 - Toggling `PMA` is permitted only for Spine version `3.8` and older.
   - For Spine version `4.0` and later, runtime applies pma property read from atlas file.
-  - Disable `PMA` if it seems too bright, and enable if darkish.
-- Force `normal` blend mode if `multiply` is not well represented.
-
+  - Mind that this is to specify what blend mode operation be used, and not to make the alpha of texture be multiplied to RGB.
+    - The latter can be done from menu `File->Extension setting`.
 
 ## Context menu functions
 
 | Menu item | Action |
 | ---- | ---- |
-| Snap as PNG | Save the current screen as `PNG`. |
-| Snap as JPG | Save the current screen as `JPG`. |
+| Snap as PNG | Save the current frame as `PNG`. |
+| Snap as JPG | Save the current frame as `JPG`. |
 | Export as GIF | Restart the current animation and export as `GIF`. |
 | Export as H264 | Restart the current animation and export as `MP4`. |
 | Export as PNGs | Restart the current animation and export as sequential `PNG`s. |
@@ -161,7 +159,6 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 
 Visual Studio is required.  
 
-0. If dependency libraries were updated, delete cache both for Visual Studio (`.vs`) and for CMake.
 1. Open `DxLibSpineViewer` directory with Visual Studio.
 2. Wait for dependency libraries downloading to be done.
     - The configuration downloads external libraries and modifies older Spine `extensions`.

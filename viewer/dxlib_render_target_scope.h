@@ -6,6 +6,8 @@ struct DxLibRenderTargetScope
 {
 	DxLibRenderTargetScope(int iGraphicHandle, bool toClear = true);
 	~DxLibRenderTargetScope();
+
+	int iPreviousRenderTarget = -1;
 };
 
 #endif // !DXLIB_RENDER_TARGET_SCOPE_H_

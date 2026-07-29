@@ -85,6 +85,9 @@ public:
 	virtual bool isDrawOrderReversed() const noexcept = 0;
 	virtual void setDrawOrder(bool reversed) = 0;
 
+	virtual void enableConversionToPmaOnLoading(bool toEnable) = 0;
+	virtual bool isConversionToPmaOnLoadingEnabled() const noexcept = 0;
+
 	virtual const char* getCurrentAnimationName() = 0;
 	virtual void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) = 0;
 	virtual void setCurrentAnimationTime(float animationTime) = 0;

@@ -666,7 +666,6 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			{
 				pDxLibSpinePlayer->toggleBlendModeAdoption();
 			}
-			HelpMarker("Force if the slot with blend-mode-multiply on non-PMA texture is not well rendered.");
 
 			bool drawOrder = pDxLibSpinePlayer->isDrawOrderReversed();
 			if (pDxLibSpinePlayer->getNumberOfSpines() > 1)

@@ -23,6 +23,11 @@ namespace DxLib
 	}
 	#endif
 
+	extern int SetUsePremulAlphaConvertLoad(int UseFlag)
+	{
+		return g_dxLibRegerenda.SetUsePremulAlphaConvertLoad(UseFlag);
+	}
+
 	extern int LoadGraph(const TCHAR* FileName, int NotUse3DFlag)
 	{
 		return g_dxLibRegerenda.LoadGraph(FileName, NotUse3DFlag);
@@ -110,6 +115,7 @@ const DxLibRegerenda* GetDxLibFunctonsToBeRegistered()
 	s_dxLibRegerenda.Get_wchar_t_CharCodeFormat = &DxLib::Get_wchar_t_CharCodeFormat;
 	s_dxLibRegerenda.ConvertStringCharCodeFormat = &DxLib::ConvertStringCharCodeFormat;
 
+	s_dxLibRegerenda.SetUsePremulAlphaConvertLoad = &SetUsePremulAlphaConvertLoad;
 	s_dxLibRegerenda.LoadGraph = &DxLib::LoadGraph;
 	s_dxLibRegerenda.DeleteGraph = &DxLib::DeleteGraph;
 

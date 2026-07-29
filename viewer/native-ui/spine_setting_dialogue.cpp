@@ -40,9 +40,9 @@ bool CSpineSettingDialogue::open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 	{
 		m_hInstance = hInstance;
 
-		UINT uiDpi = ::GetDpiForSystem();
-		int iWindowWidth = ::MulDiv(160, uiDpi, USER_DEFAULT_SCREEN_DPI);
-		int iWindowHeight = ::MulDiv(160, uiDpi, USER_DEFAULT_SCREEN_DPI);
+		UINT dpi = ::GetDpiForSystem();
+		int windowWidth = ::MulDiv(160, dpi, USER_DEFAULT_SCREEN_DPI);
+		int windowHeight = ::MulDiv(160, dpi, USER_DEFAULT_SCREEN_DPI);
 
 		RECT rect{};
 		::GetClientRect(hWnd, &rect);
@@ -50,7 +50,7 @@ bool CSpineSettingDialogue::open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 		::ClientToScreen(hWnd, &parentClientPos);
 
 		m_hWnd = ::CreateWindowW(m_className, windowName, WS_OVERLAPPEDWINDOW & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
-			parentClientPos.x, parentClientPos.y, iWindowWidth, iWindowHeight, hWnd, nullptr, hInstance, this);
+			parentClientPos.x, parentClientPos.y, windowWidth, windowHeight, hWnd, nullptr, hInstance, this);
 		if (m_hWnd != nullptr)
 		{
 			messageLoop();
@@ -59,6 +59,16 @@ bool CSpineSettingDialogue::open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 	}
 
 	return false;
+}
+
+void CSpineSettingDialogue::multiplyAlphaOnLoading(bool toMultiply)
+{
+	m_toMultiplyAlphaOnLoading = toMultiply;
+}
+
+bool CSpineSettingDialogue::isToMultiplyAlphaOnLoading() const noexcept
+{
+	return m_toMultiplyAlphaOnLoading;
 }
 
 int CSpineSettingDialogue::messageLoop()
@@ -142,6 +152,17 @@ LRESULT CSpineSettingDialogue::onCreate(HWND hWnd)
 	m_skelStatic.create(L"Skeleton", m_hWnd);
 	m_skelEdit.create(m_skelExtension.c_str(), m_hWnd);
 
+	m_pmaButton.create(L"PMA on loading", m_hWnd, reinterpret_cast<HMENU>(Controls::kPmaButton), true);
+	m_pmaButton.setCheckBox(m_toMultiplyAlphaOnLoading);
+
+	const auto SetFontCallback = [](HWND hWnd, LPARAM lParam)
+		-> BOOL
+		{
+			::SendMessage(hWnd, WM_SETFONT, static_cast<WPARAM>(lParam), 0);
+			/* TRUE: 続行, FALSE: 終了 */
+			return TRUE;
+		};
+
 	::EnumChildWindows(m_hWnd, SetFontCallback, reinterpret_cast<LPARAM>(m_hFont));
 
 	return 0;
@@ -156,7 +177,7 @@ LRESULT CSpineSettingDialogue::onDestroy()
 /* WM_CLOSE */
 LRESULT CSpineSettingDialogue::onClose()
 {
-	storeEditBoxInputs();
+	storeInputs();
 
 	HWND hOwnerWnd = ::GetWindow(m_hWnd, GW_OWNER);
 	::EnableWindow(hOwnerWnd, TRUE);
@@ -209,6 +230,9 @@ LRESULT CSpineSettingDialogue::onSize()
 	h = fontHeight + spaceY * 2;
 	::MoveWindow(m_skelEdit.getHwnd(), x, y, w, h, TRUE);
 
+	y += h;
+	::MoveWindow(m_pmaButton.getHwnd(), x, y, w, h, TRUE);
+
 	return 0;
 }
 /* WM_COMMAND */
@@ -234,17 +258,11 @@ LRESULT CSpineSettingDialogue::onCommand(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-BOOL CSpineSettingDialogue::SetFontCallback(HWND hWnd, LPARAM lParam)
-{
-	::SendMessage(hWnd, WM_SETFONT, static_cast<WPARAM>(lParam), 0);
-	/* TRUE: 続行, FALSE: 終了 */
-	return TRUE;
-}
-
 /* 入力値格納 */
-void CSpineSettingDialogue::storeEditBoxInputs()
+void CSpineSettingDialogue::storeInputs()
 {
 	m_atlasExtension.assign(m_atlasEdit.getText());
 	m_skelExtension.assign(m_skelEdit.getText());
+	m_toMultiplyAlphaOnLoading = m_pmaButton.isChecked();
 }
 

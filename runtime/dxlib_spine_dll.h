@@ -23,6 +23,7 @@ struct DxLibRegerenda
 	int (*ConvertStringCharCodeFormat)(int SrcCharCodeFormat, const void* SrcString, int DestCharCodeFormat, void* DestStringBuffer);
 #endif
 	/* To create and destroy texture. */
+	int (*SetUsePremulAlphaConvertLoad)(int UseFlag);
 	int (*LoadGraph)(const TCHAR* FileName, int NotUse3DFlag);
 	int (*DeleteGraph)(int GrHandle);
 

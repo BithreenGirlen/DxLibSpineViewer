@@ -431,6 +431,17 @@ bool CDxLibSpineDrawable::IsToBeLeftOut(const spine::String& slotName)
 
 void CDxLibTextureLoader::load(spine::AtlasPage& atlasPage, const spine::String& path)
 {
+#if defined(SPINE_40) || defined(SPINE_41) || defined (SPINE_42)
+	bool toConvertToPma = !atlasPage.pma && m_toConvertToPma;
+	if (toConvertToPma)
+	{
+		atlasPage.pma = true;
+	}
+#else
+	bool toConvertToPma = m_toConvertToPma;
+#endif
+	DxLib::SetUsePremulAlphaConvertLoad(toConvertToPma ? TRUE : FALSE);
+
 #if	defined(_WIN32) && defined(_UNICODE)
 	const auto WidenPath = [](const char* charPath)
 		-> wchar_t*
@@ -452,6 +463,7 @@ void CDxLibTextureLoader::load(spine::AtlasPage& atlasPage, const spine::String&
 		};
 	wchar_t* wcharPath = WidenPath(path.buffer());
 	if (wcharPath == nullptr)return;
+
 	int iDxLibTexture = DxLib::LoadGraph(wcharPath);
 	free(wcharPath);
 	wcharPath = nullptr;
@@ -471,4 +483,14 @@ void CDxLibTextureLoader::load(spine::AtlasPage& atlasPage, const spine::String&
 void CDxLibTextureLoader::unload(void* texture)
 {
 	DxLib::DeleteGraph(static_cast<int>(reinterpret_cast<unsigned long long>(texture)));
+}
+
+void CDxLibTextureLoader::enableConversionToPma(bool toEnable)
+{
+	m_toConvertToPma = toEnable;
+}
+
+bool CDxLibTextureLoader::isConversionToPmaEnabled() const noexcept
+{
+	return m_toConvertToPma;
 }

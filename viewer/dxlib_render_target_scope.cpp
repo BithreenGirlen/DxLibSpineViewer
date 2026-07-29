@@ -6,6 +6,7 @@
 #include <DxLib.h>
 
 DxLibRenderTargetScope::DxLibRenderTargetScope(int iGraphicHandle, bool toClear)
+	:iPreviousRenderTarget(DxLib::GetDrawScreen())
 {
 	DxLib::SetDrawScreen(iGraphicHandle);
 	if (toClear)DxLib::ClearDrawScreen();
@@ -13,5 +14,5 @@ DxLibRenderTargetScope::DxLibRenderTargetScope(int iGraphicHandle, bool toClear)
 
 DxLibRenderTargetScope::~DxLibRenderTargetScope()
 {
-	DxLib::SetDrawScreen(DX_SCREEN_BACK);
+	DxLib::SetDrawScreen(iPreviousRenderTarget == -1 ? DX_SCREEN_BACK : iPreviousRenderTarget);
 }

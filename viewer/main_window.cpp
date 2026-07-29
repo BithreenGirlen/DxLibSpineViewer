@@ -22,6 +22,20 @@
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+struct SuspendWmPaintScope
+{
+	SuspendWmPaintScope(HWND hWnd)
+		:hTargetWnd(hWnd)
+	{
+		::ValidateRect(hTargetWnd, nullptr);
+	}
+	~SuspendWmPaintScope()
+	{
+		::InvalidateRect(hTargetWnd, nullptr, FALSE);
+	}
+
+	HWND hTargetWnd;
+};
 
 bool CMainWindow::create(HINSTANCE hInstance, const wchar_t* pwzWindowName)
 {
@@ -650,6 +664,8 @@ void CMainWindow::menuOnOpenFiles()
 {
 	if (m_dxLibRecorder.getState() != CDxLibRecorder::EState::Idle)return;
 
+	SuspendWmPaintScope suspenWmPaintScope(m_hWnd);
+
 	std::vector<std::wstring> atlasFilePaths = win_dialogue::SelectOpenFiles(L"atlas files", L"*.atlas;*.atlas.txt", L"Select atlas files", m_hWnd, true);
 	if (!atlasFilePaths.empty())
 	{
@@ -700,6 +716,8 @@ void CMainWindow::menuOnOpenFolder()
 {
 	if (m_dxLibRecorder.getState() != CDxLibRecorder::EState::Idle)return;
 
+	SuspendWmPaintScope suspenWmPaintScope(m_hWnd);
+
 	std::wstring selectedFolderPath = win_dialogue::SelectFolder(nullptr, m_hWnd);
 	if (!selectedFolderPath.empty())
 	{
@@ -714,11 +732,13 @@ void CMainWindow::menuOnOpenFolder()
 
 void CMainWindow::menuOnExtensionSetting()
 {
-	m_spineSettingDialogue.open(::GetModuleHandleA(nullptr), m_hWnd, L"Extensions");
+	m_spineSettingDialogue.open(::GetModuleHandleW(nullptr), m_hWnd, L"Extensions");
 }
 
 void CMainWindow::menuOnImportCocos()
 {
+	SuspendWmPaintScope suspenWmPaintScope(m_hWnd);
+
 	std::wstring selectedFilePath = win_dialogue::SelectOpenFile(L"Import file", L"*.json", L"Select Cocos import file", m_hWnd);
 	if (selectedFilePath.empty())return;
 
@@ -757,6 +777,11 @@ void CMainWindow::menuOnImportCocos()
 	}
 	else
 	{
+		/*
+		* Calling ShowErrorMessageValidatingOwnerWindow() in the scope of SuspendWmPaintScope 
+		* results in unnecessary ::ValidateRect() calls though,
+		* keep it untouched becasue the error reporting is unlikely case.
+		*/
 		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"The selected json seems not to contain atlas file.", m_hWnd);
 		return;
 	}
@@ -789,6 +814,8 @@ void CMainWindow::menuOnShowToolDialogue()
 void CMainWindow::menuOnAddFile()
 {
 	if (m_dxLibRecorder.getState() != CDxLibRecorder::EState::Idle)return;
+
+	SuspendWmPaintScope suspenWmPaintScope(m_hWnd);
 
 	std::wstring selectedAtlasFilePath = win_dialogue::SelectOpenFile(L"atlas file", L"*.atlas;*.atlas.txt", L"Select atlas file to add", m_hWnd, true);
 	if (selectedAtlasFilePath.empty())return;
@@ -1232,6 +1259,7 @@ bool CMainWindow::loadSpinesFromMemory(const std::vector<std::string>& atlasData
 		return false;
 	}
 	m_dxLibSpinePlayer.setPlayerToUse(versionIndex);
+	m_dxLibSpinePlayer.get()->enableConversionToPmaOnLoading(m_spineSettingDialogue.isToMultiplyAlphaOnLoading());
 
 	bool isBinarySkel = skeletonMetaData.skeletonFormat == SkeletonFormat::Binary;
 	bool hadLoaded = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();

@@ -19,6 +19,8 @@ public:
 	const std::wstring& getAtlasExtension() const { return m_atlasExtension; }
 	const std::wstring& getSkelExtension() const { return m_skelExtension; }
 
+	void multiplyAlphaOnLoading(bool toMultiply);
+	bool isToMultiplyAlphaOnLoading() const noexcept;
 private:
 	const wchar_t* m_className = L"Spine setting dialogue";
 	HINSTANCE m_hInstance = nullptr;
@@ -35,20 +37,25 @@ private:
 	LRESULT onCommand(WPARAM wParam, LPARAM lParam);
 
 	enum Constants { kFontSize = 16 };
-
+	struct Controls
+	{
+		enum
+		{
+			kPmaButton = 1,
+		};
+	};
 	HFONT m_hFont = nullptr;
 
 	CStatic m_atlasStatic;
 	CEdit m_atlasEdit;
 	CStatic m_skelStatic;
 	CEdit m_skelEdit;
+	CButton m_pmaButton;
 
 	std::wstring m_atlasExtension = L".atlas";
 	std::wstring m_skelExtension = L".skel";
+	bool m_toMultiplyAlphaOnLoading = false;
 
-	/// @brief EnumChildWindows callback 
-	static BOOL CALLBACK SetFontCallback(HWND hWnd, LPARAM lParam);
-
-	void storeEditBoxInputs();
+	void storeInputs();
 };
 #endif // !SPINE_SETTING_DIALOGUE_H_

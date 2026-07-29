@@ -372,6 +372,23 @@ void CSpinePlayerC::setDrawOrder(bool reversed)
 	m_isDrawOrderReversed = reversed;
 }
 
+void CSpinePlayerC::enableConversionToPmaOnLoading(bool toEnable)
+{
+#if !defined(SPINE_21)
+	SpineTextureLoader_enableConversionToPma(toEnable);
+#endif
+}
+
+bool CSpinePlayerC::isConversionToPmaOnLoadingEnabled() const noexcept
+{
+	/* Spine 2.1 has neither blendmode-multiply nor blendmode-screen. */
+#if defined(SPINE_21)
+	return false;
+#else
+	return SpineTextureLoader_isConversionToPmaEnabled();
+#endif
+}
+
 const char* CSpinePlayerC::getCurrentAnimationName()
 {
 	for (const auto& pDrawable : m_drawables)

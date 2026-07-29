@@ -16,6 +16,8 @@ static_assert(static_cast<spPhysics>(CDxLibSpineDrawableC::Physics::Update) == s
 static_assert(static_cast<spPhysics>(CDxLibSpineDrawableC::Physics::Pose) == spPhysics::SP_PHYSICS_POSE, "Physics_Pose");
 #endif
 
+static bool g_toConvertToPma = false;
+
 #if	defined(_WIN32) && defined(_UNICODE)
 static wchar_t* WidenPath(const char* path)
 {
@@ -40,6 +42,18 @@ static wchar_t* WidenPath(const char* path)
 
 void _spAtlasPage_createTexture(spAtlasPage* pAtlasPage, const char* path)
 {
+#if defined(SPINE_40) || defined(SPINE_41) || defined (SPINE_42)
+	/* true: -1, false: 0 */
+	bool toConvertToPma = (pAtlasPage->pma == 0) && g_toConvertToPma;
+	if (toConvertToPma)
+	{
+		pAtlasPage->pma = -1;
+	}
+#else
+	bool toConvertToPma = g_toConvertToPma;
+#endif
+	DxLib::SetUsePremulAlphaConvertLoad(toConvertToPma ? TRUE : FALSE);
+
 #if	defined(_WIN32) && defined(_UNICODE)
 	wchar_t* wcharPath = WidenPath(path);
 	if (wcharPath == nullptr)return;
@@ -537,4 +551,14 @@ bool CDxLibSpineDrawableC::isSlotToBeLeftOut(const char* slotName)
 	}
 
 	return false;
+}
+
+void SpineTextureLoader_enableConversionToPma(bool toEnable)
+{
+	g_toConvertToPma = toEnable;
+}
+
+bool SpineTextureLoader_isConversionToPmaEnabled()
+{
+	return g_toConvertToPma;
 }

@@ -89,6 +89,9 @@ public:
 	void setDrawOrder(bool reversed) override;
 	bool isDrawOrderReversed() const noexcept override;
 
+	void enableConversionToPmaOnLoading(bool toEnable) override;
+	bool isConversionToPmaOnLoadingEnabled() const noexcept override;
+
 	const char* getCurrentAnimationName() override;
 	void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) override;
 	void setCurrentAnimationTime(float animationTime) override;
@@ -320,6 +323,16 @@ bool SPCLASS::isDrawOrderReversed() const noexcept
 void SPCLASS::setDrawOrder(bool reversed)
 {
 	m_dxLibSpinePlayer.setDrawOrder(reversed);
+}
+
+void SPCLASS::enableConversionToPmaOnLoading(bool toEnable)
+{
+	m_dxLibSpinePlayer.enableConversionToPmaOnLoading(toEnable);
+}
+
+bool SPCLASS::isConversionToPmaOnLoadingEnabled() const noexcept
+{
+	return m_dxLibSpinePlayer.isConversionToPmaOnLoadingEnabled();
 }
 
 const char* SPCLASS::getCurrentAnimationName()

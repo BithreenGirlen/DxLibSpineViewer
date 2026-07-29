@@ -372,6 +372,16 @@ void CSpinePlayer::setDrawOrder(bool reversed)
 	m_isDrawOrderReversed = reversed;
 }
 
+void CSpinePlayer::enableConversionToPmaOnLoading(bool toEnable)
+{
+	m_textureLoader.enableConversionToPma(toEnable);
+}
+
+bool CSpinePlayer::isConversionToPmaOnLoadingEnabled() const noexcept
+{
+	return m_textureLoader.isConversionToPmaEnabled();
+}
+
 const char* CSpinePlayer::getCurrentAnimationName()
 {
 	for (const auto& pDrawable : m_drawables)
