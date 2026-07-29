@@ -95,6 +95,23 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
   - which contains atlas at `[5][0][2]`, and skeleton at `[5][0][4]`.
   - or that which contains atlas at `[5][0][2]` and requires binary skeleton separately. 
 
+## How to adjust window size
+
+On loaded, the window will be fit to the whole bounding box of Spine at the timeline of 0 with empty animation and empty skin.   
+The window can be resized via menu item `Allow dragged resizing`, or can be adjusted to a specific size via menu item `Show tool dialogue`.
+
+<details><summary>Fit window to a specific slot</summary>
+
+https://github.com/user-attachments/assets/0aa569b2-8cb0-4a6c-ab6b-c3c8c74d7b74
+
+</details>
+
+<details><summary>Set fixed-size</summary>
+
+https://github.com/user-attachments/assets/e466abca-ec17-4f12-930e-6a890a960bc1
+
+</details>
+
 ## Mouse functions
 
 | Input | Action |
