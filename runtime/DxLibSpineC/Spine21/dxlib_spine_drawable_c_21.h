@@ -1,5 +1,5 @@
-﻿#ifndef DXLIB_SPINE_C_21_H_
-#define DXLIB_SPINE_C_21_H_
+﻿#ifndef DXLIB_SPINE_DRAWABLE_C_21_H_
+#define DXLIB_SPINE_DRAWABLE_C_21_H_
 
 #include <spine/spine.h>
 #include <spine/array.h>
@@ -79,4 +79,5 @@ private:
 	void clearLeaveOutList();
 	bool isSlotToBeLeftOut(const char* slotName);
 };
-#endif // !DXLIB_SPINE_C_21_H_
+
+#endif // !DXLIB_SPINE_DRAWABLE_C_21_H_

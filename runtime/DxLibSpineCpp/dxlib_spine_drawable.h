@@ -1,5 +1,5 @@
-﻿#ifndef DXLIB_SPINE_H_
-#define DXLIB_SPINE_H_
+﻿#ifndef DXLIB_SPINE_DRAWABLE_H_
+#define DXLIB_SPINE_DRAWABLE_H_
 
 /* Avoid conflict between <MathUtils.h> and <Windows.h> for Spine 4.0 and older */
 #undef min
@@ -82,18 +82,4 @@ private:
 	bool IsToBeLeftOut(const spine::String& slotName);
 };
 
-class CDxLibTextureLoader : public spine::TextureLoader
-{
-public:
-	void load(spine::AtlasPage& page, const spine::String& path) override;
-	void unload(void* texture) override;
-
-	/// @brief 読み込み時に、画像を乗算済みαにするか否か。既定では無効
-	/// @remark Spine 4.0以降ではAtlasPage::pmaをみて合理性を判断します
-	void enableConversionToPma(bool toEnable);
-	bool isConversionToPmaEnabled() const noexcept;
-private:
-	bool m_toConvertToPma = false;
-};
-
-#endif // DXLIB_SPINE_H_
+#endif // DXLIB_SPINE_DRAWABLE_H_

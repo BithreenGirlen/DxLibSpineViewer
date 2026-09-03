@@ -2,23 +2,15 @@
 /* To calculate bounding box */
 #include <float.h>
 
-#include "dxlib_spine.h"
+#include "dxlib_spine_drawable.h"
 
-namespace spine
-{
-	SpineExtension* getDefaultExtension()
-	{
-		return new DefaultSpineExtension();
-	}
-
-	/* std::underlying_type_t is not a core language feature. */
 #if defined(SPINE_42)
-	static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::None) == spine::Physics::Physics_None, "Physics_None");
-	static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::Reset) == spine::Physics::Physics_Reset, "Physics_Reset");
-	static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::Update) == spine::Physics::Physics_Update, "Physics_Update");
-	static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::Pose) == spine::Physics::Physics_Pose, "Physics_Pose");
+static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::None) == spine::Physics::Physics_None, "Physics_None");
+static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::Reset) == spine::Physics::Physics_Reset, "Physics_Reset");
+static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::Update) == spine::Physics::Physics_Update, "Physics_Update");
+static_assert(static_cast<spine::Physics>(CDxLibSpineDrawable::Physics::Pose) == spine::Physics::Physics_Pose, "Physics_Pose");
 #endif
-}
+
 
 CDxLibSpineDrawable::CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData)
 {
@@ -427,70 +419,4 @@ bool CDxLibSpineDrawable::IsToBeLeftOut(const spine::String& slotName)
 	{
 		return m_leaveOutList.contains(slotName);
 	}
-}
-
-void CDxLibTextureLoader::load(spine::AtlasPage& atlasPage, const spine::String& path)
-{
-#if defined(SPINE_40) || defined(SPINE_41) || defined (SPINE_42)
-	bool toConvertToPma = !atlasPage.pma && m_toConvertToPma;
-	if (toConvertToPma)
-	{
-		atlasPage.pma = true;
-	}
-#else
-	bool toConvertToPma = m_toConvertToPma;
-#endif
-	DxLib::SetUsePremulAlphaConvertLoad(toConvertToPma ? TRUE : FALSE);
-
-#if	defined(_WIN32) && defined(_UNICODE)
-	const auto WidenPath = [](const char* charPath)
-		-> wchar_t*
-		{
-			int iCharCode = DxLib::GetUseCharCodeFormat();
-			int iWcharCode = DxLib::Get_wchar_t_CharCodeFormat();
-
-			int iByteLength = DxLib::ConvertStringCharCodeFormat(iCharCode, charPath, iWcharCode, nullptr);
-			if (iByteLength < sizeof(wchar_t))return nullptr;
-
-			/* The length including null termination */
-			int iStringLength = iByteLength / sizeof(wchar_t);
-			wchar_t* pResult = static_cast<wchar_t*>(calloc(iStringLength, sizeof(wchar_t)));
-			if (pResult == nullptr)return nullptr;
-
-			int iRet = DxLib::ConvertStringCharCodeFormat(iCharCode, charPath, iWcharCode, pResult);
-
-			return pResult;
-		};
-	wchar_t* wcharPath = WidenPath(path.buffer());
-	if (wcharPath == nullptr)return;
-
-	int iDxLibTexture = DxLib::LoadGraph(wcharPath);
-	free(wcharPath);
-	wcharPath = nullptr;
-#else
-	int iDxLibTexture = DxLib::LoadGraph(path.buffer());
-#endif
-	if (iDxLibTexture == -1)return;
-
-	void* p = reinterpret_cast<void*>(static_cast<unsigned long long>(iDxLibTexture));
-#if defined (SPINE_41) || defined (SPINE_42)
-	atlasPage.texture = p;
-#else
-	atlasPage.setRendererObject(p);
-#endif
-}
-
-void CDxLibTextureLoader::unload(void* texture)
-{
-	DxLib::DeleteGraph(static_cast<int>(reinterpret_cast<unsigned long long>(texture)));
-}
-
-void CDxLibTextureLoader::enableConversionToPma(bool toEnable)
-{
-	m_toConvertToPma = toEnable;
-}
-
-bool CDxLibTextureLoader::isConversionToPmaEnabled() const noexcept
-{
-	return m_toConvertToPma;
 }

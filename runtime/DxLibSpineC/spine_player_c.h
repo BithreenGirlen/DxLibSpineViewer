@@ -9,12 +9,13 @@
 /* DxLib::FLOAT2 is composed of {u,v} variables that it is not compatible with other rendering library. */
 using FPoint2 = struct { float x, y; };
 #ifdef SPINE_21
-#include "Spine21/dxlib_spine_c_21.h"
+#include "Spine21/dxlib_spine_drawable_c_21.h"
 using CSpineDrawableC = CDxLibSpineDrawableC21;
 #else
-#include "dxlib_spine_c.h"
+#include "dxlib_spine_drawable_c.h"
 using CSpineDrawableC = CDxLibSpineDrawableC;
 #endif
+#include "dxlib_spine_texture_loader_c.h"
 
 
 class CSpinePlayerC

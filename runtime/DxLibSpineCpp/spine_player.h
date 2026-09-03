@@ -8,7 +8,8 @@
 #include <memory>
 #include <unordered_map>
 
-#include "dxlib_spine.h"
+#include "dxlib_spine_drawable.h"
+#include "dxlib_spine_texture_loader.h"
 /* DxLib::FLOAT2 is composed of {u,v} variables that it is not compatible with other rendering library. */
 using FPoint2 = struct { float x, y; };
 using CSpineDrawable = CDxLibSpineDrawable;

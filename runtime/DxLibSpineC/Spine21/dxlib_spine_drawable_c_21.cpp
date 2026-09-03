@@ -1,64 +1,13 @@
 ﻿
 /* To calculate bounding box */
 #include <float.h>
-
+/* FREE() and MALLOC_STR() macro */
 #include <spine/extension.h>
 
-#include "dxlib_spine_c_21.h"
+#include "dxlib_spine_drawable_c_21.h"
 
 _SP_ARRAY_IMPLEMENT_TYPE_NO_CONTAINS(spDxLibVertexArray, DxLib::VERTEX2D)
 
-#if	defined(_WIN32) && defined(_UNICODE)
-static wchar_t* WidenPath(const char* path)
-{
-	int iCharCode = DxLib::GetUseCharCodeFormat();
-	int iWcharCode = DxLib::Get_wchar_t_CharCodeFormat();
-
-	int iByteLength = DxLib::ConvertStringCharCodeFormat(iCharCode, path, iWcharCode, nullptr);
-	if (iByteLength < sizeof(wchar_t))return nullptr;
-
-	/* The length including null termination */
-	int iStringLength = iByteLength / sizeof(wchar_t);
-	wchar_t* pResult = static_cast<wchar_t*>(calloc(iStringLength, sizeof(wchar_t)));
-	if (pResult == nullptr)return nullptr;
-
-	int iRet = DxLib::ConvertStringCharCodeFormat(iCharCode, path, iWcharCode, pResult);
-
-	return pResult;
-}
-#endif
-
-/* ==================== Implementations for <extension.h> ==================== */
-
-void _spAtlasPage_createTexture(spAtlasPage* pAtlasPage, const char* path)
-{
-#if	defined(_WIN32) && defined(_UNICODE)
-	wchar_t* wcharPath = WidenPath(path);
-	if (wcharPath == nullptr)return;
-	int iDxLibTexture = DxLib::LoadGraph(wcharPath);
-	free(wcharPath);
-	wcharPath = nullptr;
-#else
-	int iDxLibTexture = DxLib::LoadGraph(path);
-#endif
-	if (iDxLibTexture == -1)return;
-
-	void* p = reinterpret_cast<void*>(static_cast<unsigned long long>(iDxLibTexture));
-
-	pAtlasPage->rendererObject = p;
-}
-
-void _spAtlasPage_disposeTexture(spAtlasPage* pAtlasPage)
-{
-	DxLib::DeleteGraph(static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasPage->rendererObject)));
-}
-
-char* _spUtil_readFile(const char* path, int* length)
-{
-	return _spReadFile(path, length);
-}
-
-/* ==================== end of implementations for <extension.h> ==================== */
 
 CDxLibSpineDrawableC21::CDxLibSpineDrawableC21(spSkeletonData* pSkeletonData)
 {

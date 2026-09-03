@@ -45,9 +45,9 @@ function(add_spine_target RUNTIME_LANGUAGE RUNTIME_VERSION)
 	# Spine 2.1 has different attachment types from later versions.
 	if(RUNTIME_LANGUAGE STREQUAL "C" AND RUNTIME_VERSION EQUAL 2.1)
 		file(GLOB DXLIB_SRC "${DXLIB_SPINE_SRC_DIR}/*.cpp")
-		list(REMOVE_ITEM DXLIB_SRC "${DXLIB_SPINE_SRC_DIR}/dxlib_spine_c.cpp")
+		list(REMOVE_ITEM DXLIB_SRC "${DXLIB_SPINE_SRC_DIR}/dxlib_spine_drawable_c.cpp")
 		target_sources(${TARGET_NAME} PRIVATE
-			${DXLIB_SPINE_RUNTIME_DIR}/DxLibSpineC/Spine21/dxlib_spine_c_21.cpp
+			${DXLIB_SPINE_RUNTIME_DIR}/DxLibSpineC/Spine21/dxlib_spine_drawable_c_21.cpp
 			${DXLIB_SRC}
 		)
 	else()

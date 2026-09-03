@@ -1,5 +1,5 @@
-﻿#ifndef DXLIB_SPINE_C_H_
-#define DXLIB_SPINE_C_H_
+﻿#ifndef DXLIB_SPINE_DRAWABLE_C_H_
+#define DXLIB_SPINE_DRAWABLE_C_H_
 
 #include <spine/spine.h>
 
@@ -142,16 +142,4 @@ private:
 	bool isSlotToBeLeftOut(const char* slotName);
 };
 
-/*
- * Todo: Move texture loader and extension to other file(s).
- *
- * The trouble is that spine-c has different structure from spine-cpp in that
- * the extension of the former contains texture loader, which has been separated from
- * memory allocation part in the latter.
- * This difference makes it hard to harmonise them.
-*/
-
-void SpineTextureLoader_enableConversionToPma(bool toEnable);
-bool SpineTextureLoader_isConversionToPmaEnabled();
-
-#endif // !DXLIB_SPINE_C_H_
+#endif // !DXLIB_SPINE_DRAWABLE_C_H_

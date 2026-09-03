@@ -1,10 +1,10 @@
 ﻿
 /* To calculate bounding box */
 #include <float.h>
-
+/* FREE() and MALLOC_STR() macro */
 #include <spine/extension.h>
 
-#include "dxlib_spine_c.h"
+#include "dxlib_spine_drawable_c.h"
 
 _SP_ARRAY_IMPLEMENT_TYPE_NO_CONTAINS(spDxLibVertexArray, DxLib::VERTEX2D)
 
@@ -16,71 +16,6 @@ static_assert(static_cast<spPhysics>(CDxLibSpineDrawableC::Physics::Update) == s
 static_assert(static_cast<spPhysics>(CDxLibSpineDrawableC::Physics::Pose) == spPhysics::SP_PHYSICS_POSE, "Physics_Pose");
 #endif
 
-static bool g_toConvertToPma = false;
-
-#if	defined(_WIN32) && defined(_UNICODE)
-static wchar_t* WidenPath(const char* path)
-{
-	int iCharCode = DxLib::GetUseCharCodeFormat();
-	int iWcharCode = DxLib::Get_wchar_t_CharCodeFormat();
-
-	int iByteLength = DxLib::ConvertStringCharCodeFormat(iCharCode, path, iWcharCode, nullptr);
-	if (iByteLength < sizeof(wchar_t))return nullptr;
-
-	/* The length including null termination */
-	int iStringLength = iByteLength / sizeof(wchar_t);
-	wchar_t* pResult = static_cast<wchar_t*>(calloc(iStringLength, sizeof(wchar_t)));
-	if (pResult == nullptr)return nullptr;
-
-	int iRet = DxLib::ConvertStringCharCodeFormat(iCharCode, path, iWcharCode, pResult);
-
-	return pResult;
-}
-#endif
-
-/* ==================== Implementations for <extension.h> ==================== */
-
-void _spAtlasPage_createTexture(spAtlasPage* pAtlasPage, const char* path)
-{
-#if defined(SPINE_40) || defined(SPINE_41) || defined (SPINE_42)
-	/* true: -1, false: 0 */
-	bool toConvertToPma = (pAtlasPage->pma == 0) && g_toConvertToPma;
-	if (toConvertToPma)
-	{
-		pAtlasPage->pma = -1;
-	}
-#else
-	bool toConvertToPma = g_toConvertToPma;
-#endif
-	DxLib::SetUsePremulAlphaConvertLoad(toConvertToPma ? TRUE : FALSE);
-
-#if	defined(_WIN32) && defined(_UNICODE)
-	wchar_t* wcharPath = WidenPath(path);
-	if (wcharPath == nullptr)return;
-	int iDxLibTexture = DxLib::LoadGraph(wcharPath);
-	free(wcharPath);
-	wcharPath = nullptr;
-#else
-	int iDxLibTexture = DxLib::LoadGraph(path);
-#endif
-	if (iDxLibTexture == -1)return;
-
-	void* p = reinterpret_cast<void*>(static_cast<unsigned long long>(iDxLibTexture));
-
-	pAtlasPage->rendererObject = p;
-}
-
-void _spAtlasPage_disposeTexture(spAtlasPage* pAtlasPage)
-{
-	DxLib::DeleteGraph(static_cast<int>(reinterpret_cast<unsigned long long>(pAtlasPage->rendererObject)));
-}
-
-char* _spUtil_readFile(const char* path, int* length)
-{
-	return _spReadFile(path, length);
-}
-
-/* ==================== end of implementations for <extension.h> ==================== */
 
 CDxLibSpineDrawableC::CDxLibSpineDrawableC(spSkeletonData* pSkeletonData)
 {
@@ -551,14 +486,4 @@ bool CDxLibSpineDrawableC::isSlotToBeLeftOut(const char* slotName)
 	}
 
 	return false;
-}
-
-void SpineTextureLoader_enableConversionToPma(bool toEnable)
-{
-	g_toConvertToPma = toEnable;
-}
-
-bool SpineTextureLoader_isConversionToPmaEnabled()
-{
-	return g_toConvertToPma;
 }
