@@ -20,8 +20,10 @@ namespace dxlib_spine_texture_loader_c
 	static constexpr size_t kMaxPathLength = 1024;
 
 	static bool g_toConvertToPma = false;
+	static void (*g_pTextureLoadCallback)(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage) = nullptr;
+	static void* g_pCallbackUserDatum = nullptr;
 
-	/// @brief 現在DxLibに設定されているコードページを元に、固定バッファ上でwchar_t文字列をchar文字列に変換
+	/// @brief 現在DxLibに設定されているコードページを元に、固定長バッファ上でwchar_t文字列をchar文字列に変換
 	/// @param wstr 変換元の文字列
 	/// @param dst 変換先のバッファ
 	/// @param dstSize 変換先の大きさ。既定引数の場合、変換前の大きさ超過確認を行わない。
@@ -44,7 +46,7 @@ namespace dxlib_spine_texture_loader_c
 		return iLength;
 	}
 
-	/// @brief 現在DxLibに設定されているコードページを元に、固定バッファ上でchar文字列をwchar_t文字列に変換
+	/// @brief 現在DxLibに設定されているコードページを元に、固定長バッファ上でchar文字列をwchar_t文字列に変換
 	/// @param str 変換元の文字列
 	/// @param dst 変換先のバッファ
 	/// @param dstSize 変換先の大きさ。既定引数の場合、変換前の大きさ超過確認を行わない。
@@ -71,8 +73,10 @@ namespace dxlib_spine_texture_loader_c
 
 /* ==================== Implementations for <spine/extension.h> ==================== */
 
-void _spAtlasPage_createTexture(spAtlasPage* pAtlasPage, const char* path)
+void _spAtlasPage_createTexture(spAtlasPage* pAtlasPage, const char* textureFilePath)
 {
+	using namespace dxlib_spine_texture_loader_c;
+
 #if defined(SPINE_40) || defined(SPINE_41) || defined (SPINE_42)
 	/* true: -1, false: 0 */
 	bool toConvertToPma = (pAtlasPage->pma == 0) && g_toConvertToPma;
@@ -81,18 +85,28 @@ void _spAtlasPage_createTexture(spAtlasPage* pAtlasPage, const char* path)
 		pAtlasPage->pma = -1;
 	}
 #else
-	bool toConvertToPma = dxlib_spine_texture_loader_c::g_toConvertToPma;
+	bool toConvertToPma = g_toConvertToPma;
 #endif
 	DxLib::SetUsePremulAlphaConvertLoad(toConvertToPma ? TRUE : FALSE);
 
+	int iDxLibTexture = -1;
+	if (g_pTextureLoadCallback != nullptr)
+	{
+		g_pTextureLoadCallback(g_pCallbackUserDatum, textureFilePath, ::strlen(textureFilePath), &iDxLibTexture);
+	}
+
+	if (iDxLibTexture == -1)
+	{
 #if	defined(_WIN32) && defined(_UNICODE)
-	wchar_t wcharPathBuffer[dxlib_spine_texture_loader_c::kMaxPathLength]{};
-	int nWritten = dxlib_spine_texture_loader_c::WidenInBuffer(path, wcharPathBuffer);
-	int iDxLibTexture = DxLib::LoadGraph(wcharPathBuffer);
+		wchar_t wcharPathBuffer[kMaxPathLength]{};
+		int nWritten = WidenInBuffer(textureFilePath, wcharPathBuffer);
+
+		iDxLibTexture = DxLib::LoadGraph(wcharPathBuffer);
 #else
-	int iDxLibTexture = DxLib::LoadGraph(path);
+		iDxLibTexture = DxLib::LoadGraph(textureFilePath);
 #endif
-	if (iDxLibTexture == -1)return;
+		if (iDxLibTexture == -1)return;
+	}
 
 	void* p = reinterpret_cast<void*>(static_cast<unsigned long long>(iDxLibTexture));
 
@@ -120,4 +134,10 @@ void SpineTextureLoader_enableConversionToPma(bool toEnable)
 bool SpineTextureLoader_isConversionToPmaEnabled()
 {
 	return dxlib_spine_texture_loader_c::g_toConvertToPma;
+}
+
+void SpineTextureLoader_setTextureLoadCallback(void(*pFunc)(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage), void* pUserDatum)
+{
+	dxlib_spine_texture_loader_c::g_pTextureLoadCallback = pFunc;
+	dxlib_spine_texture_loader_c::g_pCallbackUserDatum = pUserDatum;
 }

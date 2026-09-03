@@ -11,6 +11,7 @@
 #include "win_text.h"
 #include "dxlib_image_encoder.h"
 #include "dxlib_render_target_scope.h"
+#include "dxlib_map.h"
 #include "json_minimal.h"
 #include "text_utility.h"
 #include "native-ui/window_menu.h"
@@ -289,8 +290,8 @@ LRESULT CMainWindow::onCommand(WPARAM wParam, LPARAM lParam)
 		case Menu::kOpenFolder:
 			menuOnOpenFolder();
 			break;
-		case Menu::kExtensionSetting:
-			menuOnExtensionSetting();
+		case Menu::kLoadOption:
+			menuOnLoadOption();
 			break;
 		case Menu::kImportCocos:
 			menuOnImportCocos();
@@ -619,7 +620,7 @@ void CMainWindow::initialiseMenuBar()
 					{Menu::kOpenFiles, L"Open Files"},
 					{},
 					{Menu::kOpenFolder, L"Open folder"},
-					{Menu::kExtensionSetting, L"Extension setting"},
+					{Menu::kLoadOption, L"Load option"},
 					{},
 					{Menu::kImportCocos, L"Import Cocos"},
 				}).get()
@@ -730,9 +731,9 @@ void CMainWindow::menuOnOpenFolder()
 	}
 }
 
-void CMainWindow::menuOnExtensionSetting()
+void CMainWindow::menuOnLoadOption()
 {
-	m_spineSettingDialogue.open(::GetModuleHandleW(nullptr), m_hWnd, L"Extensions");
+	m_spineSettingDialogue.open(::GetModuleHandleW(nullptr), m_hWnd, L"Extension");
 }
 
 void CMainWindow::menuOnImportCocos()
@@ -1259,7 +1260,16 @@ bool CMainWindow::loadSpinesFromMemory(const std::vector<std::string>& atlasData
 		return false;
 	}
 	m_dxLibSpinePlayer.setPlayerToUse(versionIndex);
+
 	m_dxLibSpinePlayer.get()->enableConversionToPmaOnLoading(m_spineSettingDialogue.isToMultiplyAlphaOnLoading());
+	if (m_spineSettingDialogue.isToFindWebpOnLoading() || m_spineSettingDialogue.isToIgnoreSmallImageOnLoading())
+	{
+		m_dxLibSpinePlayer.get()->setTextureLoadCallback(&CMainWindow::SpineTextureLoadCallback, this);
+	}
+	else
+	{
+		m_dxLibSpinePlayer.get()->setTextureLoadCallback(nullptr, nullptr);
+	}
 
 	bool isBinarySkel = skeletonMetaData.skeletonFormat == SkeletonFormat::Binary;
 	bool hadLoaded = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
@@ -1290,6 +1300,80 @@ void CMainWindow::postSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t
 	}
 	if (hadLoaded != hasLoaded)updateMenuItemState();
 	m_spineToolDatum.hasJustBeenLoaded = hasLoaded;
+}
+
+void CMainWindow::SpineTextureLoadCallback(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage)
+{
+	CMainWindow* pThis = static_cast<CMainWindow*>(pUserDatum);
+	if (pThis == nullptr)return;
+
+	int* pDxLibTexture = reinterpret_cast<int*>(pOutImage);
+	if (pDxLibTexture == nullptr)return;
+
+	wchar_t pathBuffer[512]{};
+	static constexpr int bufferCapacity = std::size(pathBuffer) - 1;
+	int pathBufferLength = 0;
+
+	/* Atlas記載のファイルが存在しなかった場合にwebpファイルを探索する。 */
+	const bool toFindWebp = pThis->m_spineSettingDialogue.isToFindWebpOnLoading();
+	if (toFindWebp)
+	{
+		pathBufferLength = win_text::WidenUtf8InBuffer(textureFilePath, static_cast<int>(filePathLength), pathBuffer, bufferCapacity);
+		bool bRet = win_filesystem::DoesFileExist(pathBuffer);
+		if (!bRet) /* Atlas記載ファイルなし */
+		{
+			const wchar_t* pPos = pathBuffer + pathBufferLength;
+			for (; pPos != pathBuffer; --pPos)
+			{
+				if (*pPos == L'.')break;
+			}
+			size_t fileNameLength = pPos - pathBuffer;
+
+			static constexpr wchar_t webpExt[] = L".webp";
+			static constexpr size_t webpExtLength = std::size(webpExt) - 1;
+			if (fileNameLength + webpExtLength >= static_cast<size_t>(bufferCapacity)) return;
+			::wmemcpy(&pathBuffer[fileNameLength], webpExt, webpExtLength);
+			fileNameLength += webpExtLength;
+			pathBuffer[fileNameLength] = L'\0';
+
+			bRet = win_filesystem::DoesFileExist(pathBuffer);
+			if (bRet) /* webp発見 */
+			{
+				*pDxLibTexture = DxLib::LoadGraph(pathBuffer);
+			}
+		}
+	}
+
+	/* マスク用と思しき小さな画像を透明にする。 */
+	const bool toIgnoreSmallImage = pThis->m_spineSettingDialogue.isToIgnoreSmallImageOnLoading();
+	if (toIgnoreSmallImage)
+	{
+		if (*pDxLibTexture == -1)
+		{
+			pathBufferLength = win_text::WidenUtf8InBuffer(textureFilePath, static_cast<int>(filePathLength), pathBuffer, bufferCapacity);
+
+			*pDxLibTexture = DxLib::LoadGraph(pathBuffer);
+		}
+
+		if (*pDxLibTexture == -1)return;
+
+		int iGraphWidth = 0, iGraphHeight = 0;
+		int iRet = DxLib::GetGraphSize(*pDxLibTexture, &iGraphWidth, &iGraphHeight);
+		if (iRet == -1)return;
+
+		/* 取り敢えず固定で。*/
+		static constexpr int kMinimumDimention = 256;
+		if (iGraphWidth < kMinimumDimention && iGraphHeight < kMinimumDimention)
+		{
+			CDxLibMap dxLibMap(*pDxLibTexture);
+			if (dxLibMap.isAccessible())
+			{
+				unsigned char* pPixels =  dxLibMap.pixels();
+				size_t nSize = static_cast<size_t>(dxLibMap.stride() * dxLibMap.height());
+				::memset(pPixels, 0x00, nSize);
+			}
+		}
+	}
 }
 
 std::wstring CMainWindow::buildExportFilePath()

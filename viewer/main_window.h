@@ -55,7 +55,7 @@ private:
 	{
 		enum
 		{
-			kOpenFiles = 1, kOpenFolder, kExtensionSetting, kImportCocos,
+			kOpenFiles = 1, kOpenFolder, kLoadOption, kImportCocos,
 			kShowToolDialogue, kAddEffectFile, kFontSetting,
 			kMakeWindowTransparent, kAllowDraggedResizing, kReverseZoomDirection,
 			kFitToCurrentFrame, kFitToDefaultSize,
@@ -125,7 +125,7 @@ private:
 
 	void menuOnOpenFiles();
 	void menuOnOpenFolder();
-	void menuOnExtensionSetting();
+	void menuOnLoadOption();
 	void menuOnImportCocos();
 
 	void menuOnShowToolDialogue();
@@ -177,6 +177,7 @@ private:
 	bool loadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName);
 	bool loadSpinesFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& textureDirectories, const std::vector<std::string>& skelData, const wchar_t* windowName);
 	void postSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t* windowName);
+	static void SpineTextureLoadCallback(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage);
 
 	std::wstring buildExportFilePath();
 	wchar_t* formatAnimationTime(float fAnimationTime, int* length = nullptr);

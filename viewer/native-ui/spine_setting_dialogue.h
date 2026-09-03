@@ -21,6 +21,12 @@ public:
 
 	void multiplyAlphaOnLoading(bool toMultiply);
 	bool isToMultiplyAlphaOnLoading() const noexcept;
+
+	void findWebpOnLoading(bool toFindWebp);
+	bool isToFindWebpOnLoading() const noexcept;
+
+	void ignoreSamllImageOnLoading(bool toIgnoreSmallImage);
+	bool isToIgnoreSmallImageOnLoading() const noexcept;
 private:
 	const wchar_t* m_className = L"Spine setting dialogue";
 	HINSTANCE m_hInstance = nullptr;
@@ -41,20 +47,26 @@ private:
 	{
 		enum
 		{
-			kPmaButton = 1,
+			kPmaButton = 1, kFindWebp, kIgnoreSmallImage
 		};
 	};
 	HFONT m_hFont = nullptr;
 
+	CStatic m_extensionSeparator;
 	CStatic m_atlasStatic;
 	CEdit m_atlasEdit;
 	CStatic m_skelStatic;
 	CEdit m_skelEdit;
+
 	CButton m_pmaButton;
+	CButton m_findWebpButton;
+	CButton m_ignoreSmallImageButton;
 
 	std::wstring m_atlasExtension = L".atlas";
 	std::wstring m_skelExtension = L".skel";
 	bool m_toMultiplyAlphaOnLoading = false;
+	bool m_toFindWebp = false;
+	bool m_toIgnoreSmallImage = false;
 
 	void storeInputs();
 };

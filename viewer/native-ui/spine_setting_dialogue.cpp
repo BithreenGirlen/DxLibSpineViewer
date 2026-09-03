@@ -41,8 +41,8 @@ bool CSpineSettingDialogue::open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 		m_hInstance = hInstance;
 
 		UINT dpi = ::GetDpiForSystem();
-		int windowWidth = ::MulDiv(160, dpi, USER_DEFAULT_SCREEN_DPI);
-		int windowHeight = ::MulDiv(160, dpi, USER_DEFAULT_SCREEN_DPI);
+		int windowWidth = ::MulDiv(180, dpi, USER_DEFAULT_SCREEN_DPI);
+		int windowHeight = ::MulDiv(200, dpi, USER_DEFAULT_SCREEN_DPI);
 
 		RECT rect{};
 		::GetClientRect(hWnd, &rect);
@@ -69,6 +69,25 @@ void CSpineSettingDialogue::multiplyAlphaOnLoading(bool toMultiply)
 bool CSpineSettingDialogue::isToMultiplyAlphaOnLoading() const noexcept
 {
 	return m_toMultiplyAlphaOnLoading;
+}
+
+void CSpineSettingDialogue::findWebpOnLoading(bool toFindWebp)
+{
+	m_toFindWebp = toFindWebp;
+}
+bool CSpineSettingDialogue::isToFindWebpOnLoading() const noexcept
+{
+	return m_toFindWebp;
+}
+
+void CSpineSettingDialogue::ignoreSamllImageOnLoading(bool toIgnoreSmallImage)
+{
+	m_toIgnoreSmallImage = toIgnoreSmallImage;
+}
+
+bool CSpineSettingDialogue::isToIgnoreSmallImageOnLoading() const noexcept
+{
+	return m_toIgnoreSmallImage;
 }
 
 int CSpineSettingDialogue::messageLoop()
@@ -155,6 +174,12 @@ LRESULT CSpineSettingDialogue::onCreate(HWND hWnd)
 	m_pmaButton.create(L"PMA on loading", m_hWnd, reinterpret_cast<HMENU>(Controls::kPmaButton), true);
 	m_pmaButton.setCheckBox(m_toMultiplyAlphaOnLoading);
 
+	m_findWebpButton.create(L"Find webp", m_hWnd, reinterpret_cast<HMENU>(Controls::kFindWebp), true);
+	m_findWebpButton.setCheckBox(m_toFindWebp);
+
+	m_ignoreSmallImageButton.create(L"Ignore small image", m_hWnd, reinterpret_cast<HMENU>(Controls::kIgnoreSmallImage), true);
+	m_ignoreSmallImageButton.setCheckBox(m_toIgnoreSmallImage);
+
 	const auto SetFontCallback = [](HWND hWnd, LPARAM lParam)
 		-> BOOL
 		{
@@ -207,13 +232,13 @@ LRESULT CSpineSettingDialogue::onSize()
 	long clientWidth = rect.right - rect.left;
 	long clientHeight = rect.bottom - rect.top;
 
-	long spaceX = clientWidth / 12;
-	long spaceY = clientHeight / 48;
+	long spaceX = clientWidth / 96;
+	long spaceY = clientHeight / 96;
 
 	long fontHeight = static_cast<long>(Constants::kFontSize * ::GetDpiForWindow(m_hWnd) / 96.f);
 
-	long x = spaceX;
-	long y = spaceY * 2;
+	long x = spaceX * 8;
+	long y = spaceY * 4;
 	long w = clientWidth * 3 / 4;
 	long h = fontHeight;
 	::MoveWindow(m_atlasStatic.getHwnd(), x, y, w, h, TRUE);
@@ -230,8 +255,14 @@ LRESULT CSpineSettingDialogue::onSize()
 	h = fontHeight + spaceY * 2;
 	::MoveWindow(m_skelEdit.getHwnd(), x, y, w, h, TRUE);
 
-	y += h;
+	y += h + spaceY * 4;
 	::MoveWindow(m_pmaButton.getHwnd(), x, y, w, h, TRUE);
+
+	y += h + spaceY * 2;
+	::MoveWindow(m_findWebpButton.getHwnd(), x, y, w, h, TRUE);
+
+	y += h + spaceY * 2;
+	::MoveWindow(m_ignoreSmallImageButton.getHwnd(), x, y, w, h, TRUE);
 
 	return 0;
 }
@@ -263,6 +294,9 @@ void CSpineSettingDialogue::storeInputs()
 {
 	m_atlasExtension.assign(m_atlasEdit.getText());
 	m_skelExtension.assign(m_skelEdit.getText());
+
 	m_toMultiplyAlphaOnLoading = m_pmaButton.isChecked();
+	m_toFindWebp = m_findWebpButton.isChecked();
+	m_toIgnoreSmallImage = m_ignoreSmallImageButton.isChecked();
 }
 

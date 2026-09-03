@@ -87,6 +87,7 @@ public:
 
 	virtual void enableConversionToPmaOnLoading(bool toEnable) = 0;
 	virtual bool isConversionToPmaOnLoadingEnabled() const noexcept = 0;
+	virtual void setTextureLoadCallback(void (*pFunc)(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage), void* pUserDatum) noexcept = 0;
 
 	virtual const char* getCurrentAnimationName() = 0;
 	virtual void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) = 0;

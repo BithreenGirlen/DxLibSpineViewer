@@ -91,6 +91,7 @@ public:
 
 	void enableConversionToPmaOnLoading(bool toEnable) override;
 	bool isConversionToPmaOnLoadingEnabled() const noexcept override;
+	void setTextureLoadCallback(void (*pFunc)(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage), void* pUserDatum) noexcept override;
 
 	const char* getCurrentAnimationName() override;
 	void getCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd) override;
@@ -333,6 +334,11 @@ void SPCLASS::enableConversionToPmaOnLoading(bool toEnable)
 bool SPCLASS::isConversionToPmaOnLoadingEnabled() const noexcept
 {
 	return m_dxLibSpinePlayer.isConversionToPmaOnLoadingEnabled();
+}
+
+void SPCLASS::setTextureLoadCallback(void (*pFunc)(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage), void* pUserDatum) noexcept
+{
+	return m_dxLibSpinePlayer.setTextureLoadCallback(pFunc, pUserDatum);
 }
 
 const char* SPCLASS::getCurrentAnimationName()

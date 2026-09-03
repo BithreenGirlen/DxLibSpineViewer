@@ -389,6 +389,13 @@ bool CSpinePlayerC::isConversionToPmaOnLoadingEnabled() const noexcept
 #endif
 }
 
+void CSpinePlayerC::setTextureLoadCallback(void(*pFunc)(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage), void* pUserDatum) noexcept
+{
+#if !defined(SPINE_21)
+	SpineTextureLoader_setTextureLoadCallback(pFunc, pUserDatum);
+#endif
+}
+
 const char* CSpinePlayerC::getCurrentAnimationName()
 {
 	for (const auto& pDrawable : m_drawables)

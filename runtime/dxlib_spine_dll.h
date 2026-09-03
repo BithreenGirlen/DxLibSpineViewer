@@ -53,10 +53,7 @@ struct DxLibRegerenda
 #endif
 };
 
-extern "C"
-{
-	SPINE_EXTERN void RegisterDxLibFunctions(const DxLibRegerenda* pDxLibRegerenda);
-}
+extern "C" SPINE_EXTERN void RegisterDxLibFunctions(const DxLibRegerenda* pDxLibRegerenda);
 
 #if !defined(SPINE_RUNTIME_DLL_BUILD)
 const DxLibRegerenda* GetDxLibFunctonsToBeRegistered();
