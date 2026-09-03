@@ -83,17 +83,27 @@ https://github.com/user-attachments/assets/3033fef6-aa30-420f-9a2a-5cb1976780e3
 
 ### Load via `Open folder` 
 
-1. From menu `File->Extension setting`, specify atlas and skeleton extensions.
+1. From menu `File->Load option`, specify atlas and skeleton extensions.
 2. From menu `File->Open folder`, select a folder containing atlas/skel(s) with specified extensions.
 
 - `Open folder` is __to load all the Spine files in a folder and render them synchronically.__
-  - Of cource it is appropriate to open a folder containing only one set of Spine, but it is not appropriate to open a folder containing more than two sets of Spine unless their animations have synchronised timelines.
+  - Of course it is appropriate to open a folder containing only one set of Spine, but it is not appropriate to open a folder containing more than two sets of Spine unless their animations have synchronised timelines.
 
 ### Load via `Import Cocos`
 
-- This is to load json:
+- This is to load JSON:
   - which contains atlas at `[5][0][2]`, and skeleton at `[5][0][4]`.
   - or that which contains atlas at `[5][0][2]` and requires binary skeleton separately. 
+
+## Load option
+
+Option on loading can be configured through menu `File->Load option`.
+
+| Option name | Function |
+| ---- | ---- |
+| PMA on loading | Multiply alpha on loading texture. |
+| Find webp | Find `*.webp` if a file specified by atlas is not found. |
+| Ignore small image | Make image smaller than `255x255` transparent on loading. |
 
 ## How to adjust window size
 
@@ -116,7 +126,7 @@ https://github.com/user-attachments/assets/e466abca-ec17-4f12-930e-6a890a960bc1
 
 | Input | Action |
 | ---- | ---- |
-| Wheel scroll | Scale up/down. Combinating with `Ctrl` to zoom in/out. |
+| Wheel scroll | Scale up/down. Combining with `Ctrl` to zoom in/out. |
 | L-pressed + wheel scroll | Speed up/down the animation. |
 | L-click | Switch the animation. |
 | L-drag | Move view-point. |
@@ -131,7 +141,7 @@ https://github.com/user-attachments/assets/e466abca-ec17-4f12-930e-6a890a960bc1
 | Input | Action |
 | --- | --- |
 | <kbd>Esc</kbd> | Close the application. |s
-| <kbd>Up</kbd> | Open the previpus folder. |
+| <kbd>Up</kbd> | Open the previous folder. |
 | <kbd>Down</kbd> | Open the next folder. |
 | <kbd>A</kbd> | Enable/disable premultiplied alpha. _Default: enabled_. | 
 | <kbd>R</kbd> | Toggle draw-order between filename asc/descending order. _Default: ascending order_. | 
@@ -185,20 +195,20 @@ Visual Studio is required.
 
 ## Spine runtime for DxLib
 
-- For minimal integration, only `dxlib_spine.cpp/h` or `dxlib_spine_c.cpp` are suffice.
-  - [dxlib_spine.cpp](/runtime//DxLibSpineCpp/dxlib_spine.cpp) is to be used with `spine-cpp`. (`3.8` to `4.2`)
-  - [dxlib_spine_c.cpp](/runtime//DxLibSpineC/dxlib_spine_c.cpp) is to be used with `spine-c`. (`3.5` to `4.2`)
-    - Class is used because DxLib is C++ library, but STL is avoided in these files.
-  - There is a runtime for [`2.1`](/runtime/DxLibSpineC/Spine21) though, note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
-- For more functionalities, use all the files under `DxLibSpineCpp` or `DxLibSpineC`.
-  - The functionalities are as follows:
+The functionalities are as follows:
 
-| File | Functionality | Dependency |
+| File | Functionality | Dependency on STL |
 | --- | --- | --- |
-| [dxlib_spine.cpp/h](/runtime/DxLibSpineCpp/dxlib_spine.h) | Load texture and render skeleton. | DxLib + Spine generic runtime |
-| [dxlib_spine_player.cpp/h](/runtime/DxLibSpineCpp/dxlib_spine_player.h) | Adjust scale and translation using matrix. | DxLib; derived from `CSpinePlayer` |
-| [spine_loader.cpp/h](/runtime/DxLibSpineCpp/spine_loader.h) | Load atlas or skeleton file. | C++14 STL + Spine generic runtime |
-| [spine_player.cpp/h](/runtime/DxLibSpineCpp/spine_player.h) | Manage Spine resources and manipulation. | C++14 STL + Spine generic runtime |
+| [dxlib_spine_drawable.cpp/h](/runtime/DxLibSpineCpp/dxlib_spine_drawable.h) | Hold instance data and render skeleton. | No |
+| [dxlib_spine_texture_loader.cpp/h](/runtime/DxLibSpineCpp/dxlib_spine_texture_loader.h) | Load and unload texture. | No |
+| [spine_loader.cpp/h](/runtime/DxLibSpineCpp/spine_loader.h) | Load atlas or skeleton file. | Yes (C++14) |
+| [spine_player.cpp/h](/runtime/DxLibSpineCpp/spine_player.h) | Manage Spine resources and manipulation. | Yes (C++14) |
+| [dxlib_spine_player.cpp/h](/runtime/DxLibSpineCpp/dxlib_spine_player.h) | Adjust scale and translation using matrix. | Yes (C++14) |
+
+- The files under `runtime/DxLibSpineCpp` are to be used with `spine-cpp`. (`3.8` to `4.2`)
+- The files under `runtime/DxLibSpineC` are to be used with `spine-c`. (`3.5` to `4.2`)
+- There is a drawable class for [`2.1`](/runtime/DxLibSpineC/Spine21) though, note that transformation method is totally [different](https://en.esotericsoftware.com/forum/d/3462-spines-non-skewing-transforms) from later versions.
+- For the time being, in order to use runtime in the environment where STL cannot be used, other functionalities than texture loader and skeleton rendering should be implemented outside of the latter three classes.
 
 - In order to build these files in a project using DxLib, it is required to define macro depending on versions of Spine generic runtime to be used with.
 
