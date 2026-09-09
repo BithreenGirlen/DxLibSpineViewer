@@ -70,7 +70,6 @@ private:
 
 	spine::Vector<float> m_worldVertices;
 	spine::Vector<DxLib::VERTEX2D> m_dxLibVertices;
-	spine::Vector<unsigned short> m_quadIndices;
 	spine::SkeletonClipping m_clipper;
 
 	/// @brief A buffer to be used to calculate bounding box.

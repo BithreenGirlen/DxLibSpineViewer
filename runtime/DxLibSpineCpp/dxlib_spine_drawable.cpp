@@ -23,13 +23,6 @@ CDxLibSpineDrawable::CDxLibSpineDrawable(spine::SkeletonData* pSkeletonData)
 	spine::AnimationStateData* pAnimationStateData = new spine::AnimationStateData(pSkeletonData);
 	m_animationState = new spine::AnimationState(pAnimationStateData);
 
-	m_quadIndices.add(0);
-	m_quadIndices.add(1);
-	m_quadIndices.add(2);
-	m_quadIndices.add(2);
-	m_quadIndices.add(3);
-	m_quadIndices.add(0);
-
 	/*
 	* Here custom blend mode is used to avoid the pixels drawn with blend-mode-multiply to be transparent.
 	* ---------- Formula for blend-mode-multiply ----------
@@ -155,6 +148,8 @@ void CDxLibSpineDrawable::draw()
 	if (m_skeleton == nullptr || m_animationState == nullptr)return;
 	if (m_skeleton->getColor().a == 0)return;
 
+	static unsigned short quadIndices[] = { 0, 1, 2, 2, 3, 0 };
+
 	for (size_t i = 0; i < m_skeleton->getSlots().size(); ++i)
 	{
 		spine::Slot& slot = *m_skeleton->getDrawOrder()[i];
@@ -174,7 +169,8 @@ void CDxLibSpineDrawable::draw()
 
 		spine::Vector<float>* pVertices = &m_worldVertices;
 		spine::Vector<float>* pAttachmentUvs = nullptr;
-		spine::Vector<unsigned short>* pIndices = nullptr;
+		unsigned short* pIndices = nullptr;
+		int indicesCount = 0;
 
 		spine::Color* pAttachmentColor = nullptr;
 
@@ -198,7 +194,8 @@ void CDxLibSpineDrawable::draw()
 			pRegionAttachment->computeWorldVertices(slot.getBone(), m_worldVertices, 0, 2);
 #endif
 			pAttachmentUvs = &pRegionAttachment->getUVs();
-			pIndices = &m_quadIndices;
+			pIndices = quadIndices;
+			indicesCount = sizeof(quadIndices) / sizeof(unsigned short);
 
 #if defined (SPINE_41) || defined (SPINE_42)
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRegion());
@@ -225,7 +222,8 @@ void CDxLibSpineDrawable::draw()
 			m_worldVertices.setSize(pMeshAttachment->getWorldVerticesLength(), 0);
 			pMeshAttachment->computeWorldVertices(slot, 0, pMeshAttachment->getWorldVerticesLength(), m_worldVertices, 0, 2);
 			pAttachmentUvs = &pMeshAttachment->getUVs();
-			pIndices = &pMeshAttachment->getTriangles();
+			pIndices = pMeshAttachment->getTriangles().buffer();
+			indicesCount = pMeshAttachment->getTriangles().size();
 
 #if defined (SPINE_41) || defined (SPINE_42)
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRegion());
@@ -253,7 +251,7 @@ void CDxLibSpineDrawable::draw()
 
 		if (m_clipper.isClipping())
 		{
-			m_clipper.clipTriangles(m_worldVertices, *pIndices, *pAttachmentUvs, 2);
+			m_clipper.clipTriangles(m_worldVertices.buffer(), pIndices, indicesCount, pAttachmentUvs->buffer(), 2);
 			if (m_clipper.getClippedTriangles().size() == 0)
 			{
 				m_clipper.clipEnd(slot);
@@ -261,7 +259,8 @@ void CDxLibSpineDrawable::draw()
 			}
 			pVertices = &m_clipper.getClippedVertices();
 			pAttachmentUvs = &m_clipper.getClippedUVs();
-			pIndices = &m_clipper.getClippedTriangles();
+			pIndices = m_clipper.getClippedTriangles().buffer();
+			indicesCount = m_clipper.getClippedTriangles().size();
 		}
 
 		const spine::Color& skeletonColor = m_skeleton->getColor();
@@ -316,8 +315,8 @@ void CDxLibSpineDrawable::draw()
 		(
 			m_dxLibVertices.buffer(),
 			static_cast<int>(m_dxLibVertices.size()),
-			pIndices->buffer(),
-			static_cast<int>(pIndices->size() / 3),
+			pIndices,
+			indicesCount / 3,
 			iDxLibTexture, TRUE
 		);
 		m_clipper.clipEnd(slot);
