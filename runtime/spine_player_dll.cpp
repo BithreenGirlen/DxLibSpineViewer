@@ -42,7 +42,7 @@ public:
 
 	bool loadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel) override;
 	bool loadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& textureDirectories, const std::vector<std::string>& skelData, bool isBinarySkel) override;
-	bool addSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool isBinarySkel) override;
+	bool addSpineFromFile(const char* atlasFilePath, const char* skelFilePath, bool isBinarySkel) override;
 
 	size_t getNumberOfSpines() const noexcept override;
 	bool hasSpineBeenLoaded() const noexcept override;
@@ -65,31 +65,30 @@ public:
 	void setSkinByName(const char* szSkinName) override;
 	void setupSkin() override;
 
-	void togglePma() override;
-	void toggleBlendModeAdoption() override;
-	void togglePause() override;
-	void toggleVisibility() override;
+	bool premultiplyAlpha(bool premultiplied, size_t nDrawableIndex = 0) noexcept override;
+	void premultiplyAlphaAll(bool premultiplied) noexcept override;
+	bool isAlphaPremultiplied(size_t nDrawableIndex = 0) const noexcept override;
 
-	bool isAlphaPremultiplied(size_t nDrawableIndex = 0) override;
-	bool premultiplyAlpha(bool isToBePremultiplied, size_t nDrawableIndex = 0) override;
+	bool forceBlendModeNormal(bool toForce, size_t nDrawableIndex = 0) noexcept override;
+	void forceBlendModeNormalAll(bool toForce) noexcept override;
+	bool isBlendModeNormalForced(size_t nDrawableIndex = 0) const noexcept override;
 
-	bool isBlendModeNormalForced(size_t nDrawableIndex = 0) override;
-	bool forceBlendModeNormal(bool isToForce, size_t nDrawableIndex = 0) override;
+	bool setPause(bool paused, size_t nDrawableIndex = 0) noexcept override;
+	void setPauseAll(bool paused) noexcept override;
+	bool isPaused(size_t nDrawableIndex = 0) const noexcept override;
 
-	bool isPaused(size_t nDrawableIndex = 0) override;
-	bool setPause(bool paused, size_t nDrawableIndex = 0) override;
+	bool setVisibility(bool visible, size_t nDrawableIndex = 0) noexcept override;
+	void setVisibilityAll(bool visible) noexcept override;
+	bool isVisible(size_t nDrawableIndex = 0) const noexcept override;
 
-	bool isVisible(size_t nDrawableIndex = 0) override;
-	bool setVisibility(bool visible, size_t nDrawableIndex = 0) override;
-
-	bool setPhysics(Physics physics, size_t nDrawableIndex = 0) override;
-	void setPhysicsAll(Physics physics) override;
+	bool setPhysics(Physics physics, size_t nDrawableIndex = 0) noexcept override;
+	void setPhysicsAll(Physics physics) noexcept override;
 	Physics getPhysics(size_t nDrawableIndex = 0) const noexcept override;
 
-	void setDrawOrder(bool reversed) override;
+	void setDrawOrder(bool reversed) noexcept override;
 	bool isDrawOrderReversed() const noexcept override;
 
-	void enableConversionToPmaOnLoading(bool toEnable) override;
+	void enableConversionToPmaOnLoading(bool toEnable) noexcept override;
 	bool isConversionToPmaOnLoadingEnabled() const noexcept override;
 	void setTextureLoadCallback(void (*pFunc)(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage), void* pUserDatum) noexcept override;
 
@@ -123,13 +122,13 @@ public:
 	void setOffset(float fX, float fY) noexcept override;
 
 	float getSkeletonScale() const noexcept override;
-	void setSkeletonScale(float fScale) override;
+	void setSkeletonScale(float fScale) noexcept override;
 
 	float getCanvasScale() const noexcept override;
-	void setCanvasScale(float fScale) override;
+	void setCanvasScale(float fScale) noexcept override;
 
 	float getTimeScale() const noexcept override;
-	void setTimeScale(float fTimeScale) override;
+	void setTimeScale(float fTimeScale) noexcept override;
 
 	DxLib::MATRIX calculateTransformMatrix() const noexcept override;
 	DxLib::FLOAT4 getCurrentBoundingBox() const override;
@@ -241,72 +240,72 @@ void SPCLASS::setupSkin()
 	m_dxLibSpinePlayer.setupSkin();
 }
 
-void SPCLASS::togglePma()
+bool SPCLASS::premultiplyAlpha(bool premultiplied, size_t nDrawableIndex) noexcept
 {
-	m_dxLibSpinePlayer.togglePma();
+	return m_dxLibSpinePlayer.premultiplyAlpha(premultiplied, nDrawableIndex);
 }
 
-void SPCLASS::toggleBlendModeAdoption()
+void SPCLASS::premultiplyAlphaAll(bool premultiplied) noexcept
 {
-	m_dxLibSpinePlayer.toggleBlendModeAdoption();
+	return m_dxLibSpinePlayer.premultiplyAlphaAll(premultiplied);
 }
 
-void SPCLASS::togglePause()
-{
-	m_dxLibSpinePlayer.togglePause();
-}
-
-void SPCLASS::toggleVisibility()
-{
-	m_dxLibSpinePlayer.toggleVisibility();
-}
-
-bool SPCLASS::isAlphaPremultiplied(size_t nDrawableIndex)
+bool SPCLASS::isAlphaPremultiplied(size_t nDrawableIndex) const noexcept
 {
 	return m_dxLibSpinePlayer.isAlphaPremultiplied(nDrawableIndex);
 }
 
-bool SPCLASS::premultiplyAlpha(bool isToBePremultiplied, size_t nDrawableIndex)
-{
-	return m_dxLibSpinePlayer.premultiplyAlpha(isToBePremultiplied, nDrawableIndex);
-}
-
-bool SPCLASS::isBlendModeNormalForced(size_t nDrawableIndex)
-{
-	return m_dxLibSpinePlayer.isBlendModeNormalForced(nDrawableIndex);
-}
-
-bool SPCLASS::forceBlendModeNormal(bool isToForce, size_t nDrawableIndex)
+bool SPCLASS::forceBlendModeNormal(bool isToForce, size_t nDrawableIndex) noexcept
 {
 	return m_dxLibSpinePlayer.forceBlendModeNormal(isToForce, nDrawableIndex);
 }
 
-bool SPCLASS::isPaused(size_t nDrawableIndex)
+void SPCLASS::forceBlendModeNormalAll(bool toForce) noexcept
 {
-	return m_dxLibSpinePlayer.isPaused(nDrawableIndex);
+	return m_dxLibSpinePlayer.forceBlendModeNormalAll(toForce);
 }
 
-bool SPCLASS::setPause(bool paused, size_t nDrawableIndex)
+bool SPCLASS::isBlendModeNormalForced(size_t nDrawableIndex) const noexcept
+{
+	return m_dxLibSpinePlayer.isBlendModeNormalForced(nDrawableIndex);
+}
+
+bool SPCLASS::setPause(bool paused, size_t nDrawableIndex) noexcept
 {
 	return m_dxLibSpinePlayer.setPause(paused, nDrawableIndex);
 }
 
-bool SPCLASS::isVisible(size_t nDrawableIndex)
+void SPCLASS::setPauseAll(bool paused) noexcept
 {
-	return m_dxLibSpinePlayer.isVisible(nDrawableIndex);
+	return m_dxLibSpinePlayer.setPauseAll(paused);
 }
 
-bool SPCLASS::setVisibility(bool visible, size_t nDrawableIndex)
+bool SPCLASS::isPaused(size_t nDrawableIndex) const noexcept
+{
+	return m_dxLibSpinePlayer.isPaused(nDrawableIndex);
+}
+
+bool SPCLASS::setVisibility(bool visible, size_t nDrawableIndex) noexcept
 {
 	return m_dxLibSpinePlayer.setVisibility(visible, nDrawableIndex);
 }
 
-bool SPCLASS::setPhysics(Physics physics, size_t nDrawableIndex)
+void SPCLASS::setVisibilityAll(bool visible) noexcept
+{
+	return m_dxLibSpinePlayer.setVisibilityAll(visible);
+}
+
+bool SPCLASS::isVisible(size_t nDrawableIndex) const noexcept
+{
+	return m_dxLibSpinePlayer.isVisible(nDrawableIndex);
+}
+
+bool SPCLASS::setPhysics(Physics physics, size_t nDrawableIndex) noexcept
 {
 	return m_dxLibSpinePlayer.setPhysics(static_cast<CDxLibSpineDrawable::Physics>(physics));
 }
 
-void SPCLASS::setPhysicsAll(Physics physics)
+void SPCLASS::setPhysicsAll(Physics physics) noexcept
 {
 	m_dxLibSpinePlayer.setPhysicsAll(static_cast<CDxLibSpineDrawable::Physics>(physics));
 }
@@ -316,17 +315,17 @@ ISpinePlayer::Physics SPCLASS::getPhysics(size_t nDrawableIndex) const noexcept
 	return static_cast<ISpinePlayer::Physics>(m_dxLibSpinePlayer.getPhysics(nDrawableIndex));
 }
 
+void SPCLASS::setDrawOrder(bool reversed) noexcept
+{
+	m_dxLibSpinePlayer.setDrawOrder(reversed);
+}
+
 bool SPCLASS::isDrawOrderReversed() const noexcept
 {
 	return m_dxLibSpinePlayer.isDrawOrderReversed();
 }
 
-void SPCLASS::setDrawOrder(bool reversed)
-{
-	m_dxLibSpinePlayer.setDrawOrder(reversed);
-}
-
-void SPCLASS::enableConversionToPmaOnLoading(bool toEnable)
+void SPCLASS::enableConversionToPmaOnLoading(bool toEnable) noexcept
 {
 	m_dxLibSpinePlayer.enableConversionToPmaOnLoading(toEnable);
 }
@@ -452,7 +451,7 @@ float SPCLASS::getSkeletonScale() const noexcept
 	return m_dxLibSpinePlayer.getSkeletonScale();
 }
 
-void SPCLASS::setSkeletonScale(float fScale)
+void SPCLASS::setSkeletonScale(float fScale) noexcept
 {
 	m_dxLibSpinePlayer.setSkeletonScale(fScale);
 }
@@ -462,7 +461,7 @@ float SPCLASS::getCanvasScale() const noexcept
 	return m_dxLibSpinePlayer.getCanvasScale();
 }
 
-void SPCLASS::setCanvasScale(float fScale)
+void SPCLASS::setCanvasScale(float fScale) noexcept
 {
 	m_dxLibSpinePlayer.setCanvasScale(fScale);
 }
@@ -472,7 +471,7 @@ float SPCLASS::getTimeScale() const noexcept
 	return m_dxLibSpinePlayer.getTimeScale();
 }
 
-void SPCLASS::setTimeScale(float fTimeScale)
+void SPCLASS::setTimeScale(float fTimeScale) noexcept
 {
 	m_dxLibSpinePlayer.setTimeScale(fTimeScale);
 }

@@ -655,7 +655,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			{
 				if (ImGui::Checkbox("Premultiply alpha", &pma))
 				{
-					pDxLibSpinePlayer->togglePma();
+					pDxLibSpinePlayer->premultiplyAlphaAll(pma);
 				}
 			}
 			HelpMarker("For Spine 3.8 and older, PMA should be configured manually.\n"
@@ -664,7 +664,7 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			bool toForceBlendModeNormal = pDxLibSpinePlayer->isBlendModeNormalForced();
 			if (ImGui::Checkbox("Force blend-mode-normal", &toForceBlendModeNormal))
 			{
-				pDxLibSpinePlayer->toggleBlendModeAdoption();
+				pDxLibSpinePlayer->forceBlendModeNormalAll(toForceBlendModeNormal);
 			}
 
 			bool drawOrder = pDxLibSpinePlayer->isDrawOrderReversed();
@@ -687,14 +687,14 @@ void spine_tool_dialogue::Display(SSpineToolDatum& spineToolDatum, bool* pIsOpen
 			bool isVisible = pDxLibSpinePlayer->isVisible();
 			if (ImGui::Checkbox("Visible", &isVisible))
 			{
-				pDxLibSpinePlayer->toggleVisibility();
+				pDxLibSpinePlayer->setVisibilityAll(isVisible);
 			}
 			HelpMarker("To be used to count draw calls to render Spine.");
 
 			bool isPaused = pDxLibSpinePlayer->isPaused();
 			if (ImGui::Checkbox("Paused", &isPaused))
 			{
-				pDxLibSpinePlayer->togglePause();
+				pDxLibSpinePlayer->setPauseAll(isPaused);
 			}
 
 			static constexpr const char* physicsModes[] = {"None", "Reset", "Update", "Pose"};

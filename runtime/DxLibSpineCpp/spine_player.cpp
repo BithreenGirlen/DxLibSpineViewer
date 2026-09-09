@@ -216,50 +216,8 @@ void CSpinePlayer::setupSkin()
 		}
 	}
 }
-/*乗算済み透過度有効・無効切り替え*/
-void CSpinePlayer::togglePma()
-{
-	for (const auto& pDrawable : m_drawables)
-	{
-		pDrawable->premultiplyAlpha(!pDrawable->isAlphaPremultiplied());
-	}
-}
-/*槽溝指定合成方法採択可否*/
-void CSpinePlayer::toggleBlendModeAdoption()
-{
-	for (const auto& pDrawable : m_drawables)
-	{
-		pDrawable->forceBlendModeNormal(!pDrawable->isBlendModeNormalForced());
-	}
-}
 
-void CSpinePlayer::togglePause()
-{
-	for (const auto& pDrawable : m_drawables)
-	{
-		pDrawable->setPause(!pDrawable->isPaused());
-	}
-}
-
-void CSpinePlayer::toggleVisibility()
-{
-	for (const auto& pDrawable : m_drawables)
-	{
-		pDrawable->setVisibility(!pDrawable->isVisible());
-	}
-}
-/* 乗算済み是否 */
-bool CSpinePlayer::isAlphaPremultiplied(size_t nDrawableIndex)
-{
-	if (nDrawableIndex < m_drawables.size())
-	{
-		return m_drawables[nDrawableIndex]->isAlphaPremultiplied();
-	}
-
-	return false;
-}
-
-bool CSpinePlayer::premultiplyAlpha(bool premultiplied, size_t nDrawableIndex)
+bool CSpinePlayer::premultiplyAlpha(bool premultiplied, size_t nDrawableIndex) noexcept
 {
 	if (nDrawableIndex < m_drawables.size())
 	{
@@ -269,18 +227,26 @@ bool CSpinePlayer::premultiplyAlpha(bool premultiplied, size_t nDrawableIndex)
 
 	return false;
 }
-/* 通常混色法強制是否*/
-bool CSpinePlayer::isBlendModeNormalForced(size_t nDrawableIndex)
+
+void CSpinePlayer::premultiplyAlphaAll(bool premultiplied) noexcept
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->premultiplyAlpha(premultiplied);
+	}
+}
+
+bool CSpinePlayer::isAlphaPremultiplied(size_t nDrawableIndex) const noexcept
 {
 	if (nDrawableIndex < m_drawables.size())
 	{
-		return m_drawables[nDrawableIndex]->isBlendModeNormalForced();
+		return m_drawables[nDrawableIndex]->isAlphaPremultiplied();
 	}
 
 	return false;
 }
 
-bool CSpinePlayer::forceBlendModeNormal(bool toForce, size_t nDrawableIndex)
+bool CSpinePlayer::forceBlendModeNormal(bool toForce, size_t nDrawableIndex) noexcept
 {
 	if (nDrawableIndex < m_drawables.size())
 	{
@@ -291,17 +257,25 @@ bool CSpinePlayer::forceBlendModeNormal(bool toForce, size_t nDrawableIndex)
 	return false;
 }
 
-bool CSpinePlayer::isPaused(size_t nDrawableIndex)
+void CSpinePlayer::forceBlendModeNormalAll(bool toForce) noexcept
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->forceBlendModeNormal(toForce);
+	}
+}
+
+bool CSpinePlayer::isBlendModeNormalForced(size_t nDrawableIndex) const noexcept
 {
 	if (nDrawableIndex < m_drawables.size())
 	{
-		return m_drawables[nDrawableIndex]->isPaused();
+		return m_drawables[nDrawableIndex]->isBlendModeNormalForced();
 	}
 
 	return false;
 }
 
-bool CSpinePlayer::setPause(bool paused, size_t nDrawableIndex)
+bool CSpinePlayer::setPause(bool paused, size_t nDrawableIndex) noexcept
 {
 	if (nDrawableIndex < m_drawables.size())
 	{
@@ -312,17 +286,25 @@ bool CSpinePlayer::setPause(bool paused, size_t nDrawableIndex)
 	return false;
 }
 
-bool CSpinePlayer::isVisible(size_t nDrawableIndex)
+void CSpinePlayer::setPauseAll(bool paused) noexcept
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->setPause(paused);
+	}
+}
+
+bool CSpinePlayer::isPaused(size_t nDrawableIndex) const noexcept
 {
 	if (nDrawableIndex < m_drawables.size())
 	{
-		return m_drawables[nDrawableIndex]->isVisible();
+		return m_drawables[nDrawableIndex]->isPaused();
 	}
 
 	return false;
 }
 
-bool CSpinePlayer::setVisibility(bool visible, size_t nDrawableIndex)
+bool CSpinePlayer::setVisibility(bool visible, size_t nDrawableIndex) noexcept
 {
 	if (nDrawableIndex < m_drawables.size())
 	{
@@ -333,7 +315,25 @@ bool CSpinePlayer::setVisibility(bool visible, size_t nDrawableIndex)
 	return false;
 }
 
-bool CSpinePlayer::setPhysics(CSpineDrawable::Physics physics, size_t nDrawableIndex)
+void CSpinePlayer::setVisibilityAll(bool visible) noexcept
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		pDrawable->setVisibility(visible);
+	}
+}
+
+bool CSpinePlayer::isVisible(size_t nDrawableIndex) const noexcept
+{
+	if (nDrawableIndex < m_drawables.size())
+	{
+		return m_drawables[nDrawableIndex]->isVisible();
+	}
+
+	return false;
+}
+
+bool CSpinePlayer::setPhysics(CSpineDrawable::Physics physics, size_t nDrawableIndex) noexcept
 {
 	if (nDrawableIndex < m_drawables.size())
 	{
@@ -344,7 +344,7 @@ bool CSpinePlayer::setPhysics(CSpineDrawable::Physics physics, size_t nDrawableI
 	return false;
 }
 
-void CSpinePlayer::setPhysicsAll(CSpineDrawable::Physics physics)
+void CSpinePlayer::setPhysicsAll(CSpineDrawable::Physics physics) noexcept
 {
 	for (const auto& pDrawable : m_drawables)
 	{
@@ -362,17 +362,17 @@ CSpineDrawable::Physics CSpinePlayer::getPhysics(size_t nDrawableIndex) const no
 	return CSpineDrawable::Physics::Update;
 }
 
+void CSpinePlayer::setDrawOrder(bool reversed) noexcept
+{
+	m_isDrawOrderReversed = reversed;
+}
+
 bool CSpinePlayer::isDrawOrderReversed() const noexcept
 {
 	return m_isDrawOrderReversed;
 }
 
-void CSpinePlayer::setDrawOrder(bool reversed)
-{
-	m_isDrawOrderReversed = reversed;
-}
-
-void CSpinePlayer::enableConversionToPmaOnLoading(bool toEnable)
+void CSpinePlayer::enableConversionToPmaOnLoading(bool toEnable) noexcept
 {
 	m_textureLoader.enableConversionToPma(toEnable);
 }
@@ -799,10 +799,7 @@ bool CSpinePlayer::addDrawable(spine::SkeletonData* pSkeletonData)
 {
 	if (pSkeletonData == nullptr)return false;
 	auto pDrawable = std::make_unique<CSpineDrawable>(pSkeletonData);
-	if (pDrawable.get() == nullptr)return false;
-
-	pDrawable->skeleton()->setPosition(m_fBaseSize.x / 2, m_fBaseSize.y / 2);
-	pDrawable->update(0.f);
+	if (pDrawable == nullptr)return false;
 
 	m_drawables.push_back(std::move(pDrawable));
 

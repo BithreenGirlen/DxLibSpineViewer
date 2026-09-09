@@ -49,34 +49,35 @@ public:
 	void setSkinByName(const char* szSkinName);
 	void setupSkin();
 
-	/// @brief Toggle the state of all drawables
-	void togglePma();
-	void toggleBlendModeAdoption();
-	void togglePause();
-	void toggleVisibility();
-
-	/// @return current state. If it were out of range, return false.
-	bool isAlphaPremultiplied(size_t nDrawableIndex = 0);
+	/// @brief To perform PMA blend-mode on the colours of vertices or not.
 	/// @return false if it were out of range.
-	bool premultiplyAlpha(bool premultiplied, size_t nDrawableIndex = 0);
+	bool premultiplyAlpha(bool premultiplied, size_t nDrawableIndex = 0) noexcept;
+	void premultiplyAlphaAll(bool premultiplied) noexcept;
+	/// @return current state. If it were out of range, return false.
+	bool isAlphaPremultiplied(size_t nDrawableIndex = 0) const noexcept;
 
-	bool isBlendModeNormalForced(size_t nDrawableIndex = 0);
-	bool forceBlendModeNormal(bool toForce, size_t nDrawableIndex = 0);
+	/// @brief To force blend-mode-normal or not.
+	/// @return false if it were out of range
+	bool forceBlendModeNormal(bool toForce, size_t nDrawableIndex = 0) noexcept;
+	void forceBlendModeNormalAll(bool toForce) noexcept;
+	bool isBlendModeNormalForced(size_t nDrawableIndex = 0) const noexcept;
 
-	bool isPaused(size_t nDrawableIndex = 0);
-	bool setPause(bool paused, size_t nDrawableIndex = 0);
+	bool setPause(bool paused, size_t nDrawableIndex = 0) noexcept;
+	void setPauseAll(bool paused) noexcept;
+	bool isPaused(size_t nDrawableIndex = 0) const noexcept;
 
-	bool isVisible(size_t nDrawableIndex = 0);
-	bool setVisibility(bool visible, size_t nDrawableIndex = 0);
+	bool setVisibility(bool visible, size_t nDrawableIndex = 0) noexcept;
+	void setVisibilityAll(bool visible) noexcept;
+	bool isVisible(size_t nDrawableIndex = 0) const noexcept;
 
-	bool setPhysics(CSpineDrawableC::Physics physics, size_t nDrawableIndex = 0);
-	void setPhysicsAll(CSpineDrawableC::Physics physics);
+	bool setPhysics(CSpineDrawableC::Physics physics, size_t nDrawableIndex = 0) noexcept;
+	void setPhysicsAll(CSpineDrawableC::Physics physics) noexcept;
 	CSpineDrawableC::Physics getPhysics(size_t nDrawableIndex = 0) const noexcept;
 
+	void setDrawOrder(bool reversed) noexcept;
 	bool isDrawOrderReversed() const noexcept;
-	void setDrawOrder(bool reversed);
 
-	void enableConversionToPmaOnLoading(bool toEnable);
+	void enableConversionToPmaOnLoading(bool toEnable) noexcept;
 	bool isConversionToPmaOnLoadingEnabled() const noexcept;
 	void setTextureLoadCallback(void (*pFunc)(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage), void* pUserDatum) noexcept;
 

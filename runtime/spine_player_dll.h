@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <memory>
 #include <unordered_map>
 
 #define DX_NON_USING_NAMESPACE_DXLIB
@@ -27,7 +26,7 @@ public:
 	virtual bool loadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel) = 0;
 	virtual bool loadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& textureDirectories, const std::vector<std::string>& skelData, bool isBinarySkel) = 0;
 
-	virtual bool addSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool isBinarySkel) = 0;
+	virtual bool addSpineFromFile(const char* atlasFilePath, const char* skelFilePath, bool isBinarySkel) = 0;
 
 	virtual size_t getNumberOfSpines() const noexcept = 0;
 	virtual bool hasSpineBeenLoaded() const noexcept = 0;
@@ -50,25 +49,26 @@ public:
 	virtual void setSkinByName(const char* szSkinName) = 0;
 	virtual void setupSkin() = 0;
 
-	/// @brief Toggle the state of all drawables
-	virtual void togglePma() = 0;
-	virtual void toggleBlendModeAdoption() = 0;
-	virtual void togglePause() = 0;
-	virtual void toggleVisibility() = 0;
-
-	/// @return current state. If it were out of range, return false.
-	virtual bool isAlphaPremultiplied(size_t nDrawableIndex = 0) = 0;
+	/// @brief To perform PMA blend-mode on the colours of vertices or not.
 	/// @return false if it were out of range.
-	virtual bool premultiplyAlpha(bool isToBePremultiplied, size_t nDrawableIndex = 0) = 0;
+	virtual bool premultiplyAlpha(bool premultiplied, size_t nDrawableIndex = 0) noexcept = 0;
+	virtual void premultiplyAlphaAll(bool premultiplied) noexcept = 0;
+	/// @return current state. If it were out of range, return false.
+	virtual bool isAlphaPremultiplied(size_t nDrawableIndex = 0) const noexcept = 0;
 
-	virtual bool isBlendModeNormalForced(size_t nDrawableIndex = 0) = 0;
-	virtual bool forceBlendModeNormal(bool isToForce, size_t nDrawableIndex = 0) = 0;
+	/// @brief To force blend-mode-normal or not.
+	/// @return false if it were out of range
+	virtual bool forceBlendModeNormal(bool toForce, size_t nDrawableIndex = 0) noexcept = 0;
+	virtual void forceBlendModeNormalAll(bool toForce) noexcept = 0;
+	virtual bool isBlendModeNormalForced(size_t nDrawableIndex = 0) const noexcept = 0;
 
-	virtual bool isPaused(size_t nDrawableIndex = 0) = 0;
-	virtual bool setPause(bool paused, size_t nDrawableIndex = 0) = 0;
+	virtual bool setPause(bool paused, size_t nDrawableIndex = 0) noexcept = 0;
+	virtual void setPauseAll(bool paused) noexcept = 0;
+	virtual bool isPaused(size_t nDrawableIndex = 0) const noexcept = 0;
 
-	virtual bool isVisible(size_t nDrawableIndex = 0) = 0;
-	virtual bool setVisibility(bool visible, size_t nDrawableIndex = 0);
+	virtual bool setVisibility(bool visible, size_t nDrawableIndex = 0) noexcept = 0;
+	virtual void setVisibilityAll(bool visible) noexcept = 0;
+	virtual bool isVisible(size_t nDrawableIndex = 0) const noexcept = 0;
 
 	enum class Physics : unsigned char
 	{
@@ -78,14 +78,14 @@ public:
 		Pose
 	};
 
-	virtual bool setPhysics(Physics physics, size_t nDrawableIndex = 0) = 0;
-	virtual void setPhysicsAll(Physics physics) = 0;
+	virtual bool setPhysics(Physics physics, size_t nDrawableIndex = 0) noexcept = 0;
+	virtual void setPhysicsAll(Physics physics) noexcept = 0;
 	virtual Physics getPhysics(size_t nDrawableIndex = 0) const noexcept = 0;
 
+	virtual void setDrawOrder(bool reversed) noexcept = 0;
 	virtual bool isDrawOrderReversed() const noexcept = 0;
-	virtual void setDrawOrder(bool reversed) = 0;
 
-	virtual void enableConversionToPmaOnLoading(bool toEnable) = 0;
+	virtual void enableConversionToPmaOnLoading(bool toEnable) noexcept = 0;
 	virtual bool isConversionToPmaOnLoadingEnabled() const noexcept = 0;
 	virtual void setTextureLoadCallback(void (*pFunc)(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage), void* pUserDatum) noexcept = 0;
 
@@ -123,13 +123,13 @@ public:
 	virtual void setOffset(float fX, float fY) noexcept = 0;
 
 	virtual float getSkeletonScale() const noexcept = 0;
-	virtual void setSkeletonScale(float fScale) = 0;
+	virtual void setSkeletonScale(float fScale) noexcept = 0;
 
 	virtual float getCanvasScale() const noexcept = 0;
-	virtual void setCanvasScale(float fScale) = 0;
+	virtual void setCanvasScale(float fScale) noexcept = 0;
 
 	virtual float getTimeScale() const noexcept = 0;
-	virtual void setTimeScale(float fTimeScale) = 0;
+	virtual void setTimeScale(float fTimeScale) noexcept = 0;
 
 	virtual DxLib::MATRIX calculateTransformMatrix() const noexcept = 0;
 	virtual DxLib::FLOAT4 getCurrentBoundingBox() const = 0;

@@ -261,10 +261,10 @@ LRESULT CMainWindow::onKeyUp(WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case 'A':
-		m_dxLibSpinePlayer.get()->togglePma();
+		m_dxLibSpinePlayer.get()->premultiplyAlphaAll(!m_dxLibSpinePlayer.get()->isAlphaPremultiplied());
 		break;
 	case 'B':
-		m_dxLibSpinePlayer.get()->toggleBlendModeAdoption();
+		m_dxLibSpinePlayer.get()->forceBlendModeNormalAll(!m_dxLibSpinePlayer.get()->isBlendModeNormalForced());
 		break;
 	case 'R':
 		m_dxLibSpinePlayer.get()->setDrawOrder(!m_dxLibSpinePlayer.get()->isDrawOrderReversed());
@@ -1004,8 +1004,8 @@ void CMainWindow::startRecording(int menuKind)
 		m_spineToolDatum.iVideoFps :
 		m_spineToolDatum.iImageFps;
 
-	if (m_dxLibSpinePlayer.get()->isPaused())m_dxLibSpinePlayer.get()->togglePause();
-	if (!m_dxLibSpinePlayer.get()->isVisible())m_dxLibSpinePlayer.get()->toggleVisibility();
+	if (m_dxLibSpinePlayer.get()->isPaused())m_dxLibSpinePlayer.get()->setPauseAll(false);
+	if (!m_dxLibSpinePlayer.get()->isVisible())m_dxLibSpinePlayer.get()->setVisibilityAll(true);
 
 	bool bRet = m_dxLibRecorder.start(outputType, fps);
 	if (!bRet)return;
