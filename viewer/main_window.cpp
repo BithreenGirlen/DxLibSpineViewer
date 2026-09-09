@@ -1190,7 +1190,7 @@ bool CMainWindow::loadSpineFilesInFolder(const std::wstring& folderPath)
 	const std::wstring& atlasExtention = m_spineSettingDialogue.getAtlasExtension();
 	const std::wstring& skelExtention = m_spineSettingDialogue.getSkelExtension();
 
-	bool isAtlasLonger = atlasExtention.size() > skelExtention.size();
+	const bool isAtlasLonger = atlasExtention.size() > skelExtention.size();
 
 	const std::wstring& longerExtesion = isAtlasLonger ? atlasExtention : skelExtention;
 	const std::wstring& shorterExtension = isAtlasLonger ? skelExtention : atlasExtention;
@@ -1228,8 +1228,8 @@ bool CMainWindow::loadSpineFilesInFolder(const std::wstring& folderPath)
 
 bool CMainWindow::loadSpineFiles(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel, const wchar_t* windowName)
 {
-	bool hadLoaded = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
-	bool hasLoaded = m_dxLibSpinePlayer.get()->loadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
+	const bool hadLoaded = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
+	const bool hasLoaded = m_dxLibSpinePlayer.get()->loadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
 	postSpineLoading(hadLoaded, hasLoaded, windowName);
 
 	return hasLoaded;
@@ -1248,7 +1248,7 @@ bool CMainWindow::loadSpinesFromMemory(const std::vector<std::string>& atlasData
 		return false;
 	}
 
-	long long versionIndex = m_dxLibSpinePlayer.findVersionIndex(reinterpret_cast<const char*>(skeletonMetaData.version));
+	const long long versionIndex = m_dxLibSpinePlayer.findVersionIndex(reinterpret_cast<const char*>(skeletonMetaData.version));
 	if (versionIndex == static_cast<long long>(CSpinePlayerDynamic::ESpineVersionIndex::NotImplemented))
 	{
 		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"The runtime for this version is not implemented.", m_hWnd);
@@ -1261,7 +1261,12 @@ bool CMainWindow::loadSpinesFromMemory(const std::vector<std::string>& atlasData
 	}
 	m_dxLibSpinePlayer.setPlayerToUse(versionIndex);
 
-	m_dxLibSpinePlayer.get()->enableConversionToPmaOnLoading(m_spineSettingDialogue.isToMultiplyAlphaOnLoading());
+	/*
+	* Blend-mode-multiply and blend-mode-screen can be realised only with pre-multiplied texture.
+	* So for later Spine versions which have PMA field on atlas page, it would be better to enable PMA per default.
+	*/
+	const bool isSpine40AndLater = versionIndex >= static_cast<size_t>(CSpinePlayerDynamic::ESpineVersionIndex::Spine40);
+	m_dxLibSpinePlayer.get()->enableConversionToPmaOnLoading(isSpine40AndLater ? true : m_spineSettingDialogue.isToMultiplyAlphaOnLoading());
 	if (m_spineSettingDialogue.isToFindWebpOnLoading() || m_spineSettingDialogue.isToIgnoreSmallImageOnLoading())
 	{
 		m_dxLibSpinePlayer.get()->setTextureLoadCallback(&CMainWindow::SpineTextureLoadCallback, this);
@@ -1271,9 +1276,9 @@ bool CMainWindow::loadSpinesFromMemory(const std::vector<std::string>& atlasData
 		m_dxLibSpinePlayer.get()->setTextureLoadCallback(nullptr, nullptr);
 	}
 
-	bool isBinarySkel = skeletonMetaData.skeletonFormat == SkeletonFormat::Binary;
-	bool hadLoaded = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
-	bool hasLoaded = m_dxLibSpinePlayer.get()->loadSpineFromMemory(atlasData, textureDirectories, skelData, isBinarySkel);
+	const bool isBinarySkel = skeletonMetaData.skeletonFormat == SkeletonFormat::Binary;
+	const bool hadLoaded = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
+	const bool hasLoaded = m_dxLibSpinePlayer.get()->loadSpineFromMemory(atlasData, textureDirectories, skelData, isBinarySkel);
 	postSpineLoading(hadLoaded, hasLoaded, windowName);
 
 	return hasLoaded;
