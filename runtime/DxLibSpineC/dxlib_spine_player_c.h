@@ -16,6 +16,6 @@ public:
 	DxLib::FLOAT4 getCurrentBoundingBoxOfSlot(const std::string& slotName) const;
 private:
 	void workOutDefaultScale() override;
-	void workOutDefaultSizeAndOffset() override;
+	bool workOutDefaultSizeAndOffset() override;
 };
 #endif // !DXLIB_SPINE_PLAYER_C_H_

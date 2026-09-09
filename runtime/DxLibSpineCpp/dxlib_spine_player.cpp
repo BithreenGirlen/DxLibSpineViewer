@@ -118,7 +118,7 @@ void CDxLibSpinePlayer::workOutDefaultScale()
 	}
 }
 
-void CDxLibSpinePlayer::workOutDefaultSizeAndOffset()
+bool CDxLibSpinePlayer::workOutDefaultSizeAndOffset()
 {
 	static constexpr float kMaxDimension = 16384.f;
 
@@ -150,5 +150,9 @@ void CDxLibSpinePlayer::workOutDefaultSizeAndOffset()
 	{
 		m_fBaseSize.x = fWidth;
 		m_fBaseSize.y = fHeight;
+
+		return true;
 	}
+
+	return false;
 }

@@ -725,7 +725,23 @@ void CSpinePlayer::resetBaseSize()
 		drawable->update(0.f);
 	}
 
-	workOutDefaultSizeAndOffset();
+	/*
+	* If empty animation has vertices, fit to the bounding-box of them.
+	* If not, set an animation and fit to the bounding-box of that animation.
+	*/
+	const bool hasVertices = workOutDefaultSizeAndOffset();
+	if (!hasVertices)
+	{
+		restartAnimation();
+
+		for (const auto& drawable : m_drawables)
+		{
+			drawable->update(0.f);
+		}
+
+		workOutDefaultSizeAndOffset();
+	}
+
 	updatePosition();
 	for (const auto& drawable : m_drawables)
 	{
@@ -734,10 +750,12 @@ void CSpinePlayer::resetBaseSize()
 
 	workOutDefaultSizeAndOffset();
 	workOutDefaultScale();
-
 	resetScale();
 
-	restartAnimation();
+	if (hasVertices)
+	{
+		restartAnimation();
+	}
 }
 
 FPoint2 CSpinePlayer::getOffset() const noexcept

@@ -158,7 +158,7 @@ protected:
 	bool setupDrawables();
 
 	virtual void workOutDefaultScale() = 0;
-	virtual void workOutDefaultSizeAndOffset() = 0;
+	virtual bool workOutDefaultSizeAndOffset() = 0;
 
 	void updatePosition();
 
