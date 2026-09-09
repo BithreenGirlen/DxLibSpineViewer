@@ -811,8 +811,6 @@ bool CSpinePlayer::addDrawable(spine::SkeletonData* pSkeletonData)
 
 bool CSpinePlayer::setupDrawables()
 {
-	workOutDefaultSizeFromFileData();
-
 	for (const auto& pSkeletonDatum : m_skeletonData)
 	{
 		bool bRet = addDrawable(pSkeletonDatum.get());
@@ -851,74 +849,6 @@ bool CSpinePlayer::setupDrawables()
 
 	return m_animationNames.size() > 0;
 }
-/*基準寸法算出*/
-void CSpinePlayer::workOutDefaultSizeFromFileData()
-{
-	if (m_skeletonData.empty())return;
-
-	float fMaxSize = 0.f;
-	const auto CompareDimention = [this, &fMaxSize](float fWidth, float fHeight)
-		-> bool
-		{
-			if (fWidth > 0.f && fHeight > 0.f && fWidth * fHeight > fMaxSize)
-			{
-				m_fBaseSize.x = fWidth;
-				m_fBaseSize.y = fHeight;
-				fMaxSize = fWidth * fHeight;
-				return true;
-			}
-
-			return false;
-		};
-
-	for (const auto& pSkeletonData : m_skeletonData)
-	{
-		if (pSkeletonData.get()->getWidth() > 0 && pSkeletonData.get()->getHeight())
-		{
-			CompareDimention(pSkeletonData.get()->getWidth(), pSkeletonData.get()->getHeight());
-		}
-		else
-		{
-			const auto FindDefaultSkinAttachment = [&pSkeletonData]()
-				-> spine::Attachment*
-				{
-					spine::Skin::AttachmentMap::Entries attachmentMapEntries = pSkeletonData.get()->getDefaultSkin()->getAttachments();
-					for (; attachmentMapEntries.hasNext();)
-					{
-						spine::Skin::AttachmentMap::Entry attachmentMapEntry = attachmentMapEntries.next();
-						if (attachmentMapEntry._slotIndex == 0)
-						{
-							return attachmentMapEntry._attachment;
-						}
-					}
-					return nullptr;
-				};
-
-			spine::Attachment* pAttachment = FindDefaultSkinAttachment();
-			if (pAttachment == nullptr)continue;
-
-			if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
-			{
-				spine::RegionAttachment* pRegionAttachment = (spine::RegionAttachment*)pAttachment;
-
-				CompareDimention(pRegionAttachment->getWidth() * pRegionAttachment->getScaleX(), pRegionAttachment->getHeight() * pRegionAttachment->getScaleY());
-			}
-			else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
-			{
-				spine::MeshAttachment* pMeshAttachment = (spine::MeshAttachment*)pAttachment;
-
-				static constexpr float kMinAtlas = 1024.f;
-
-				float fScale =
-					::isgreater(pMeshAttachment->getWidth(), kMinAtlas) &&
-					::isgreater(pMeshAttachment->getHeight(), kMinAtlas) ? 1.f : 2.f;
-
-				CompareDimention(pMeshAttachment->getWidth() * fScale, pMeshAttachment->getHeight() * fScale);
-			}
-		}
-	}
-}
-
 /*位置適用*/
 void CSpinePlayer::updatePosition()
 {

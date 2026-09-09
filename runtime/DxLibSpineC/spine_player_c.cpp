@@ -873,8 +873,6 @@ bool CSpinePlayerC::addDrawable(spSkeletonData* pSkeletonData)
 
 bool CSpinePlayerC::setupDrawables()
 {
-	workOutDefaultSizeFromFileData();
-
 	for (const auto& pSkeletonDatum : m_skeletonData)
 	{
 		bool bRet = addDrawable(pSkeletonDatum.get());
@@ -911,60 +909,6 @@ bool CSpinePlayerC::setupDrawables()
 	resetBaseSize();
 
 	return m_animationNames.size() > 0;
-}
-/*標準寸法算出*/
-void CSpinePlayerC::workOutDefaultSizeFromFileData()
-{
-	if (m_skeletonData.empty())return;
-
-	float fMaxSize = 0.f;
-	const auto CompareDimention = [this, &fMaxSize](float fWidth, float fHeight)
-		-> bool
-		{
-			if (fWidth > 0.f && fHeight > 0.f && fWidth * fHeight > fMaxSize)
-			{
-				m_fBaseSize.x = fWidth;
-				m_fBaseSize.y = fHeight;
-				fMaxSize = fWidth * fHeight;
-				return true;
-			}
-
-			return false;
-		};
-
-	for (const auto& pSkeletonData : m_skeletonData)
-	{
-		if (pSkeletonData->defaultSkin == nullptr)continue;
-
-		const char* attachmentName = spSkin_getAttachmentName(pSkeletonData->defaultSkin, 0, 0);
-		if (attachmentName == nullptr)continue;
-
-		spAttachment* pAttachment = spSkin_getAttachment(pSkeletonData->defaultSkin, 0, attachmentName);
-		if (pAttachment == nullptr)continue;
-
-		if (pAttachment->type == SP_ATTACHMENT_REGION)
-		{
-			spRegionAttachment* pRegionAttachment = (spRegionAttachment*)pAttachment;
-
-			CompareDimention(pRegionAttachment->width * pRegionAttachment->scaleX, pRegionAttachment->height * pRegionAttachment->scaleY);
-		}
-		else if (pAttachment->type == SP_ATTACHMENT_MESH)
-		{
-			spMeshAttachment* pMeshAttachment = (spMeshAttachment*)pAttachment;
-
-			spSlotData* pSlotData = spSkeletonData_findSlot(pSkeletonData.get(), attachmentName);
-
-			float fScaleX = pSlotData != nullptr ? pSlotData->boneData->scaleX : 1.f;
-			float fScaleY = pSlotData != nullptr ? pSlotData->boneData->scaleY : 1.f;
-
-			CompareDimention(pMeshAttachment->width * fScaleX, pMeshAttachment->height * fScaleY);
-		}
-	}
-
-	for (const auto& pSkeletonData : m_skeletonData)
-	{
-		CompareDimention(pSkeletonData->width, pSkeletonData->height);
-	}
 }
 /*位置適用*/
 void CSpinePlayerC::updatePosition()

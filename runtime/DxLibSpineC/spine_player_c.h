@@ -156,7 +156,6 @@ protected:
 	bool addDrawable(spSkeletonData* pSkeletonData);
 	bool setupDrawables();
 
-	void workOutDefaultSizeFromFileData();
 	virtual void workOutDefaultScale() = 0;
 	virtual void workOutDefaultSizeAndOffset() = 0;
 
