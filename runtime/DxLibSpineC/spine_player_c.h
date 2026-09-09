@@ -24,10 +24,10 @@ public:
 	CSpinePlayerC() = default;
 	virtual ~CSpinePlayerC() = default;
 
-	bool loadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel);
-	bool loadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool isBinarySkel);
+	bool loadSpineFromFile(const std::vector<std::string>& atlasFilePaths, const std::vector<std::string>& skeletonFilePaths, bool isBinarySkel, void* pRenderer = nullptr);
+	bool loadSpineFromMemory(const std::vector<std::string>& atlasFileData, const std::vector<std::string>& textureDirectories, const std::vector<std::string>& skeletonFileData, bool isBinarySkel, void* pRenderer = nullptr);
 
-	bool addSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool isBinarySkel);
+	bool addSpineFromFile(const char* atlasFilePath, const char* skelFilePath, bool isBinarySkel);
 
 	size_t getNumberOfSpines() const noexcept;
 	bool hasSpineBeenLoaded() const noexcept;

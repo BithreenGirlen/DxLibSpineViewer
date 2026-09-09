@@ -2,6 +2,9 @@
 
 #include "spine_loader_c.h"
 
+#include <spine/SkeletonJson.h>
+#include <spine/SkeletonBinary.h>
+
 std::shared_ptr<spAtlas> spine_loader_c::CreateAtlasFromFile(const char* filePath, void* rendererObject)
 {
 	auto atlas = std::shared_ptr<spAtlas>
@@ -12,19 +15,21 @@ std::shared_ptr<spAtlas> spine_loader_c::CreateAtlasFromFile(const char* filePat
 				if(pAtlas != nullptr)spAtlas_dispose(pAtlas);
 			}
 		);
+
 	return atlas;
 }
 
-std::shared_ptr<spAtlas> spine_loader_c::CreateAtlasFromMemory(const char* atlasData, int atlasLength, const char* fileDirectory, void* rendererObject)
+std::shared_ptr<spAtlas> spine_loader_c::CreateAtlasFromMemory(const char* atlasData, int atlasFileLength, const char* textureDirectory, void* rendererObject)
 {
 	auto atlas = std::shared_ptr<spAtlas>
 		(
-			spAtlas_create(atlasData, atlasLength, fileDirectory, rendererObject),
+			spAtlas_create(atlasData, atlasFileLength, textureDirectory, rendererObject),
 			[](spAtlas* pAtlas)
 			{
 				if (pAtlas != nullptr)spAtlas_dispose(pAtlas);
 			}
 		);
+
 	return atlas;
 }
 
@@ -32,6 +37,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromFile(const c
 {
 	spSkeletonJson* json = spSkeletonJson_create(atlas);
 	json->scale = 1.f;
+
 	auto skeletonData = std::shared_ptr<spSkeletonData>
 		(
 			spSkeletonJson_readSkeletonDataFile(json, filePath),
@@ -41,6 +47,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromFile(const c
 			}
 		);
 	spSkeletonJson_dispose(json);
+
     return skeletonData;
 }
 
@@ -48,6 +55,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromFile(const
 {
 	spSkeletonBinary* binary = spSkeletonBinary_create(atlas);
 	binary->scale = 1.f;
+
 	auto skeletonData = std::shared_ptr<spSkeletonData>
 		(
 			spSkeletonBinary_readSkeletonDataFile(binary, filePath),
@@ -57,6 +65,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromFile(const
 			}
 		);
 	spSkeletonBinary_dispose(binary);
+
 	return skeletonData;
 }
 
@@ -64,6 +73,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromMemory(const
 {
 	spSkeletonJson* json = spSkeletonJson_create(atlas);
 	json->scale = 1.f;
+
 	auto skeletonData = std::shared_ptr<spSkeletonData>
 		(
 			spSkeletonJson_readSkeletonData(json, skeletonJson),
@@ -73,6 +83,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadTextSkeletonFromMemory(const
 			}
 		);
 	spSkeletonJson_dispose(json);
+
 	return skeletonData;
 }
 
@@ -80,6 +91,7 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromMemory(con
 {
 	spSkeletonBinary* binary = spSkeletonBinary_create(atlas);
 	binary->scale = 1.f;
+
 	auto skeletonData = std::shared_ptr<spSkeletonData>
 		(
 			spSkeletonBinary_readSkeletonData(binary, skeletonBinary, skeletonLength),
@@ -89,5 +101,6 @@ std::shared_ptr<spSkeletonData> spine_loader_c::ReadBinarySkeletonFromMemory(con
 			}
 		);
 	spSkeletonBinary_dispose(binary);
+
 	return skeletonData;
 }

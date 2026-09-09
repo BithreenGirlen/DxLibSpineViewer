@@ -6,22 +6,22 @@
 #include "spine_loader_c.h"
 
 /*ファイル取り込み*/
-bool CSpinePlayerC::loadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool isBinarySkel)
+bool CSpinePlayerC::loadSpineFromFile(const std::vector<std::string>& atlasFilePaths, const std::vector<std::string>& skeletonFilePaths, bool isBinarySkel, void* pRenderer)
 {
-	if (atlasPaths.size() != skelPaths.size())return false;
+	if (atlasFilePaths.size() != skeletonFilePaths.size())return false;
 	clearDrawables();
 
-	for (size_t i = 0; i < atlasPaths.size(); ++i)
+	for (size_t i = 0; i < atlasFilePaths.size(); ++i)
 	{
-		const std::string& strAtlasPath = atlasPaths[i];
-		const std::string& strSkeletonPath = skelPaths[i];
+		const std::string& atlasFilePath = atlasFilePaths[i];
+		const std::string& skeletonFilePath = skeletonFilePaths[i];
 
-		std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromFile(strAtlasPath.c_str(), nullptr);
+		std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromFile(atlasFilePath.c_str(), pRenderer);
 		if (atlas.get() == nullptr)continue;
 
 		std::shared_ptr<spSkeletonData> skeletonData = isBinarySkel ?
-			spine_loader_c::ReadBinarySkeletonFromFile(strSkeletonPath.c_str(), atlas.get()) :
-			spine_loader_c::ReadTextSkeletonFromFile(strSkeletonPath.c_str(), atlas.get());
+			spine_loader_c::ReadBinarySkeletonFromFile(skeletonFilePath.c_str(), atlas.get()) :
+			spine_loader_c::ReadTextSkeletonFromFile(skeletonFilePath.c_str(), atlas.get());
 		if (skeletonData.get() == nullptr)continue;
 
 		m_atlases.push_back(std::move(atlas));
@@ -33,23 +33,23 @@ bool CSpinePlayerC::loadSpineFromFile(const std::vector<std::string>& atlasPaths
 	return setupDrawables();
 }
 /*メモリ取り込み*/
-bool CSpinePlayerC::loadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool isBinarySkel)
+bool CSpinePlayerC::loadSpineFromMemory(const std::vector<std::string>& atlasFileData, const std::vector<std::string>& textureDirectories, const std::vector<std::string>& skeletonFileData, bool isBinarySkel, void* pRenderer)
 {
-	if (atlasData.size() != skelData.size() || atlasData.size() != atlasPaths.size())return false;
+	if (atlasFileData.size() != skeletonFileData.size() || atlasFileData.size() != textureDirectories.size())return false;
 	clearDrawables();
 
-	for (size_t i = 0; i < atlasData.size(); ++i)
+	for (size_t i = 0; i < atlasFileData.size(); ++i)
 	{
-		const std::string& strAtlasDatum = atlasData[i];
-		const std::string& strAtlasPath = atlasPaths[i];
-		const std::string& strSkeletonData = skelData[i];
+		const std::string& atlasFileDatum = atlasFileData[i];
+		const std::string& textureDirectory = textureDirectories[i];
+		const std::string& skeletonFileDatum = skeletonFileData[i];
 
-		std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromMemory(strAtlasDatum.c_str(), static_cast<int>(strAtlasDatum.size()), strAtlasPath.c_str(), nullptr);
+		std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromMemory(atlasFileDatum.c_str(), static_cast<int>(atlasFileDatum.size()), textureDirectory.c_str(), pRenderer);
 		if (atlas.get() == nullptr)continue;
 
 		std::shared_ptr<spSkeletonData> skeletonData = isBinarySkel ?
-			spine_loader_c::ReadBinarySkeletonFromMemory(reinterpret_cast<const unsigned char*>((strSkeletonData.c_str())), static_cast<int>(strSkeletonData.size()), atlas.get()) :
-			spine_loader_c::ReadTextSkeletonFromMemory(strSkeletonData.c_str(), atlas.get());
+			spine_loader_c::ReadBinarySkeletonFromMemory(reinterpret_cast<const unsigned char*>((skeletonFileDatum.c_str())), static_cast<int>(skeletonFileDatum.size()), atlas.get()) :
+			spine_loader_c::ReadTextSkeletonFromMemory(skeletonFileDatum.c_str(), atlas.get());
 		if (skeletonData.get() == nullptr)continue;
 
 		m_atlases.push_back(std::move(atlas));
@@ -61,16 +61,16 @@ bool CSpinePlayerC::loadSpineFromMemory(const std::vector<std::string>& atlasDat
 	return setupDrawables();
 }
 /*ファイルから追加*/
-bool CSpinePlayerC::addSpineFromFile(const char* szAtlasPath, const char* szSkelPath, bool bBinary)
+bool CSpinePlayerC::addSpineFromFile(const char* atlasFilePath, const char* skelFilePath, bool isBinarySkel)
 {
-	if (m_drawables.empty() || szAtlasPath == nullptr || szSkelPath == nullptr)return false;
+	if (m_drawables.empty() || atlasFilePath == nullptr || skelFilePath == nullptr)return false;
 
-	std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromFile(szAtlasPath, nullptr);
+	std::shared_ptr<spAtlas> atlas = spine_loader_c::CreateAtlasFromFile(atlasFilePath, nullptr);
 	if (atlas.get() == nullptr)return false;
 
-	std::shared_ptr<spSkeletonData> skeletonData = bBinary ?
-		spine_loader_c::ReadBinarySkeletonFromFile(szSkelPath, atlas.get()) :
-		spine_loader_c::ReadTextSkeletonFromFile(szSkelPath, atlas.get());
+	std::shared_ptr<spSkeletonData> skeletonData = isBinarySkel ?
+		spine_loader_c::ReadBinarySkeletonFromFile(skelFilePath, atlas.get()) :
+		spine_loader_c::ReadTextSkeletonFromFile(skelFilePath, atlas.get());
 	if (skeletonData.get() == nullptr)return false;
 
 	bool bRet = addDrawable(skeletonData.get());

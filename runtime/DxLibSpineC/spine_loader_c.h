@@ -3,12 +3,13 @@
 
 #include <memory>
 
-#include <spine/spine.h>
+#include <spine/Atlas.h>
+#include <spine/SkeletonData.h>
 
 namespace spine_loader_c
 {
 	std::shared_ptr<spAtlas> CreateAtlasFromFile(const char* filePath, void* rendererObject);
-	std::shared_ptr<spAtlas> CreateAtlasFromMemory(const char* atlasData, int atlasLength, const char* fileDirectory, void* rendererObject);
+	std::shared_ptr<spAtlas> CreateAtlasFromMemory(const char* atlasFileData, int atlasDataLength, const char* textureDirectory, void* rendererObject);
 
 	std::shared_ptr<spSkeletonData> ReadTextSkeletonFromFile(const char* filePath, spAtlas* atlas);
 	std::shared_ptr<spSkeletonData> ReadBinarySkeletonFromFile(const char* filePath, spAtlas* atlas);
