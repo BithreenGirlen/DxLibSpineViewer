@@ -105,6 +105,8 @@ Option on loading can be configured through menu `File->Load option`.
 | Find webp | Find `*.webp` if a file specified by atlas is not found. |
 | Ignore small image | Make image smaller than `255x255` transparent on loading. |
 
+- `PMA on loading` is valid only for Spine 3.8 and older. For Spine 4.0 and later, the texture is converted to PMA if the `pma` property of atlas page is `false` because blend-mode-multiply and screen can only be represented using PMA texture and these blend-modes are used widely in later versions.
+
 ## How to adjust window size
 
 On loaded, the window will be fit to the whole bounding box of Spine at the timeline of 0 with empty animation and empty skin.   
@@ -127,13 +129,13 @@ https://github.com/user-attachments/assets/e466abca-ec17-4f12-930e-6a890a960bc1
 | Input | Action |
 | ---- | ---- |
 | Wheel scroll | Scale up/down. Combining with `Ctrl` to zoom in/out. |
-| L-pressed + wheel scroll | Speed up/down the animation. |
-| L-click | Switch the animation. |
-| L-drag | Move view-point. |
-| M-click | Reset scale, animation speed, and view-point to default. |
-| R-pressed + wheel scroll | Switch the skin. |
-| R-pressed + M-click | Hide/show the border of window. |
-| R-pressed + L-click | Start moving borderless window. L-click again to end. |
+| Left-pressed + wheel scroll | Speed up/down the animation. |
+| Left-click | Switch the animation. |
+| Left-drag | Move view-point. |
+| Middle-click | Reset scale, animation speed, and view-point to default. |
+| Right-pressed + wheel scroll | Switch the skin. |
+| Right-pressed + middle-click | Hide/show the border of window. |
+| Right-pressed + left-click | Start moving borderless window. L-click again to end. |
 
 
 ## Keyboard functions
@@ -150,7 +152,7 @@ https://github.com/user-attachments/assets/e466abca-ec17-4f12-930e-6a890a960bc1
 - Toggling `PMA` is permitted only for Spine version `3.8` and older.
   - For Spine version `4.0` and later, runtime applies pma property read from atlas file.
   - Mind that this is to specify what blend mode operation be used, and not to make the alpha of texture be multiplied to RGB.
-    - The latter can be done from menu `File->Extension setting`.
+    - The latter can be done from menu `File->Load option`.
 
 ## Context menu functions
 
@@ -164,7 +166,7 @@ https://github.com/user-attachments/assets/e466abca-ec17-4f12-930e-6a890a960bc1
 | Export as JPGs | Restart the current animation and export as sequential `PNG`s. |
 
 - Context menu appears only when Spine is loaded.
-- By unchecking `Export per anim.` option from `Tool->Export setting`, when to start and end recording will be delegated to user.
+- By unchecking `Export per animation` option in tool dialogue, when to start and end recording will be delegated to user.
 
 <details><summary>Note on filename</summary>
 
@@ -187,11 +189,11 @@ https://github.com/user-attachments/assets/e466abca-ec17-4f12-930e-6a890a960bc1
 Visual Studio is required.  
 
 1. Open `DxLibSpineViewer` directory with Visual Studio.
-2. Wait for dependency libraries downloading to be done.
+2. Wait for downloading dependency libraries to be done.
     - The configuration downloads external libraries and modifies older Spine `extensions`.
       - For spine-c `3.5`, renames some of the functions which lack `sp` prefix so as to be consistent with `3.6` and later.
       - For spine-c `2.1`, supplies binary skeleton reader from [here](https://github.com/BithreenGirlen/spine-c-2.1.27).
-3. Build All `DxLibSpineViewer` project.
+3. Build All.
 
 ## Spine runtime for DxLib
 
