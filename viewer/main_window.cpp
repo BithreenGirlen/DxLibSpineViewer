@@ -219,17 +219,22 @@ LRESULT CMainWindow::onSize(WPARAM wParam, LPARAM lParam)
 		BOOL iRet = ::GetMonitorInfoW(hMonitor, &monitorInfo);
 		if (iRet)
 		{
-			int displayWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
-			int displayHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+			const int monitorWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+			const int monitorHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
 
-			clientWidth = (std::min)(clientWidth, displayWidth);
-			clientHeight = (std::min)(clientHeight, displayHeight);
+			clientWidth = (std::min)(clientWidth, monitorWidth);
+			clientHeight = (std::min)(clientHeight, monitorHeight);
 		}
 	}
 
 	DxLib::SetGraphMode(clientWidth, clientHeight, 32);
 
 	m_spineRenderTexture = DxLib::MakeScreen(clientWidth, clientHeight, 1);
+	if (!m_spineRenderTexture.empty())
+	{
+		m_spineToolDatum.iTextureWidth = clientWidth;
+		m_spineToolDatum.iTextureHeight = clientHeight;
+	}
 
 	return 0;
 }
@@ -1148,11 +1153,9 @@ void CMainWindow::resizeWindow()
 
 	RECT rect;
 	::GetWindowRect(m_hWnd, &rect);
-	int iX = static_cast<int>(fBaseSize.u * fScale);
-	int iY = static_cast<int>(fBaseSize.v * fScale);
+	int windowWidth = static_cast<int>(fBaseSize.u * fScale);
+	int windowHeight = static_cast<int>(fBaseSize.v * fScale);
 
-	int monitorWidth = (std::numeric_limits<int32_t>::max)();
-	int monitorHeight = (std::numeric_limits<int32_t>::max)();
 	HMONITOR hMonitor = ::MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
 	if (hMonitor != nullptr)
 	{
@@ -1160,25 +1163,21 @@ void CMainWindow::resizeWindow()
 		BOOL iRet = ::GetMonitorInfoW(hMonitor, &monitorInfo);
 		if (iRet)
 		{
-			monitorWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
-			monitorHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+			const int monitorWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+			const int monitorHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+
+			windowWidth = (std::min)(windowWidth, monitorWidth);
+			windowHeight = (std::min)(windowHeight, monitorHeight);
 		}
 	}
 
-	iX = (std::min)(iX, monitorWidth);
-	iY = (std::min)(iY, monitorHeight);
-
-	rect.right = iX + rect.left;
-	rect.bottom = iY + rect.top;
+	rect.right = windowWidth + rect.left;
+	rect.bottom = windowHeight + rect.top;
 
 	LONG lStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
-	const auto IsWidowBarHidden = [&lStyle]()
-		-> bool
-		{
-			return !((lStyle & WS_CAPTION) && (lStyle & WS_SYSMENU));
-		};
+	const bool isWindowBarHidden = !((lStyle & WS_CAPTION) && (lStyle & WS_SYSMENU));
 
-	::AdjustWindowRect(&rect, lStyle, IsWidowBarHidden() ? FALSE : TRUE);
+	::AdjustWindowRect(&rect, lStyle, isWindowBarHidden ? FALSE : TRUE);
 	::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
 }
 
@@ -1199,7 +1198,7 @@ bool CMainWindow::loadSpineFilesInFolder(const std::wstring& folderPath)
 	std::vector<std::string>& shorterPathData = isAtlasLonger ? skelData : atlasData;
 
 	std::vector<std::wstring> filePaths;
-	win_filesystem::CreateFilePathList(folderPath.c_str(), L"*", filePaths);
+	win_filesystem::CreateFilePathList(folderPath, L"*", filePaths);
 
 	for (const auto& filePath : filePaths)
 	{
@@ -1259,10 +1258,17 @@ bool CMainWindow::loadSpinesFromMemory(const std::vector<std::string>& atlasData
 		win_dialogue::ShowErrorMessageValidatingOwnerWindow(L"The dll for this version is not loaded.", m_hWnd);
 		return false;
 	}
+
+	/* To restore tha last runtime options except for force-blend-normal, which is trivial. */
+	const bool hadLoaded = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
+	const auto lastPhysicsMode = m_dxLibSpinePlayer.get()->getPhysics();
+	const bool wasPremultiplied = m_dxLibSpinePlayer.get()->isAlphaPremultiplied();
+	const bool wasSpine40AndLater = m_dxLibSpinePlayer.versionIndexInUse() >= static_cast<uint8_t>(CSpinePlayerDynamic::ESpineVersionIndex::Spine40);
+
 	m_dxLibSpinePlayer.setPlayerToUse(versionIndex);
 
 	/*
-	* Blend-mode-multiply and blend-mode-screen can be realised only with pre-multiplied texture.
+	* Blend-mode-multiply and blend-mode-screen can be represented only by using pre-multiplied texture.
 	* So for later Spine versions which have PMA field on atlas page, it would be better to enable PMA per default.
 	*/
 	const bool isSpine40AndLater = versionIndex >= static_cast<size_t>(CSpinePlayerDynamic::ESpineVersionIndex::Spine40);
@@ -1277,8 +1283,17 @@ bool CMainWindow::loadSpinesFromMemory(const std::vector<std::string>& atlasData
 	}
 
 	const bool isBinarySkel = skeletonMetaData.skeletonFormat == SkeletonFormat::Binary;
-	const bool hadLoaded = m_dxLibSpinePlayer.get()->hasSpineBeenLoaded();
 	const bool hasLoaded = m_dxLibSpinePlayer.get()->loadSpineFromMemory(atlasData, textureDirectories, skelData, isBinarySkel);
+	if (hadLoaded && hasLoaded)
+	{
+		m_dxLibSpinePlayer.get()->setPhysicsAll(lastPhysicsMode);
+
+		if (!wasSpine40AndLater && !isSpine40AndLater)
+		{
+			m_dxLibSpinePlayer.get()->premultiplyAlphaAll(wasPremultiplied);
+		}
+	}
+	
 	postSpineLoading(hadLoaded, hasLoaded, windowName);
 
 	return hasLoaded;
@@ -1305,6 +1320,7 @@ void CMainWindow::postSpineLoading(bool hadLoaded, bool hasLoaded, const wchar_t
 	}
 	if (hadLoaded != hasLoaded)updateMenuItemState();
 	m_spineToolDatum.hasJustBeenLoaded = hasLoaded;
+	m_spineToolDatum.toUpdatePhysicsSelectedItem = true;
 }
 
 void CMainWindow::SpineTextureLoadCallback(void* pUserDatum, const char* textureFilePath, size_t filePathLength, void* pOutImage)
@@ -1342,14 +1358,14 @@ void CMainWindow::SpineTextureLoadCallback(void* pUserDatum, const char* texture
 			pathBuffer[fileNameLength] = L'\0';
 
 			bRet = win_filesystem::DoesFileExist(pathBuffer);
-			if (bRet) /* webp発見 */
+			if (bRet) /* webpあり */
 			{
 				*pDxLibTexture = DxLib::LoadGraph(pathBuffer);
 			}
 		}
 	}
 
-	/* マスク用と思しき小さな画像を透明にする。 */
+	/* マスク用途の小さな画像を透明にする。 */
 	const bool toIgnoreSmallImage = pThis->m_spineSettingDialogue.isToIgnoreSmallImageOnLoading();
 	if (toIgnoreSmallImage)
 	{
@@ -1412,14 +1428,8 @@ wchar_t* CMainWindow::formatAnimationTime(float fAnimationTime, int* length)
 
 void CMainWindow::imGuiSpineToolDialogue()
 {
-	if (!m_dxLibSpinePlayer.get()->hasSpineBeenLoaded())return;
-
 	if (!m_toShowSpineTool)return;
-
-	if (!m_spineRenderTexture.empty())
-	{
-		DxLib::GetGraphSize(m_spineRenderTexture.get(), &m_spineToolDatum.iTextureWidth, &m_spineToolDatum.iTextureHeight);
-	}
+	if (!m_dxLibSpinePlayer.get()->hasSpineBeenLoaded())return;
 
 	spine_tool_dialogue::Display(m_spineToolDatum, &m_toShowSpineTool);
 	if (m_spineToolDatum.isWindowToBeResized)
