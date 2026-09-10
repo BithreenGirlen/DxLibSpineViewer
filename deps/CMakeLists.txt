@@ -2,37 +2,42 @@
 project(DxLibSpineViewer-deps)
 
 set(IMGUI_VERSION "1.92.6-docking")
-set(DIR_IMGUI "${CMAKE_CURRENT_LIST_DIR}/imgui-docking")
+set(IMGUI_DIR "${CMAKE_CURRENT_LIST_DIR}/imgui-docking")
 
-set(DIR_DXLIB ${CMAKE_CURRENT_LIST_DIR}/dxlib)
+set(DXLIB_DIR ${CMAKE_CURRENT_LIST_DIR}/dxlib)
 
-set(DIR_TEMP ${CMAKE_CURRENT_BINARY_DIR}/temp)
+set(TEMP_DIR ${CMAKE_CURRENT_BINARY_DIR}/temp)
+
+function(download_and_extract HOST_URL ARCHIVE_NAME)
+	if (NOT EXISTS "${TEMP_DIR}/${ARCHIVE_NAME}.zip")
+		file(DOWNLOAD "${HOST_URL}" "${TEMP_DIR}/${ARCHIVE_NAME}.zip" SHOW_PROGRESS)
+	endif()
+
+	if (NOT EXISTS "${TEMP_DIR}/${ARCHIVE_NAME}")
+		file(ARCHIVE_EXTRACT INPUT "${TEMP_DIR}/${ARCHIVE_NAME}.zip" DESTINATION "${TEMP_DIR}")
+	endif()
+endfunction()
 
 # Download DxLib.
 # --------------------
 # The version to be used is the latest, so download from "../temp/DxLibVCTest.zip".
 # The static libraries in need are those for Visual Studio x64 MDd or MD.
 
-if (NOT EXISTS "${DIR_DXLIB}")
-	set(DXLIB_ARCHIVE_NAME "DxLibVCTest")
-	if (NOT EXISTS "${DIR_TEMP}/${DXLIB_ARCHIVE_NAME}.zip")
-		file(DOWNLOAD "https://dxlib.xsrv.jp/temp/DxLibVCTest.zip" "${DIR_TEMP}/${DXLIB_ARCHIVE_NAME}.zip" SHOW_PROGRESS)
-	endif()
+if (NOT EXISTS "${DXLIB_DIR}")
+	set (DXLIB_VC_URL "https://dxlib.xsrv.jp/temp/DxLibVCTest.zip")
+	set(DXLIB_VC_FOLDER_NAME "DxLibVCTest")
+	download_and_extract("${DXLIB_VC_URL}" "${DXLIB_VC_FOLDER_NAME}")
 
-	if (NOT EXISTS "${DIR_TEMP}/${DXLIB_ARCHIVE_NAME}")
-		file(ARCHIVE_EXTRACT INPUT "${DIR_TEMP}/${DXLIB_ARCHIVE_NAME}.zip" DESTINATION "${DIR_TEMP}")
-	endif()
-
-	file(GLOB DXLIB_LIBS "${DIR_TEMP}/DxLibVCTest/*.lib")
+	file(GLOB DXLIB_LIBS "${TEMP_DIR}/${DXLIB_VC_FOLDER_NAME}/*.lib")
 	foreach(FILE IN LISTS DXLIB_LIBS)
 		if(FILE MATCHES "_vs2015_x64_MDd.lib" OR FILE MATCHES "_vs2015_x64_MD.lib")
-			file(COPY ${FILE} DESTINATION "${DIR_DXLIB}")
+			file(COPY ${FILE} DESTINATION "${DXLIB_DIR}")
 		endif()
 	endforeach()
 
-	file(GLOB INCLUDE_FILES "${DIR_TEMP}/DxLibVCTest/*.h")
+	file(GLOB INCLUDE_FILES "${TEMP_DIR}/DxLibVCTest/*.h")
 	foreach(FILE IN LISTS INCLUDE_FILES)
-		file(COPY ${FILE} DESTINATION "${DIR_DXLIB}")
+		file(COPY ${FILE} DESTINATION "${DXLIB_DIR}")
 	endforeach()
 endif()
 
@@ -55,21 +60,15 @@ set(
 
 function(donwload_spine_runtime BRANCH_NAME FOLDER_PATH)
 	set (SPINE_RUNTIME_URL "https://github.com/EsotericSoftware/spine-runtimes/archive/refs/heads/${BRANCH_NAME}.zip")
-	set (SPINE_RUNTIME_FILEPATH "${DIR_TEMP}/spine-runtimes-${BRANCH_NAME}")
-	if (NOT EXISTS "${SPINE_RUNTIME_FILEPATH}.zip")
-		file(DOWNLOAD "${SPINE_RUNTIME_URL}" "${SPINE_RUNTIME_FILEPATH}.zip" SHOW_PROGRESS)
-	endif()
-
-	if (NOT EXISTS "${SPINE_RUNTIME_FILEPATH}")
-		file(ARCHIVE_EXTRACT INPUT "${SPINE_RUNTIME_FILEPATH}.zip" DESTINATION "${DIR_TEMP}")
-	endif()
+	set (SPINE_FOLDER_NAME "spine-runtimes-${BRANCH_NAME}")
+	download_and_extract("${SPINE_RUNTIME_URL}" "${SPINE_FOLDER_NAME}")
 
 	if (FOLDER_PATH MATCHES "spine-c-")
-		file(COPY "${DIR_TEMP}/spine-runtimes-${BRANCH_NAME}/spine-c/spine-c/src" DESTINATION "${FOLDER_PATH}")
-		file(COPY "${DIR_TEMP}/spine-runtimes-${BRANCH_NAME}/spine-c/spine-c/include" DESTINATION "${FOLDER_PATH}")
+		file(COPY "${TEMP_DIR}/${SPINE_FOLDER_NAME}/spine-c/spine-c/src" DESTINATION "${FOLDER_PATH}")
+		file(COPY "${TEMP_DIR}/${SPINE_FOLDER_NAME}/spine-c/spine-c/include" DESTINATION "${FOLDER_PATH}")
 	else()
-		file(COPY "${DIR_TEMP}/spine-runtimes-${BRANCH_NAME}/spine-cpp/spine-cpp/src" DESTINATION "${FOLDER_PATH}")
-		file(COPY "${DIR_TEMP}/spine-runtimes-${BRANCH_NAME}/spine-cpp/spine-cpp/include" DESTINATION "${FOLDER_PATH}")
+		file(COPY "${TEMP_DIR}/${SPINE_FOLDER_NAME}/spine-cpp/spine-cpp/src" DESTINATION "${FOLDER_PATH}")
+		file(COPY "${TEMP_DIR}/${SPINE_FOLDER_NAME}/spine-cpp/spine-cpp/include" DESTINATION "${FOLDER_PATH}")
 	endif()
 endfunction()
 
@@ -78,44 +77,31 @@ foreach(VERSION IN LISTS SPINE_VERSIONS)
 	list(GET VERSIONS 0 BRANCH_NAME)
 	list(GET VERSIONS 1 FOLDER_NAME)
 
-	set(DIR_SPINE "${CMAKE_CURRENT_LIST_DIR}/${FOLDER_NAME}")
+	set(SPINE_DIR "${CMAKE_CURRENT_LIST_DIR}/${FOLDER_NAME}")
 
-	if (NOT EXISTS "${DIR_SPINE}/src")
-		donwload_spine_runtime(${BRANCH_NAME} ${DIR_SPINE})
+	if (NOT EXISTS "${SPINE_DIR}/src")
+		donwload_spine_runtime(${BRANCH_NAME} ${SPINE_DIR})
 	endif()
 endforeach()
 
 # Exceptional procedure for spine 2.1 runtime
-set(DIR_SPINE_C_21 ${CMAKE_CURRENT_LIST_DIR}/spine-c-2.1)
-if (NOT EXISTS "${DIR_SPINE_C_21}/src")
+set(SPINE_C_21_DIR ${CMAKE_CURRENT_LIST_DIR}/spine-c-2.1)
+if (NOT EXISTS "${SPINE_C_21_DIR}/src")
 	set (SPINE_21_RUNTIME_URL "https://github.com/EsotericSoftware/spine-runtimes/archive/refs/tags/2.1.25.zip")
-	set (SPINE_21_RUNTIME_FILEPATH "${DIR_TEMP}/spine-runtimes-2.1.25")
-	if (NOT EXISTS "${SPINE_21_RUNTIME_FILEPATH}.zip")
-		file(DOWNLOAD "${SPINE_21_RUNTIME_URL}" "${SPINE_21_RUNTIME_FILEPATH}.zip" SHOW_PROGRESS)
-	endif()
-
-	if (NOT EXISTS "${SPINE_21_RUNTIME_FILEPATH}")
-		file(ARCHIVE_EXTRACT INPUT "${SPINE_21_RUNTIME_FILEPATH}.zip" DESTINATION "${DIR_TEMP}")
-	endif()
+	set (SPINE_21_FOLDER_NAME "spine-runtimes-2.1.25")
+	download_and_extract("${SPINE_21_RUNTIME_URL}" "${SPINE_21_FOLDER_NAME}")
 	
 	# One depth shorter than later versions.
-	file(COPY "${DIR_TEMP}/spine-runtimes-2.1.25/spine-c/src" DESTINATION "${DIR_SPINE_C_21}")
-	file(COPY "${DIR_TEMP}/spine-runtimes-2.1.25/spine-c/include" DESTINATION "${DIR_SPINE_C_21}")
+	file(COPY "${TEMP_DIR}/${SPINE_21_FOLDER_NAME}/spine-c/src" DESTINATION "${SPINE_C_21_DIR}")
+	file(COPY "${TEMP_DIR}/${SPINE_21_FOLDER_NAME}/spine-c/include" DESTINATION "${SPINE_C_21_DIR}")
 
 	# Add skeleton binary reader and overwrite some of the files for spine 2.1.
 	set (SPINE_21_RUNTIME_BINARY_READER_URL "https://github.com/BithreenGirlen/spine-c-2.1.27/archive/refs/heads/main.zip")
-	set (SPINE_21_RUNTIME_BINARY_READER_FILENAME "${DIR_TEMP}/spine-c-2.1.27.zip")
+	set (SPINE_21_RUNTIME_BINARY_READER_FOLDER_NAME "spine-c-2.1.27")
+	download_and_extract("${SPINE_21_RUNTIME_BINARY_READER_URL}" "${SPINE_21_RUNTIME_BINARY_READER_FOLDER_NAME}")
 
-	if (NOT EXISTS "${SPINE_21_RUNTIME_BINARY_READER_FILENAME}")
-		file(DOWNLOAD "${SPINE_21_RUNTIME_BINARY_READER_URL}" "${SPINE_21_RUNTIME_BINARY_READER_FILENAME}" SHOW_PROGRESS)
-	endif()
-
-	if (NOT EXISTS "${DIR_TEMP}/spine-c-2.1.27-main")
-		file(ARCHIVE_EXTRACT INPUT "${SPINE_21_RUNTIME_BINARY_READER_FILENAME}" DESTINATION "${DIR_TEMP}")
-	endif()
-
-	file(COPY "${DIR_TEMP}/spine-c-2.1.27-main/spine-c/src" DESTINATION "${DIR_SPINE_C_21}")
-	file(COPY "${DIR_TEMP}/spine-c-2.1.27-main/spine-c/include" DESTINATION "${DIR_SPINE_C_21}")
+	file(COPY "${TEMP_DIR}/${SPINE_21_RUNTIME_BINARY_READER_FOLDER_NAME}-main/spine-c/src" DESTINATION "${SPINE_C_21_DIR}")
+	file(COPY "${TEMP_DIR}/${SPINE_21_RUNTIME_BINARY_READER_FOLDER_NAME}-main/spine-c/include" DESTINATION "${SPINE_C_21_DIR}")
 endif()
 
 # Modification on spine-c 3.5 extension.c and extension.h
@@ -126,9 +112,9 @@ function(replace_names_in_file FILE_PATH OLD_NAME NEW_NAME)
 endfunction()
 
 function(MODIFY_SPINE_35)
-	set(DIR_SPINE_C_35 ${CMAKE_CURRENT_LIST_DIR}/spine-c-3.5)
+	set(SPINE_C_35_DIR ${CMAKE_CURRENT_LIST_DIR}/spine-c-3.5)
 	set(NAMES_TO_BE_RENAMED "_malloc" "_calloc" "_realloc" "_free")
-	set(FILES_TO_BE_MODIFIED "${DIR_SPINE_C_35}/src/spine/extension.c" "${DIR_SPINE_C_35}/include/spine/extension.h")
+	set(FILES_TO_BE_MODIFIED "${SPINE_C_35_DIR}/src/spine/extension.c" "${SPINE_C_35_DIR}/include/spine/extension.h")
 
 	foreach(FILENAME IN LISTS FILES_TO_BE_MODIFIED)
 		foreach(NAME_TO_BE_RENAMED IN LISTS NAMES_TO_BE_RENAMED)
@@ -150,20 +136,21 @@ endfunction()
 MODIFY_SPINE_35()
 
 # Download Dear-ImGui docking
-if (NOT EXISTS "${DIR_IMGUI}")
-	set(IMGUI_SRC_URL "https://github.com/ocornut/imgui/archive/refs/tags/v${IMGUI_VERSION}.zip")
-	set(IMGUI_SRC_ARCHIVE_PATH "${DIR_TEMP}/${IMGUI_VERSION}")
-
-	if (NOT EXISTS "${IMGUI_SRC_ARCHIVE_PATH}.zip")
-		file(DOWNLOAD "${IMGUI_SRC_URL}" "${IMGUI_SRC_ARCHIVE_PATH}.zip" SHOW_PROGRESS)
-	endif()
-
-	if (NOT EXISTS "${IMGUI_SRC_ARCHIVE_PATH}")
-		file(ARCHIVE_EXTRACT INPUT "${IMGUI_SRC_ARCHIVE_PATH}.zip" DESTINATION "${DIR_TEMP}")
-	endif()
-
-	file(COPY "${DIR_TEMP}/imgui-${IMGUI_VERSION}/" DESTINATION "${DIR_IMGUI}")
+if (NOT EXISTS "${IMGUI_DIR}")
+	set (IMGUI_FOLDER_NAME "imgui-${IMGUI_VERSION}")
+	download_and_extract("https://github.com/ocornut/imgui/archive/refs/tags/v${IMGUI_VERSION}.zip" "${IMGUI_FOLDER_NAME}")
+	# Exclude VC project files, documents, and examples
+	file(COPY "${TEMP_DIR}/${IMGUI_FOLDER_NAME}/"
+	DESTINATION "${IMGUI_DIR}"
+	FILES_MATCHING 
+		PATTERN "*.cpp"
+		PATTERN "*.h"
+		PATTERN ".github" EXCLUDE
+		PATTERN "docs" EXCLUDE
+		PATTERN "examples" EXCLUDE
+		PATTERN "misc" EXCLUDE
+	)
 endif()
 
 # Delete Spine runtimes for other languages because they are irrelevant for the project.
-file(REMOVE_RECURSE "${DIR_TEMP}")
+file(REMOVE_RECURSE "${TEMP_DIR}")
