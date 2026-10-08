@@ -595,7 +595,12 @@ void CMainWindow::tick()
 		{
 			{
 				DxLibRenderTargetScope dxLibRenderTarget(m_spineRenderTexture.get());
+
+				const DxLib::MATRIX transfromMatrix = m_dxLibSpinePlayer.get()->calculateTransformMatrix();
+				
+				DxLib::SetTransformTo2D(&transfromMatrix);
 				m_dxLibSpinePlayer.get()->draw();
+				DxLib::ResetTransformTo2D();
 			}
 
 			DxLib::DrawGraph(0, 0, m_spineRenderTexture.get(), TRUE);

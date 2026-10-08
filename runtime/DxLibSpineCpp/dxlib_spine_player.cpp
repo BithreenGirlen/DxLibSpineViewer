@@ -7,9 +7,6 @@ void CDxLibSpinePlayer::draw()
 {
 	if (!m_drawables.empty())
 	{
-		DxLib::MATRIX matrix = calculateTransformMatrix();
-		DxLib::SetTransformTo2D(&matrix);
-
 		if (!m_isDrawOrderReversed)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
@@ -24,8 +21,6 @@ void CDxLibSpinePlayer::draw()
 				m_drawables[i]->draw();
 			}
 		}
-
-		DxLib::ResetTransformTo2D();
 	}
 }
 
