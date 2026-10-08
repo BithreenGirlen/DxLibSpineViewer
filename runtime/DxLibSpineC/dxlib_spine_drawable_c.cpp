@@ -326,6 +326,8 @@ void CDxLibSpineDrawableC::draw()
 		spSkeletonClipping_clipEnd(m_clipper, pSlot);
 	}
 	spSkeletonClipping_clipEnd2(m_clipper);
+
+	DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 }
 
 void CDxLibSpineDrawableC::setLeaveOutList(const char** list, int listCount)

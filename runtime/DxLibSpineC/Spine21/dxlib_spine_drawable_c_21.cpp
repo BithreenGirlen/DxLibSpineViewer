@@ -269,6 +269,8 @@ void CDxLibSpineDrawableC21::draw()
 			iDxLibTexture, TRUE
 		);
 	}
+
+	DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 }
 
 void CDxLibSpineDrawableC21::setLeaveOutList(const char** list, int listCount)

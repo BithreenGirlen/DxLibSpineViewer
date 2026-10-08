@@ -322,6 +322,8 @@ void CDxLibSpineDrawable::draw()
 		m_clipper.clipEnd(slot);
 	}
 	m_clipper.clipEnd();
+
+	DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 }
 
 void CDxLibSpineDrawable::setLeaveOutList(spine::Vector<spine::String>& list)

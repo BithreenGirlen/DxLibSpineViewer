@@ -597,7 +597,7 @@ void CMainWindow::tick()
 				DxLibRenderTargetScope dxLibRenderTarget(m_spineRenderTexture.get());
 				m_dxLibSpinePlayer.get()->draw();
 			}
-			DxLib::SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+
 			DxLib::DrawGraph(0, 0, m_spineRenderTexture.get(), TRUE);
 		}
 
