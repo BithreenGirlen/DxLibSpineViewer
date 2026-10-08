@@ -1273,7 +1273,7 @@ bool CMainWindow::loadSpinesFromMemory(const std::vector<std::string>& atlasData
 	*/
 	const bool isSpine40AndLater = versionIndex >= static_cast<size_t>(CSpinePlayerDynamic::ESpineVersionIndex::Spine40);
 	m_dxLibSpinePlayer.get()->enableConversionToPmaOnLoading(isSpine40AndLater ? true : m_spineSettingDialogue.isToMultiplyAlphaOnLoading());
-	if (m_spineSettingDialogue.isToFindWebpOnLoading() || m_spineSettingDialogue.isToIgnoreSmallImageOnLoading())
+	if (m_spineSettingDialogue.isToFindWebpOnLoading() || m_spineSettingDialogue.isToIgnoreMaskImageOnLoading())
 	{
 		m_dxLibSpinePlayer.get()->setTextureLoadCallback(&CMainWindow::SpineTextureLoadCallback, this);
 	}
@@ -1366,7 +1366,7 @@ void CMainWindow::SpineTextureLoadCallback(void* pUserDatum, const char* texture
 	}
 
 	/* マスク用途の小さな画像を透明にする。 */
-	const bool toIgnoreSmallImage = pThis->m_spineSettingDialogue.isToIgnoreSmallImageOnLoading();
+	const bool toIgnoreSmallImage = pThis->m_spineSettingDialogue.isToIgnoreMaskImageOnLoading();
 	if (toIgnoreSmallImage)
 	{
 		if (*pDxLibTexture == -1)
@@ -1382,9 +1382,9 @@ void CMainWindow::SpineTextureLoadCallback(void* pUserDatum, const char* texture
 		int iRet = DxLib::GetGraphSize(*pDxLibTexture, &iGraphWidth, &iGraphHeight);
 		if (iRet == -1)return;
 
-		/* 取り敢えず固定で。*/
-		static constexpr int kMinimumDimention = 256;
-		if (iGraphWidth < kMinimumDimention && iGraphHeight < kMinimumDimention)
+		const int maskImageWidth = pThis->m_spineSettingDialogue.getMaskImageWidth();
+		const int maskImageHeight = pThis->m_spineSettingDialogue.getMaskImageWidth();
+		if (iGraphWidth <= maskImageWidth && iGraphHeight <= maskImageHeight)
 		{
 			CDxLibMap dxLibMap(*pDxLibTexture);
 			if (dxLibMap.isAccessible())

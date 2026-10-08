@@ -14,20 +14,26 @@ public:
 	~CSpineSettingDialogue();
 
 	bool open(HINSTANCE hInstance, HWND hWnd, const wchar_t* windowName);
-	HWND getHwnd()const { return m_hWnd; }
+	HWND getHwnd()const noexcept{ return m_hWnd; }
 
-	const std::wstring& getAtlasExtension() const { return m_atlasExtension; }
-	const std::wstring& getSkelExtension() const { return m_skelExtension; }
+	const std::wstring& getAtlasExtension() const noexcept { return m_atlasExtension; }
+	const std::wstring& getSkelExtension() const noexcept { return m_skelExtension; }
 
-	void multiplyAlphaOnLoading(bool toMultiply);
+	void multiplyAlphaOnLoading(bool toMultiply) noexcept;
 	bool isToMultiplyAlphaOnLoading() const noexcept;
 
-	void findWebpOnLoading(bool toFindWebp);
+	void findWebpOnLoading(bool toFindWebp) noexcept;
 	bool isToFindWebpOnLoading() const noexcept;
 
-	void ignoreSamllImageOnLoading(bool toIgnoreSmallImage);
-	bool isToIgnoreSmallImageOnLoading() const noexcept;
+	void ignoreMaskImageOnLoading(bool toIgnoreMaskImage) noexcept;
+	bool isToIgnoreMaskImageOnLoading() const noexcept;
+
+	int getMaskImageWidth() const noexcept;
+	int getMaskImageHeight() const noexcept;
 private:
+	static constexpr int kDefaultFontSize = 16;
+	static constexpr int kDefaultMaskImageDemention = 256;
+
 	const wchar_t* m_className = L"Spine setting dialogue";
 	HINSTANCE m_hInstance = nullptr;
 	HWND m_hWnd = nullptr;
@@ -42,7 +48,6 @@ private:
 	LRESULT onSize();
 	LRESULT onCommand(WPARAM wParam, LPARAM lParam);
 
-	enum Constants { kFontSize = 16 };
 	struct Controls
 	{
 		enum
@@ -60,14 +65,22 @@ private:
 
 	CButton m_pmaButton;
 	CButton m_findWebpButton;
-	CButton m_ignoreSmallImageButton;
+
+	CButton m_ignoreMaskImageButton;
+	CStatic m_maskWidthStatic;
+	CSpin m_maskWidthSpin;
+	CStatic m_maskHeightStatic;
+	CSpin m_maskHeightSpin;
 
 	std::wstring m_atlasExtension = L".atlas";
 	std::wstring m_skelExtension = L".skel";
 	bool m_toMultiplyAlphaOnLoading = false;
 	bool m_toFindWebp = false;
-	bool m_toIgnoreSmallImage = false;
+	bool m_toIgnoreMaskImage = false;
 
-	void storeInputs();
+	int m_maskImageWidth = kDefaultMaskImageDemention;
+	int m_maskImageHeight = kDefaultMaskImageDemention;
+
+	void storeInputs() noexcept;
 };
 #endif // !SPINE_SETTING_DIALOGUE_H_

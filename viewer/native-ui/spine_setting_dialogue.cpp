@@ -3,13 +3,11 @@
 #include <Windows.h>
 #include <CommCtrl.h>
 
-#include <vector>
-
 #include "spine_setting_dialogue.h"
 
 CSpineSettingDialogue::CSpineSettingDialogue()
 {
-	int fontHeight = static_cast<int>(Constants::kFontSize * ::GetDpiForSystem() / 96.f);
+	int fontHeight = static_cast<int>(kDefaultFontSize * ::GetDpiForSystem() / 96.f);
 	m_hFont = ::CreateFont(fontHeight, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE, EASTEUROPE_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, L"Yu mincho");
 }
 
@@ -42,7 +40,7 @@ bool CSpineSettingDialogue::open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 
 		UINT dpi = ::GetDpiForSystem();
 		int windowWidth = ::MulDiv(180, dpi, USER_DEFAULT_SCREEN_DPI);
-		int windowHeight = ::MulDiv(200, dpi, USER_DEFAULT_SCREEN_DPI);
+		int windowHeight = ::MulDiv(220, dpi, USER_DEFAULT_SCREEN_DPI);
 
 		RECT rect{};
 		::GetClientRect(hWnd, &rect);
@@ -61,7 +59,7 @@ bool CSpineSettingDialogue::open(HINSTANCE hInstance, HWND hWnd, const wchar_t* 
 	return false;
 }
 
-void CSpineSettingDialogue::multiplyAlphaOnLoading(bool toMultiply)
+void CSpineSettingDialogue::multiplyAlphaOnLoading(bool toMultiply) noexcept
 {
 	m_toMultiplyAlphaOnLoading = toMultiply;
 }
@@ -71,7 +69,7 @@ bool CSpineSettingDialogue::isToMultiplyAlphaOnLoading() const noexcept
 	return m_toMultiplyAlphaOnLoading;
 }
 
-void CSpineSettingDialogue::findWebpOnLoading(bool toFindWebp)
+void CSpineSettingDialogue::findWebpOnLoading(bool toFindWebp) noexcept
 {
 	m_toFindWebp = toFindWebp;
 }
@@ -80,14 +78,24 @@ bool CSpineSettingDialogue::isToFindWebpOnLoading() const noexcept
 	return m_toFindWebp;
 }
 
-void CSpineSettingDialogue::ignoreSamllImageOnLoading(bool toIgnoreSmallImage)
+void CSpineSettingDialogue::ignoreMaskImageOnLoading(bool toIgnoreMaskImage) noexcept
 {
-	m_toIgnoreSmallImage = toIgnoreSmallImage;
+	m_toIgnoreMaskImage = toIgnoreMaskImage;
 }
 
-bool CSpineSettingDialogue::isToIgnoreSmallImageOnLoading() const noexcept
+bool CSpineSettingDialogue::isToIgnoreMaskImageOnLoading() const noexcept
 {
-	return m_toIgnoreSmallImage;
+	return m_toIgnoreMaskImage;
+}
+
+int CSpineSettingDialogue::getMaskImageWidth() const noexcept
+{
+	return m_maskImageWidth;
+}
+
+int CSpineSettingDialogue::getMaskImageHeight() const noexcept
+{
+	return m_maskImageHeight;
 }
 
 int CSpineSettingDialogue::messageLoop()
@@ -177,8 +185,16 @@ LRESULT CSpineSettingDialogue::onCreate(HWND hWnd)
 	m_findWebpButton.create(L"Find webp", m_hWnd, reinterpret_cast<HMENU>(Controls::kFindWebp), true);
 	m_findWebpButton.setCheckBox(m_toFindWebp);
 
-	m_ignoreSmallImageButton.create(L"Ignore small image", m_hWnd, reinterpret_cast<HMENU>(Controls::kIgnoreSmallImage), true);
-	m_ignoreSmallImageButton.setCheckBox(m_toIgnoreSmallImage);
+	m_ignoreMaskImageButton.create(L"Ignore small image", m_hWnd, reinterpret_cast<HMENU>(Controls::kIgnoreSmallImage), true);
+	m_ignoreMaskImageButton.setCheckBox(m_toIgnoreMaskImage);
+
+	m_maskWidthStatic.create(L"w:", m_hWnd);
+	m_maskWidthSpin.create(m_hWnd, 16, 1024);
+	m_maskWidthSpin.setValue(static_cast<long>(m_maskImageWidth));
+
+	m_maskHeightStatic.create(L"h:", m_hWnd);
+	m_maskHeightSpin.create(m_hWnd, 16, 1024);
+	m_maskHeightSpin.setValue(static_cast<long>(m_maskImageHeight));
 
 	const auto SetFontCallback = [](HWND hWnd, LPARAM lParam)
 		-> BOOL
@@ -229,13 +245,13 @@ LRESULT CSpineSettingDialogue::onSize()
 	RECT rect;
 	::GetClientRect(m_hWnd, &rect);
 
-	long clientWidth = rect.right - rect.left;
-	long clientHeight = rect.bottom - rect.top;
+	const long clientWidth = rect.right - rect.left;
+	const long clientHeight = rect.bottom - rect.top;
 
-	long spaceX = clientWidth / 96;
-	long spaceY = clientHeight / 96;
+	const long spaceX = clientWidth / 96;
+	const long spaceY = clientHeight / 96;
 
-	long fontHeight = static_cast<long>(Constants::kFontSize * ::GetDpiForWindow(m_hWnd) / 96.f);
+	const long fontHeight = static_cast<long>(kDefaultFontSize * ::GetDpiForWindow(m_hWnd) / 96.f);
 
 	long x = spaceX * 8;
 	long y = spaceY * 4;
@@ -262,7 +278,22 @@ LRESULT CSpineSettingDialogue::onSize()
 	::MoveWindow(m_findWebpButton.getHwnd(), x, y, w, h, TRUE);
 
 	y += h + spaceY * 2;
-	::MoveWindow(m_ignoreSmallImageButton.getHwnd(), x, y, w, h, TRUE);
+	::MoveWindow(m_ignoreMaskImageButton.getHwnd(), x, y, w, h, TRUE);
+
+	y += h + spaceY * 2;
+	w = fontHeight;
+	::MoveWindow(m_maskWidthStatic.getHwnd(), x, y, w, h, TRUE);
+	x += fontHeight;
+	w = fontHeight * 9 / 4;
+	m_maskWidthSpin.adjustPosition(x, y, w, h);
+
+	/* Spin has the half width of its buddy edit control size. */
+	x += w * 3 / 2 + spaceX * 2;
+	w = fontHeight;
+	::MoveWindow(m_maskHeightStatic.getHwnd(), x, y, w, h, TRUE);
+	x += fontHeight;
+	w = fontHeight * 9 / 4;
+	m_maskHeightSpin.adjustPosition(x, y, w, h);
 
 	return 0;
 }
@@ -290,13 +321,16 @@ LRESULT CSpineSettingDialogue::onCommand(WPARAM wParam, LPARAM lParam)
 }
 
 /* 入力値格納 */
-void CSpineSettingDialogue::storeInputs()
+void CSpineSettingDialogue::storeInputs() noexcept
 {
 	m_atlasExtension.assign(m_atlasEdit.getText());
 	m_skelExtension.assign(m_skelEdit.getText());
 
 	m_toMultiplyAlphaOnLoading = m_pmaButton.isChecked();
 	m_toFindWebp = m_findWebpButton.isChecked();
-	m_toIgnoreSmallImage = m_ignoreSmallImageButton.isChecked();
+	m_toIgnoreMaskImage = m_ignoreMaskImageButton.isChecked();
+
+	m_maskImageWidth = static_cast<int>(m_maskWidthSpin.getValue());
+	m_maskImageHeight = static_cast<int>(m_maskHeightSpin.getValue());
 }
 
